@@ -1,0 +1,76 @@
+.App {
+  max-width: 1400px;
+  margin: 2rem auto;
+  font-family: sans-serif;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.input-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.text-input {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%; /* Constrain the width */
+  max-height: 100%; /* Constrain the height */
+  overflow: hidden; /* Prevent content from overflowing */
+  box-sizing: border-box; /* Include padding and border in the element's size */
+}
+
+.diff-container {
+  margin-top: 2rem;
+  max-width: 100%; /* Constrain to the parent container width */
+  width: 100%; /* Use the full width of the container */
+  max-height: 400px; /* Set a maximum height to prevent vertical expansion */
+  box-sizing: border-box; /* Include padding and border in width/height */
+  border: 1px solid #ccc; /* Optional: Add a border for better visibility */
+  background-color: #f7f7f7; /* Match the diff viewer background */
+  padding: 1rem; /* Add some padding inside the container */
+}
+
+/* The container for both textareas (line-numbers + main) */
+.advanced-line-numbered-textarea {
+  display: flex;        /* side-by-side layout */
+  position: relative;
+  border: 1px solid #ccc;
+  font-family: monospace;
+  overflow: hidden;     /* optional, hide overflow if needed */
+}
+
+/* Left box: line numbers (read-only) */
+.line-numbers {
+  width: 10px;          /* small fixed width for line numbers */
+  border: none;
+  resize: none;
+  overflow: hidden;     /* hides horizontal scrollbar if text is wide */
+  text-align: right;    /* right-align the numbers */
+  padding: 0.5rem;
+  background-color: #f3f3f3;
+  color: #666;
+  outline: none;        /* hide focus ring */
+  line-height: 1.5;     /* match main textarea’s line-height */
+  font-size: 14px;
+}
+
+/* Right box: main editable textarea */
+.text-input-box {
+  flex: 1;              /* take remaining horizontal space */
+  border: none;
+  resize: none;         /* let the container handle sizing */
+  padding: 0.5rem;
+  outline: none;
+  line-height: 1.5;
+  font-size: 14px;
+  background: #fff;
+}
