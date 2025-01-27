@@ -27,14 +27,10 @@ function App() {
         const formatted = prettier.format(jsonString, {
           parser: 'json',
           plugins: [parserBabel],
-          // Optional Prettier config:
-          //   tabWidth: 2,
-          //   trailingComma: "es5",
-          //   etc.
         });
 
         // Update state with the formatted JSON
-        setOriginalText("formatted");
+        setOriginalText(formatted);
       } catch (err) {
         alert('Invalid JSON in Original Text');
       }
@@ -53,7 +49,7 @@ function App() {
           plugins: [parserBabel],
         });
 
-        setModifiedText("formatted");
+        setModifiedText(formatted);
       } catch (err) {
         alert('Invalid JSON in Modified Text');
       }
@@ -105,14 +101,27 @@ function App() {
 
       <div className="diff-container">
         <h2>Difference</h2>
-        <DiffViewer
-          oldValue={originalText}
-          newValue={modifiedText}
-          splitView={true}
-          compareMethod={DiffMethod.WORDS}
-          disableWordDiff={false}
-          showDiffOnly={false}
-        />
+        <div className="diff-viewer-wrapper">
+          <DiffViewer
+            oldValue={originalText}
+            newValue={modifiedText}
+            splitView={true}
+            compareMethod={DiffMethod.WORDS}
+            disableWordDiff={false}
+            showDiffOnly={false}
+            leftTitle="Original"
+            rightTitle="Modified"
+            styles={{
+              diffContainer: {
+                overflowX: 'auto', // Enable horizontal scrolling
+                width: '100%', // Ensure it takes full width
+              },
+              contentText: {
+                wordBreak: 'break-all', // Break long words to prevent overflow
+              },
+            }}
+          />
+        </div>
       </div>
     </div>
   );

@@ -45,11 +45,15 @@ h1 {
   margin-top: 2rem;
   max-width: 100%;
   width: 100%;
-  max-height: 400px;
   box-sizing: border-box;
   border: 1px solid #ccc;
   background-color: #f7f7f7;
   padding: 1rem;
+}
+
+.diff-viewer-wrapper {
+  width: 100%;
+  overflow-x: auto; /* Enable horizontal scrolling */
 }
 
 /* Optional advanced-line-numbered-textarea styles (if used) */
