@@ -1,50 +1,70 @@
-
-import AdvancedLineNumberedTextarea from './components/AdvancedLineNumberedTextArea';
-import CodeMirror from '@uiw/react-codemirror';
-import { EditorView } from "@codemirror/view"
-import { StreamLanguage } from '@codemirror/language';
-import 'codemirror/lib/codemirror.css'; // CodeMirror base styles
-import 'codemirror/theme/dracula.css'; // Optional: Theme styles
-import 'codemirror/mode/javascript/javascript'; // Language mode
-
 import React, { useState } from 'react';
-
-// You can still use a diff library like react-diff-viewer, or the diff package, etc.
-// For example:
+import CodeMirror from '@uiw/react-codemirror';
+import { EditorView } from "@codemirror/view";
 import DiffViewer, { DiffMethod } from 'react-diff-viewer';
+
+// 1. Import Prettier and the Babel parser
+import prettier from 'prettier/standalone';
+import parserBabel from 'prettier/parser-babel';
+
 import './App.css';
 
 function App() {
   const [originalText, setOriginalText] = useState('');
   const [modifiedText, setModifiedText] = useState('');
 
-  // Optional: custom styles for react-diff-viewer highlighting
-  const customStyles = {
-    variables: {
-      light: {
-        diffViewerBackground: '#f7f7f7',
-        diffViewerColor: '#333',
-        addedBackground: '#e0ffe0',
-        addedColor: '#2c662d',
-        removedBackground: '#ffecec',
-        removedColor: '#8c1a1a',
-      },
-    },
-    line: {
-      wordAdded: {
-        backgroundColor: '#b1fcb1',
-      },
-      wordRemoved: {
-        backgroundColor: '#ffb9b9',
-      },
-      whiteSpace: 'pre-wrap'
-    },
+  // Format only the "Original Text" field
+  const handleFormatJSONOriginal = () => {
+    if (originalText.trim()) {
+      try {
+        // Step 1: Validate it's valid JSON by parsing
+        const parsed = JSON.parse(originalText);
+        
+        // Step 2: Convert back to string (so Prettier sees valid JSON)
+        const jsonString = JSON.stringify(parsed, null, 2); 
+
+        // Step 3: Use Prettier to format the string
+        const formatted = prettier.format(jsonString, {
+          parser: 'json',
+          plugins: [parserBabel],
+          // Optional Prettier config:
+          //   tabWidth: 2,
+          //   trailingComma: "es5",
+          //   etc.
+        });
+
+        // Update state with the formatted JSON
+        setOriginalText("formatted");
+      } catch (err) {
+        alert('Invalid JSON in Original Text');
+      }
+    }
   };
-  
+
+  // Format only the "Modified Text" field
+  const handleFormatJSONModified = () => {
+    if (modifiedText.trim()) {
+      try {
+        const parsed = JSON.parse(modifiedText);
+        const jsonString = JSON.stringify(parsed);
+
+        const formatted = prettier.format(jsonString, {
+          parser: 'json',
+          plugins: [parserBabel],
+        });
+
+        setModifiedText("formatted");
+      } catch (err) {
+        alert('Invalid JSON in Modified Text');
+      }
+    }
+  };
+
   return (
     <div className="App">
       <h1>Diff Checker</h1>
       <div className="input-container">
+        {/* ORIGINAL TEXT AREA */}
         <div className="text-input">
           <h2>Original Text</h2>
           <CodeMirror
@@ -53,25 +73,33 @@ function App() {
             value={originalText}
             placeholder="Enter original text here..."
             height="200px"
-            options={{
-              lineWrapping: true
-            }}
-            onChange={(value) => setOriginalText(value)} // Updated to pass the editor content
+            onChange={(value, viewUpdate) => setOriginalText(value)}
           />
+          
+          <div className="button-row">
+            <button className="format-button" onClick={handleFormatJSONOriginal}>
+              Format JSON
+            </button>
+          </div>
         </div>
 
+        {/* MODIFIED TEXT AREA */}
         <div className="text-input">
           <h2>Modified Text</h2>
           <CodeMirror
+            extensions={[EditorView.lineWrapping]}
             className="code-mirror-modified"
             value={modifiedText}
             placeholder="Enter modified text here..."
             height="200px"
-            options={{
-              lineWrapping: true
-            }}
-            onChange={(value) => setModifiedText(value)} // Updated to pass the editor content
+            onChange={(value, viewUpdate) => setModifiedText(value)}
           />
+          
+          <div className="button-row">
+            <button className="format-button" onClick={handleFormatJSONModified}>
+              Format JSON
+            </button>
+          </div>
         </div>
       </div>
 
@@ -82,7 +110,6 @@ function App() {
           newValue={modifiedText}
           splitView={true}
           compareMethod={DiffMethod.WORDS}
-          styles={customStyles}
           disableWordDiff={false}
           showDiffOnly={false}
         />

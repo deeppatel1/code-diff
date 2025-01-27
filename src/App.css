@@ -22,52 +22,63 @@ h1 {
   flex: 1;
   display: flex;
   flex-direction: column;
-  max-width: 100%; /* Constrain the width */
-  max-height: 100%; /* Constrain the height */
-  overflow: hidden; /* Prevent content from overflowing */
-  box-sizing: border-box; /* Include padding and border in the element's size */
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.button-row {
+  display: flex;
+  justify-content: flex-end; /* Align to the right */
+  margin-top: 0.5rem;
+}
+
+.format-button {
+  margin-right: 1rem; /* Additional space to the right, if desired */
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
 }
 
 .diff-container {
   margin-top: 2rem;
-  max-width: 100%; /* Constrain to the parent container width */
-  width: 100%; /* Use the full width of the container */
-  max-height: 400px; /* Set a maximum height to prevent vertical expansion */
-  box-sizing: border-box; /* Include padding and border in width/height */
-  border: 1px solid #ccc; /* Optional: Add a border for better visibility */
-  background-color: #f7f7f7; /* Match the diff viewer background */
-  padding: 1rem; /* Add some padding inside the container */
+  max-width: 100%;
+  width: 100%;
+  max-height: 400px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  background-color: #f7f7f7;
+  padding: 1rem;
 }
 
-/* The container for both textareas (line-numbers + main) */
+/* Optional advanced-line-numbered-textarea styles (if used) */
 .advanced-line-numbered-textarea {
-  display: flex;        /* side-by-side layout */
+  display: flex;
   position: relative;
   border: 1px solid #ccc;
   font-family: monospace;
-  overflow: hidden;     /* optional, hide overflow if needed */
+  overflow: hidden;
 }
 
-/* Left box: line numbers (read-only) */
 .line-numbers {
-  width: 10px;          /* small fixed width for line numbers */
+  width: 10px;
   border: none;
   resize: none;
-  overflow: hidden;     /* hides horizontal scrollbar if text is wide */
-  text-align: right;    /* right-align the numbers */
+  overflow: hidden;
+  text-align: right;
   padding: 0.5rem;
   background-color: #f3f3f3;
   color: #666;
-  outline: none;        /* hide focus ring */
-  line-height: 1.5;     /* match main textarea’s line-height */
+  outline: none;
+  line-height: 1.5;
   font-size: 14px;
 }
 
-/* Right box: main editable textarea */
 .text-input-box {
-  flex: 1;              /* take remaining horizontal space */
+  flex: 1;
   border: none;
-  resize: none;         /* let the container handle sizing */
+  resize: none;
   padding: 0.5rem;
   outline: none;
   line-height: 1.5;
