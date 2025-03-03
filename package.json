@@ -12,6 +12,7 @@
     "codemirror": "^5.65.18",
     "cra-template": "1.2.0",
     "diff-match-patch": "^1.0.5",
+    "prismjs": "^1.29.0",
     "react": "^19.0.0",
     "react-diff-view": "^3.3.1",
     "react-diff-viewer": "^3.1.1",
