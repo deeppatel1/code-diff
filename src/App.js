@@ -104,13 +104,14 @@ function App() {
       <div className="input-container">
         {/* ORIGINAL TEXT AREA */}
         <div className="text-input">
-          <h2>Original Text</h2>
+          <h2>Original</h2>
           <CodeMirror
             extensions={[EditorView.lineWrapping]}
             className="code-mirror-original"
             value={originalText}
             placeholder="Enter original text here..."
-            height="200px"
+            height="300px"
+            width="100%"
             onChange={(value) => setOriginalText(value)}
           />
           {detectLanguage(originalText) === 'json' && (
@@ -126,13 +127,14 @@ function App() {
         </div>
         {/* MODIFIED TEXT AREA */}
         <div className="text-input">
-          <h2>Modified Text</h2>
+          <h2>Modified</h2>
           <CodeMirror
             extensions={[EditorView.lineWrapping]}
             className="code-mirror-modified"
             value={modifiedText}
             placeholder="Enter modified text here..."
-            height="200px"
+            height="300px"
+            width="100%"
             onChange={(value) => setModifiedText(value)}
           />
           {detectLanguage(modifiedText) === 'json' && (
