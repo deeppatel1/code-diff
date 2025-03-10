@@ -16,6 +16,9 @@ function App() {
   const [originalText, setOriginalText] = useState('');
   const [modifiedText, setModifiedText] = useState('');
   const [originalLanguage, setOriginalLanguage] = useState('text');
+  const [darkMode, setDarkMode] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   // Auto-detect language based on the content of the original text
   const detectLanguage = (text) => {
@@ -63,7 +66,7 @@ function App() {
       const parsed = JSON.parse(text);
       return JSON.stringify(parsed, null, 2);
     } catch (err) {
-      alert('Invalid JSON in text field');
+      showToastNotification('Invalid JSON in text field');
       return text;
     }
   };
@@ -72,15 +75,51 @@ function App() {
   const handleFormatOriginal = () => {
     if (detectLanguage(originalText) === 'json') {
       const formatted = formatJSON(originalText);
-      if (formatted) setOriginalText(formatted);
+      if (formatted) {
+        setOriginalText(formatted);
+        showToastNotification('JSON formatted successfully');
+      }
     }
   };
 
   const handleFormatModified = () => {
     if (detectLanguage(modifiedText) === 'json') {
       const formatted = formatJSON(modifiedText);
-      if (formatted) setModifiedText(formatted);
+      if (formatted) {
+        setModifiedText(formatted);
+        showToastNotification('JSON formatted successfully');
+      }
     }
+  };
+
+  // Toast notification
+  const showToastNotification = (message) => {
+    setToastMessage(message);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 3000);
+  };
+
+  // Clear both text areas
+  const handleClearAll = () => {
+    setOriginalText('');
+    setModifiedText('');
+    showToastNotification('All content cleared');
+  };
+
+  // Swap content between original and modified
+  const handleSwapContent = () => {
+    const temp = originalText;
+    setOriginalText(modifiedText);
+    setModifiedText(temp);
+    showToastNotification('Content swapped');
+  };
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+    document.body.classList.toggle('dark-mode');
   };
 
   // Syntax highlighting function
@@ -99,58 +138,99 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <h1>Diff Checker</h1>
+    <div className={`App ${darkMode ? 'dark-mode' : ''}`}>
+      <header className="app-header">
+        <h1>Diff Checker</h1>
+        <div className="toolbar">
+          <button className="icon-button" onClick={toggleDarkMode} title="Toggle Dark Mode">
+            {darkMode ? '☀️' : '🌙'}
+          </button>
+          <button className="action-button" onClick={handleClearAll}>
+            Clear All
+          </button>
+          <button className="action-button" onClick={handleSwapContent}>
+            Swap Content
+          </button>
+        </div>
+      </header>
+
       <div className="input-container">
         {/* ORIGINAL TEXT AREA */}
         <div className="text-input">
-          <h2>Original</h2>
-          <CodeMirror
-            extensions={[EditorView.lineWrapping]}
-            className="code-mirror-original"
-            value={originalText}
-            placeholder="Enter original text here..."
-            height="300px"
-            width="100%"
-            onChange={(value) => setOriginalText(value)}
-          />
-          {detectLanguage(originalText) === 'json' && (
-            <div className="button-row">
+          <div className="text-input-header">
+            <h2>Original</h2>
+            {detectLanguage(originalText) === 'json' && (
+              <span className="language-badge">JSON</span>
+            )}
+          </div>
+          <div className="editor-container">
+            <CodeMirror
+              extensions={[EditorView.lineWrapping]}
+              className="code-mirror-original"
+              value={originalText}
+              placeholder="Enter original text here..."
+              height="300px"
+              width="100%"
+              onChange={(value) => setOriginalText(value)}
+              theme={darkMode ? 'dark' : 'light'}
+            />
+          </div>
+          <div className="button-row">
+            {detectLanguage(originalText) === 'json' && (
               <button className="format-button" onClick={handleFormatOriginal}>
                 Format JSON
               </button>
-              <span className="language-indicator">
-                Detected: JSON
-              </span>
+            )}
+            <div className="characters-count">
+              {originalText.length} characters
             </div>
-          )}
+          </div>
         </div>
+        
         {/* MODIFIED TEXT AREA */}
         <div className="text-input">
-          <h2>Modified</h2>
-          <CodeMirror
-            extensions={[EditorView.lineWrapping]}
-            className="code-mirror-modified"
-            value={modifiedText}
-            placeholder="Enter modified text here..."
-            height="300px"
-            width="100%"
-            onChange={(value) => setModifiedText(value)}
-          />
-          {detectLanguage(modifiedText) === 'json' && (
-            <div className="button-row">
+          <div className="text-input-header">
+            <h2>Modified</h2>
+            {detectLanguage(modifiedText) === 'json' && (
+              <span className="language-badge">JSON</span>
+            )}
+          </div>
+          <div className="editor-container">
+            <CodeMirror
+              extensions={[EditorView.lineWrapping]}
+              className="code-mirror-modified"
+              value={modifiedText}
+              placeholder="Enter modified text here..."
+              height="300px"
+              width="100%"
+              onChange={(value) => setModifiedText(value)}
+              theme={darkMode ? 'dark' : 'light'}
+            />
+          </div>
+          <div className="button-row">
+            {detectLanguage(modifiedText) === 'json' && (
               <button className="format-button" onClick={handleFormatModified}>
                 Format JSON
               </button>
-              <span className="language-indicator">
-                Detected: JSON
-              </span>
+            )}
+            <div className="characters-count">
+              {modifiedText.length} characters
             </div>
-          )}
+          </div>
         </div>
       </div>
+
       <div className="diff-container">
-        <h2>Difference</h2>
+        <div className="diff-header">
+          <h2>Difference</h2>
+          <div className="diff-stats">
+            {originalText.length > 0 && modifiedText.length > 0 && (
+              <span className="similarity-indicator">
+                Similarity: {Math.round((1 - Math.abs(originalText.length - modifiedText.length) / Math.max(originalText.length, modifiedText.length)) * 100)}%
+              </span>
+            )}
+          </div>
+        </div>
         <div className="diff-viewer-wrapper">
           <DiffViewer
             oldValue={originalText}
@@ -159,8 +239,6 @@ function App() {
             compareMethod={DiffMethod.CHARS}
             disableWordDiff={false}
             showDiffOnly={false}
-            leftTitle="Original"
-            rightTitle="Modified"
             renderContent={(str) => highlightSyntax(str, originalLanguage)}
             styles={{
               diffContainer: {
@@ -170,10 +248,24 @@ function App() {
               contentText: {
                 wordBreak: 'break-all',
               },
+              useDarkTheme: darkMode
             }}
           />
         </div>
       </div>
+
+      {/* Toast notification */}
+      {showToast && (
+        <div className="toast-notification">
+          <div className="toast-content">
+            <div className="toast-message">{toastMessage}</div>
+          </div>
+        </div>
+      )}
+
+      {/* <footer className="app-footer">
+        <p></p>
+      </footer> */}
     </div>
   );
 }
