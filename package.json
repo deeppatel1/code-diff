@@ -12,6 +12,8 @@
     "codemirror": "^5.65.18",
     "cra-template": "1.2.0",
     "diff-match-patch": "^1.0.5",
+    "js-beautify": "^1.15.4",
+    "json-formatter-js": "^2.5.23",
     "prismjs": "^1.29.0",
     "react": "^19.0.0",
     "react-diff-view": "^3.3.1",
