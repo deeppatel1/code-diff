@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { EditorView } from "@codemirror/view";
 import DiffViewer, { DiffMethod } from 'react-diff-viewer';
-import JSONFormatter from 'json-formatter-js';
+import { ReactComponent as CopyIcon } from './copy.svg';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-json';
@@ -176,13 +176,27 @@ function App() {
             />
           </div>
           <div className="button-row">
-            {detectLanguage(originalText) === 'json' && (
-              <button className="format-button" onClick={handleFormatOriginal}>
-                Format JSON
+            <div className="left-side">
+              {detectLanguage(originalText) === 'json' && (
+                <button className="format-button" onClick={handleFormatOriginal}>
+                  Format JSON
+                </button>
+              )}
+            </div>
+            <div className="right-side">
+              <button
+                className="copy-button"
+                onClick={() => {
+                  navigator.clipboard.writeText(originalText);
+                  showToastNotification('Original text copied!');
+                }}
+                title="Copy original text"
+              >
+                <CopyIcon width={15} height={15} />
               </button>
-            )}
-            <div className="characters-count">
-              {originalText.length} characters
+              <div className="characters-count">
+                {originalText.length} characters
+              </div>
             </div>
           </div>
         </div>
@@ -208,13 +222,27 @@ function App() {
             />
           </div>
           <div className="button-row">
-            {detectLanguage(modifiedText) === 'json' && (
-              <button className="format-button" onClick={handleFormatModified}>
-                Format JSON
+            <div className="left-side">
+              {detectLanguage(modifiedText) === 'json' && (
+                <button className="format-button" onClick={handleFormatModified}>
+                  Format JSON
+                </button>
+              )}
+            </div>
+            <div className="right-side">
+              <button
+                className="copy-button"
+                onClick={() => {
+                  navigator.clipboard.writeText(modifiedText);
+                  showToastNotification('Modified text copied!');
+                }}
+                title="Copy modified text"
+              >
+                <CopyIcon width={15} height={15} />
               </button>
-            )}
-            <div className="characters-count">
-              {modifiedText.length} characters
+              <div className="characters-count">
+                {modifiedText.length} characters
+              </div>
             </div>
           </div>
         </div>
