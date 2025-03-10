@@ -71,6 +71,49 @@ function App() {
     }
   };
 
+  // Sort JSON keys alphabetically
+  const sortJSON = (text) => {
+    if (!text.trim()) return '';
+    try {
+      // Parse the JSON first
+      const parsed = JSON.parse(text);
+      
+      // Function to recursively sort an object by keys
+      const sortObject = (obj) => {
+        // If not an object or is null, return as is
+        if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) {
+          // If it's an array, sort its object elements
+          if (Array.isArray(obj)) {
+            return obj.map(item => typeof item === 'object' && item !== null ? sortObject(item) : item);
+          }
+          return obj;
+        }
+        
+        // Create an empty object to store sorted keys
+        const sortedObj = {};
+        
+        // Get all keys and sort them alphabetically
+        const keys = Object.keys(obj).sort();
+        
+        // Add each key-value pair in sorted order
+        keys.forEach(key => {
+          sortedObj[key] = sortObject(obj[key]);
+        });
+        
+        return sortedObj;
+      };
+      
+      // Sort the JSON object
+      const sortedObj = sortObject(parsed);
+      
+      // Stringify with pretty formatting
+      return JSON.stringify(sortedObj, null, 2);
+    } catch (err) {
+      showToastNotification('Invalid JSON in text field');
+      return text;
+    }
+  };
+
   // Format handlers using the detected language
   const handleFormatOriginal = () => {
     if (detectLanguage(originalText) === 'json') {
@@ -88,6 +131,27 @@ function App() {
       if (formatted) {
         setModifiedText(formatted);
         showToastNotification('JSON formatted successfully');
+      }
+    }
+  };
+
+  // Sort handlers for JSON objects
+  const handleSortOriginal = () => {
+    if (detectLanguage(originalText) === 'json') {
+      const sorted = sortJSON(originalText);
+      if (sorted) {
+        setOriginalText(sorted);
+        showToastNotification('JSON sorted successfully');
+      }
+    }
+  };
+
+  const handleSortModified = () => {
+    if (detectLanguage(modifiedText) === 'json') {
+      const sorted = sortJSON(modifiedText);
+      if (sorted) {
+        setModifiedText(sorted);
+        showToastNotification('JSON sorted successfully');
       }
     }
   };
@@ -178,9 +242,14 @@ function App() {
           <div className="button-row">
             <div className="left-side">
               {detectLanguage(originalText) === 'json' && (
-                <button className="format-button" onClick={handleFormatOriginal}>
-                  Format JSON
-                </button>
+                <>
+                  <button className="format-button" onClick={handleFormatOriginal}>
+                    Format JSON
+                  </button>
+                  <button className="sort-button" onClick={handleSortOriginal}>
+                    Sort JSON
+                  </button>
+                </>
               )}
             </div>
             <div className="right-side">
@@ -224,9 +293,14 @@ function App() {
           <div className="button-row">
             <div className="left-side">
               {detectLanguage(modifiedText) === 'json' && (
-                <button className="format-button" onClick={handleFormatModified}>
-                  Format JSON
-                </button>
+                <>
+                  <button className="format-button" onClick={handleFormatModified}>
+                    Format JSON
+                  </button>
+                  <button className="sort-button" onClick={handleSortModified}>
+                    Sort JSON
+                  </button>
+                </>
               )}
             </div>
             <div className="right-side">
@@ -290,10 +364,6 @@ function App() {
           </div>
         </div>
       )}
-
-      {/* <footer className="app-footer">
-        <p></p>
-      </footer> */}
     </div>
   );
 }

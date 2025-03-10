@@ -1,10 +1,12 @@
 /* Base Styles */
 :root {
-  --primary-color: #4CAF50;
-  --primary-hover: #3e8e41;
+  --primary-color: #4CAF50; /* Changed from #4CAF50 to purple */
+  --primary-hover: #3e8e41; /* Changed from #3e8e41 to darker purple */
+  --secondary-color: #9C27B0; /* New secondary color for sort button */
+  --secondary-hover: #7B1FA2; /* New secondary hover color for sort button */
   --text-color: #333;
-  --light-bg: #f5f5f5;             /* was #fff; softer neutral */
-  --light-bg-secondary: #eaeaea;   /* was #f7f7f7; slightly darker neutral */
+  --light-bg: #f5f5f5;            
+  --light-bg-secondary: #eaeaea;   
   --border-color: #e1e4e8;
   --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   --toast-bg: #333;
@@ -17,8 +19,10 @@
 
 /* Dark Mode Variables */
 body.dark-mode, .dark-mode {
-  --primary-color: #4CAF50;
-  --primary-hover: #3e8e41;
+  --primary-color: #8A2BE2; /* Changed from #4CAF50 to purple */
+  --primary-hover: #7B1FA2; /* Changed from #3e8e41 to darker purple */
+  --secondary-color: #9C27B0;
+  --secondary-hover: #7B1FA2;
   --text-color: #eee;
   --light-bg: #1e1e1e;
   --light-bg-secondary: #2d2d2d;
@@ -258,6 +262,22 @@ h2 {
   background-color: var(--primary-hover);
 }
 
+/* New style for sort button */
+.sort-button {
+  background-color: var(--secondary-color);
+  color: white;
+  border: none;
+  margin-left: 0.5rem;
+  padding: 0.4rem .8rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color var(--transition-speed);
+}
+
+.sort-button:hover {
+  background-color: var(--secondary-hover);
+}
 
 .characters-count {
   color: #888;
@@ -318,16 +338,6 @@ h2 {
   margin-left: 0.5rem;
 }
 
-/* Footer Styles */
-.app-footer {
-  margin-top: 2rem;
-  text-align: center;
-  color: #888;
-  font-size: 0.875rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-color);
-}
-
 /* Animation */
 @keyframes slideIn {
   from {
@@ -382,6 +392,8 @@ h2 {
 
 .left-side {
   flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 .right-side {
