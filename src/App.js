@@ -1,5 +1,4 @@
-import { Copy, Moon, Sun, RefreshCw, Trash2, Code, ArrowUpDown } from 'lucide-react';
-import './CodeDiff.css';
+import { Copy, Moon, Sun, RefreshCw, Trash2, Code, ArrowUpDown, Wand2, ArrowUpAZ, Settings } from 'lucide-react';import './CodeDiff.css';
 import React, { useState, useEffect } from 'react';
 import DiffViewer, { DiffMethod } from 'react-diff-viewer';
 import { ReactComponent as CopyIcon } from './copy.svg';
@@ -16,11 +15,59 @@ function App() {
   const [originalText, setOriginalText] = useState('');
   const [modifiedText, setModifiedText] = useState('');
   const [originalLanguage, setOriginalLanguage] = useState('text');
+  const [language, setLanguage] = useState('javascript');
   const [darkMode, setDarkMode] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [diffMode, setDiffMode] = useState('split'); // 'split' or 'unified'
 
+    // Language options
+  const languageOptions = [
+    { value: 'javascript', label: 'JavaScript' },
+    { value: 'python', label: 'Python' },
+    { value: 'java', label: 'Java' },
+    { value: 'cpp', label: 'C++' },
+    { value: 'css', label: 'CSS' },
+    { value: 'html', label: 'HTML' },
+    { value: 'json', label: 'JSON' },
+    { value: 'xml', label: 'XML' },
+    { value: 'sql', label: 'SQL' },
+    { value: 'bash', label: 'Bash' },
+    { value: 'text', label: 'Plain Text' }
+  ];
+
+  // Auto-detect language based on content
+  const detectLanguage = (text) => {
+    if (isValidJSON(text)) return 'json';
+    if (text.includes('<!DOCTYPE') || text.includes('<html>')) return 'html';
+    if (text.includes('def ') && text.includes(':')) return 'python';
+    if (text.includes('function ') || text.includes('=>') || text.includes('const ')) return 'javascript';
+    if (text.includes('SELECT ') || text.includes('FROM ')) return 'sql';
+    if (text.includes('#include') || text.includes('int main')) return 'cpp';
+    return 'text';
+  };
+
+  // Auto-detect language when text changes
+  useEffect(() => {
+    if (originalText || modifiedText) {
+      const detectedLang = detectLanguage(originalText || modifiedText);
+      if (detectedLang !== 'text' && language === 'text') {
+        setLanguage(detectedLang);
+      }
+    }
+  }, [originalText, modifiedText, language]);
+
+
+  // JSON detection function
+  const isValidJSON = (str) => {
+    if (!str.trim()) return false;
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
     // Check if either text contains valid JSON
   const originalIsJSON = isValidJSON(originalText);
   const modifiedIsJSON = isValidJSON(modifiedText);
@@ -90,7 +137,7 @@ function App() {
     }
   };
 
-  
+
   // Generate diff
   const generateDiff = () => {
     if (!originalText.trim() && !modifiedText.trim()) {
@@ -172,20 +219,58 @@ function App() {
 
 
   };
-  // Syntax highlighting function
-  const highlightSyntax = (str, language) => {
-    if (!str) return '';
-    const stringValue = typeof str === 'object' ? JSON.stringify(str, null, 2) : String(str);
-    let prismLanguage = Prism.languages[language] || Prism.languages.text;
-    return (
-      <pre
-        style={{ display: 'inline', margin: 0 }}
-        dangerouslySetInnerHTML={{
-          __html: Prism.highlight(stringValue, prismLanguage),
-        }}
-      />
-    );
+// Syntax highlighting with basic patterns
+  const highlightSyntax = (text, lang) => {
+    if (!text) return '';
+    
+    let highlightedText = text;
+    
+    switch (lang) {
+      case 'javascript':
+        highlightedText = text
+          .replace(/(function|const|let|var|if|else|for|while|return|class|extends|import|export|from|default|async|await|try|catch|finally)\b/g, '<span style="color: #0969da; font-weight: bold;">$1</span>')
+          .replace(/\/\/.*$/gm, '<span style="color: #6a737d; font-style: italic;">$&</span>')
+          .replace(/\/\*[\s\S]*?\*\//g, '<span style="color: #6a737d; font-style: italic;">$&</span>')
+          .replace(/"([^"\\]|\\.)*"/g, '<span style="color: #032f62;">$&</span>')
+          .replace(/'([^'\\]|\\.)*'/g, '<span style="color: #032f62;">$&</span>')
+          .replace(/`([^`\\]|\\.)*`/g, '<span style="color: #032f62;">$&</span>');
+        break;
+      
+      case 'python':
+        highlightedText = text
+          .replace(/(def|class|if|elif|else|for|while|return|import|from|as|try|except|finally|with|lambda|yield|async|await|pass|break|continue)\b/g, '<span style="color: #0969da; font-weight: bold;">$1</span>')
+          .replace(/#.*$/gm, '<span style="color: #6a737d; font-style: italic;">$&</span>')
+          .replace(/"([^"\\]|\\.)*"/g, '<span style="color: #032f62;">$&</span>')
+          .replace(/'([^'\\]|\\.)*'/g, '<span style="color: #032f62;">$&</span>');
+        break;
+      
+      case 'json':
+        highlightedText = text
+          .replace(/"([^"\\]|\\.)*"(?=\s*:)/g, '<span style="color: #0969da; font-weight: bold;">$&</span>')
+          .replace(/"([^"\\]|\\.)*"(?!\s*:)/g, '<span style="color: #032f62;">$&</span>')
+          .replace(/\b(true|false|null)\b/g, '<span style="color: #e36209; font-weight: bold;">$1</span>')
+          .replace(/\b\d+\.?\d*\b/g, '<span style="color: #e36209;">$&</span>');
+        break;
+      
+      case 'css':
+        highlightedText = text
+          .replace(/([a-zA-Z-]+)(?=\s*:)/g, '<span style="color: #0969da;">$1</span>')
+          .replace(/:\s*([^;]+)/g, ': <span style="color: #032f62;">$1</span>')
+          .replace(/\/\*[\s\S]*?\*\//g, '<span style="color: #6a737d; font-style: italic;">$&</span>');
+        break;
+      
+      case 'html':
+        highlightedText = text
+          .replace(/&lt;(\/?[a-zA-Z][^&gt;]*)&gt;/g, '<span style="color: #116329;">&lt;$1&gt;</span>')
+          .replace(/(<\/?[a-zA-Z][^>]*)>/g, '<span style="color: #116329;">$1</span>')
+          .replace(/\s([a-zA-Z-]+)=/g, ' <span style="color: #0969da;">$1</span>=')
+          .replace(/"([^"]*)"/g, '<span style="color: #032f62;">"$1"</span>');
+        break;
+    }
+    
+    return highlightedText;
   };
+
   return (
     <div className={`app ${darkMode ? 'dark-mode' : 'light-mode'}`}>
       {/* Header */}
@@ -242,16 +327,40 @@ function App() {
           <div className="input-panel">
             <div className="panel-header">
               <div className="panel-info">
-                <h3>Original</h3>
+                <h3 className="panel-title">
+                  Original
+                  {originalIsJSON && <span className="json-badge">JSON</span>}
+                </h3>
                 <p>{originalText.length} chars</p>
               </div>
-              <button
-                onClick={() => copyToClipboard(originalText)}
-                className="copy-btn"
-                disabled={!originalText}
-              >
-                <Copy className="copy-icon" />
-              </button>
+              <div className="panel-buttons">
+                {originalIsJSON && (
+                  <>
+                    <button
+                      onClick={beautifyOriginal}
+                      className="copy-btn"
+                      title="Beautify JSON"
+                    >
+                      <Wand2 className="copy-icon" />
+                    </button>
+                    <button
+                      onClick={sortOriginal}
+                      className="copy-btn"
+                      title="Sort JSON keys"
+                    >
+                      <ArrowUpAZ className="copy-icon" />
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => copyToClipboard(originalText)}
+                  className="copy-btn"
+                  disabled={!originalText}
+                  title="Copy to clipboard"
+                >
+                  <Copy className="copy-icon" />
+                </button>
+              </div>
             </div>
             <textarea
               value={originalText}
@@ -265,16 +374,40 @@ function App() {
           <div className="input-panel">
             <div className="panel-header">
               <div className="panel-info">
-                <h3>Modified</h3>
+                <h3 className="panel-title">
+                  Modified
+                  {modifiedIsJSON && <span className="json-badge">JSON</span>}
+                </h3>
                 <p>{modifiedText.length} chars</p>
               </div>
-              <button
-                onClick={() => copyToClipboard(modifiedText)}
-                className="copy-btn"
-                disabled={!modifiedText}
-              >
-                <Copy className="copy-icon" />
-              </button>
+              <div className="panel-buttons">
+                {modifiedIsJSON && (
+                  <>
+                    <button
+                      onClick={beautifyModified}
+                      className="copy-btn"
+                      title="Beautify JSON"
+                    >
+                      <Wand2 className="copy-icon" />
+                    </button>
+                    <button
+                      onClick={sortModified}
+                      className="copy-btn"
+                      title="Sort JSON keys"
+                    >
+                      <ArrowUpAZ className="copy-icon" />
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => copyToClipboard(modifiedText)}
+                  className="copy-btn"
+                  disabled={!modifiedText}
+                  title="Copy to clipboard"
+                >
+                  <Copy className="copy-icon" />
+                </button>
+              </div>
             </div>
             <textarea
               value={modifiedText}
