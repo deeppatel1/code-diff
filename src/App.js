@@ -1,6 +1,6 @@
+import { Copy, Moon, Sun, RefreshCw, Trash2, Code, ArrowUpDown } from 'lucide-react';
+import './CodeDiff.css';
 import React, { useState, useEffect } from 'react';
-import CodeMirror from '@uiw/react-codemirror';
-import { EditorView } from "@codemirror/view";
 import DiffViewer, { DiffMethod } from 'react-diff-viewer';
 import { ReactComponent as CopyIcon } from './copy.svg';
 import Prism from 'prismjs';
@@ -10,7 +10,7 @@ import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-markup';
 import 'prismjs/themes/prism.css';
-import './App.css';
+
 
 function App() {
   const [originalText, setOriginalText] = useState('');
@@ -19,173 +19,159 @@ function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [diffMode, setDiffMode] = useState('split'); // 'split' or 'unified'
 
-  // Auto-detect language based on the content of the original text
-  const detectLanguage = (text) => {
-    if (!text.trim()) return 'text';
+    // Check if either text contains valid JSON
+  const originalIsJSON = isValidJSON(originalText);
+  const modifiedIsJSON = isValidJSON(modifiedText);
 
-    try {
-      JSON.parse(text);
-      return 'json';
-    } catch (e) {
-      // Not JSON, continue detection
-    }
-
-    if (text.includes('def ') || text.includes('import ') || text.includes('class ') || /:\s*\n\s+/.test(text)) {
-      return 'python';
-    }
-
-    if (text.includes('<html>') || text.includes('<!DOCTYPE html>') ||
-        (text.includes('<') && text.includes('</') && text.includes('>'))) {
-      return 'html';
-    }
-
-    if (text.includes('{') && text.includes('}') &&
-        (/[a-z-]+\s*:\s*[^{]+;/.test(text) || text.includes('@media'))) {
-      return 'css';
-    }
-
-    if (text.includes('{') && text.includes('}') &&
-        (text.includes('function') || text.includes('=>') || text.includes('const ') ||
-         text.includes('var ') || text.includes('let '))) {
-      return 'javascript';
-    }
-
-    return 'text';
-  };
-
-  // Update the language detection when the original text changes
-  useEffect(() => {
-    setOriginalLanguage(detectLanguage(originalText));
-  }, [originalText]);
-
-  // Format JSON using json-formatter-js
-  const formatJSON = (text) => {
-    if (!text.trim()) return '';
+  // Beautify JSON function
+  const beautifyJSON = (text) => {
     try {
       const parsed = JSON.parse(text);
       return JSON.stringify(parsed, null, 2);
-    } catch (err) {
-      showToastNotification('Invalid JSON in text field');
+    } catch (e) {
       return text;
     }
   };
 
-  // Sort JSON keys alphabetically
+  // Sort JSON keys function
   const sortJSON = (text) => {
-    if (!text.trim()) return '';
     try {
-      // Parse the JSON first
       const parsed = JSON.parse(text);
-      
-      // Function to recursively sort an object by keys
-      const sortObject = (obj) => {
-        // If not an object or is null, return as is
-        if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) {
-          // If it's an array, sort its object elements
-          if (Array.isArray(obj)) {
-            return obj.map(item => typeof item === 'object' && item !== null ? sortObject(item) : item);
-          }
-          return obj;
+      const sortedKeys = (obj) => {
+        if (Array.isArray(obj)) {
+          return obj.map(sortedKeys);
+        } else if (obj !== null && typeof obj === 'object') {
+          return Object.keys(obj)
+            .sort()
+            .reduce((result, key) => {
+              result[key] = sortedKeys(obj[key]);
+              return result;
+            }, {});
         }
-        
-        // Create an empty object to store sorted keys
-        const sortedObj = {};
-        
-        // Get all keys and sort them alphabetically
-        const keys = Object.keys(obj).sort();
-        
-        // Add each key-value pair in sorted order
-        keys.forEach(key => {
-          sortedObj[key] = sortObject(obj[key]);
-        });
-        
-        return sortedObj;
+        return obj;
       };
-      
-      // Sort the JSON object
-      const sortedObj = sortObject(parsed);
-      
-      // Stringify with pretty formatting
-      return JSON.stringify(sortedObj, null, 2);
-    } catch (err) {
-      showToastNotification('Invalid JSON in text field');
+      return JSON.stringify(sortedKeys(parsed), null, 2);
+    } catch (e) {
       return text;
     }
   };
 
-  // Format handlers using the detected language
-  const handleFormatOriginal = () => {
-    if (detectLanguage(originalText) === 'json') {
-      const formatted = formatJSON(originalText);
-      if (formatted) {
-        setOriginalText(formatted);
-        showToastNotification('JSON formatted successfully');
-      }
+  // Beautify original JSON
+  const beautifyOriginal = () => {
+    if (originalIsJSON) {
+      setOriginalText(beautifyJSON(originalText));
+      showToastMessage('Original JSON beautified!');
     }
   };
 
-  const handleFormatModified = () => {
-    if (detectLanguage(modifiedText) === 'json') {
-      const formatted = formatJSON(modifiedText);
-      if (formatted) {
-        setModifiedText(formatted);
-        showToastNotification('JSON formatted successfully');
-      }
+  // Beautify modified JSON
+  const beautifyModified = () => {
+    if (modifiedIsJSON) {
+      setModifiedText(beautifyJSON(modifiedText));
+      showToastMessage('Modified JSON beautified!');
     }
   };
 
-  // Sort handlers for JSON objects
-  const handleSortOriginal = () => {
-    if (detectLanguage(originalText) === 'json') {
-      const sorted = sortJSON(originalText);
-      if (sorted) {
-        setOriginalText(sorted);
-        showToastNotification('JSON sorted successfully');
-      }
+  // Sort original JSON
+  const sortOriginal = () => {
+    if (originalIsJSON) {
+      setOriginalText(sortJSON(originalText));
+      showToastMessage('Original JSON keys sorted!');
     }
   };
 
-  const handleSortModified = () => {
-    if (detectLanguage(modifiedText) === 'json') {
-      const sorted = sortJSON(modifiedText);
-      if (sorted) {
-        setModifiedText(sorted);
-        showToastNotification('JSON sorted successfully');
-      }
+  // Sort modified JSON
+  const sortModified = () => {
+    if (modifiedIsJSON) {
+      setModifiedText(sortJSON(modifiedText));
+      showToastMessage('Modified JSON keys sorted!');
     }
   };
 
-  // Toast notification
-  const showToastNotification = (message) => {
+  
+  // Generate diff
+  const generateDiff = () => {
+    if (!originalText.trim() && !modifiedText.trim()) {
+      return [];
+    }
+
+    const originalLines = originalText.split('\n');
+    const modifiedLines = modifiedText.split('\n');
+    const maxLines = Math.max(originalLines.length, modifiedLines.length);
+    const diffs = [];
+
+    for (let i = 0; i < maxLines; i++) {
+      const originalLine = originalLines[i] || '';
+      const modifiedLine = modifiedLines[i] || '';
+      
+      if (originalLine === modifiedLine) {
+        diffs.push({
+          type: 'equal',
+          originalLine: originalLine,
+          modifiedLine: modifiedLine,
+          lineNumber: i + 1
+        });
+      } else if (originalLine && !modifiedLine) {
+        diffs.push({
+          type: 'removed',
+          originalLine: originalLine,
+          modifiedLine: '',
+          lineNumber: i + 1
+        });
+      } else if (!originalLine && modifiedLine) {
+        diffs.push({
+          type: 'added',
+          originalLine: '',
+          modifiedLine: modifiedLine,
+          lineNumber: i + 1
+        });
+      } else {
+        diffs.push({
+          type: 'modified',
+          originalLine: originalLine,
+          modifiedLine: modifiedLine,
+          lineNumber: i + 1
+        });
+      }
+    }
+
+    return diffs;
+  };
+
+  const diffs = generateDiff();
+
+  // Show toast message
+  const showToastMessage = (message) => {
     setToastMessage(message);
     setShowToast(true);
-    setTimeout(() => {
-      setShowToast(false);
-    }, 3000);
+    setTimeout(() => setShowToast(false), 2000);
   };
 
-  // Clear both text areas
-  const handleClearAll = () => {
+  // Copy to clipboard
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      showToastMessage('Copied to clipboard!');
+    });
+  };
+
+  // Clear all content
+  const clearAll = () => {
     setOriginalText('');
     setModifiedText('');
-    showToastNotification('All content cleared');
+    showToastMessage('All content cleared!');
   };
 
-  // Swap content between original and modified
-  const handleSwapContent = () => {
+  // Swap content
+  const swapContent = () => {
     const temp = originalText;
     setOriginalText(modifiedText);
     setModifiedText(temp);
-    showToastNotification('Content swapped');
-  };
+    showToastMessage('Content swapped!');
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.body.classList.toggle('dark-mode');
-  };
 
+  };
   // Syntax highlighting function
   const highlightSyntax = (str, language) => {
     if (!str) return '';
@@ -200,167 +186,147 @@ function App() {
       />
     );
   };
-
   return (
-    <div className={`App ${darkMode ? 'dark-mode' : ''}`}>
-      <header className="app-header">
-        <h1>Diff Checker</h1>
-        <div className="toolbar">
-          <button className="icon-button" onClick={toggleDarkMode} title="Toggle Dark Mode">
-            {darkMode ? '☀️' : '🌙'}
-          </button>
-          <button className="action-button" onClick={handleClearAll}>
-            Clear All
-          </button>
-          <button className="action-button" onClick={handleSwapContent}>
-            Swap Content
-          </button>
-        </div>
-      </header>
-
-      <div className="input-container">
-        {/* ORIGINAL TEXT AREA */}
-        <div className="text-input">
-          <div className="text-input-header">
-            <h2>Original</h2>
-            {detectLanguage(originalText) === 'json' && (
-              <span className="language-badge">JSON</span>
-            )}
+    <div className={`app ${darkMode ? 'dark-mode' : 'light-mode'}`}>
+      {/* Header */}
+      <div className="header">
+        <div className="header-content">
+          <div className="header-left">
+            <Code className="header-icon" />
+            <div className="header-text">
+              <h1>Code Diff</h1>
+              <p>Compare and analyze code differences</p>
+            </div>
           </div>
-          <div className="editor-container">
-            <CodeMirror
-              extensions={[EditorView.lineWrapping]}
-              className="code-mirror-original"
+          
+          <div className="header-controls">
+            <button
+              onClick={() => setDiffMode(diffMode === 'split' ? 'unified' : 'split')}
+              className="control-btn"
+              title="Toggle diff view"
+            >
+              <ArrowUpDown className="control-icon" />
+            </button>
+            
+            <button
+              onClick={swapContent}
+              className="control-btn"
+              title="Swap content"
+            >
+              <RefreshCw className="control-icon" />
+            </button>
+            
+            <button
+              onClick={clearAll}
+              className="control-btn"
+              title="Clear all"
+            >
+              <Trash2 className="control-icon" />
+            </button>
+            
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="control-btn"
+              title="Toggle theme"
+            >
+              {darkMode ? <Sun className="control-icon" /> : <Moon className="control-icon" />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="main-content">
+        {/* Input Section */}
+        <div className="input-grid">
+          {/* Original Text */}
+          <div className="input-panel">
+            <div className="panel-header">
+              <div className="panel-info">
+                <h3>Original</h3>
+                <p>{originalText.length} chars</p>
+              </div>
+              <button
+                onClick={() => copyToClipboard(originalText)}
+                className="copy-btn"
+                disabled={!originalText}
+              >
+                <Copy className="copy-icon" />
+              </button>
+            </div>
+            <textarea
               value={originalText}
+              onChange={(e) => setOriginalText(e.target.value)}
               placeholder="Enter original text here..."
-              height="300px"
-              width="100%"
-              onChange={(value) => setOriginalText(value)}
-              theme={darkMode ? 'dark' : 'light'}
+              className="text-input"
             />
           </div>
-          <div className="button-row">
-            <div className="left-side">
-              {detectLanguage(originalText) === 'json' && (
-                <>
-                  <button className="format-button" onClick={handleFormatOriginal}>
-                    Format JSON
-                  </button>
-                  <button className="sort-button" onClick={handleSortOriginal}>
-                    Sort JSON
-                  </button>
-                </>
-              )}
-            </div>
-            <div className="right-side">
-              <button
-                className="copy-button"
-                onClick={() => {
-                  navigator.clipboard.writeText(originalText);
-                  showToastNotification('Original text copied!');
-                }}
-                title="Copy original text"
-              >
-                <CopyIcon width={15} height={15} />
-              </button>
-              <div className="characters-count">
-                {originalText.length} characters
+
+          {/* Modified Text */}
+          <div className="input-panel">
+            <div className="panel-header">
+              <div className="panel-info">
+                <h3>Modified</h3>
+                <p>{modifiedText.length} chars</p>
               </div>
+              <button
+                onClick={() => copyToClipboard(modifiedText)}
+                className="copy-btn"
+                disabled={!modifiedText}
+              >
+                <Copy className="copy-icon" />
+              </button>
             </div>
-          </div>
-        </div>
-        
-        {/* MODIFIED TEXT AREA */}
-        <div className="text-input">
-          <div className="text-input-header">
-            <h2>Modified</h2>
-            {detectLanguage(modifiedText) === 'json' && (
-              <span className="language-badge">JSON</span>
-            )}
-          </div>
-          <div className="editor-container">
-            <CodeMirror
-              extensions={[EditorView.lineWrapping]}
-              className="code-mirror-modified"
+            <textarea
               value={modifiedText}
+              onChange={(e) => setModifiedText(e.target.value)}
               placeholder="Enter modified text here..."
-              height="300px"
-              width="100%"
-              onChange={(value) => setModifiedText(value)}
-              theme={darkMode ? 'dark' : 'light'}
+              className="text-input"
             />
           </div>
-          <div className="button-row">
-            <div className="left-side">
-              {detectLanguage(modifiedText) === 'json' && (
-                <>
-                  <button className="format-button" onClick={handleFormatModified}>
-                    Format JSON
-                  </button>
-                  <button className="sort-button" onClick={handleSortModified}>
-                    Sort JSON
-                  </button>
-                </>
-              )}
+        </div>
+
+        {/* Differences Section */}
+        <div className="diff-panel">
+          <div className="diff-header">
+            <div className="diff-title">
+              <Code className="diff-icon" />
+              <h3>Differences</h3>
             </div>
-            <div className="right-side">
-              <button
-                className="copy-button"
-                onClick={() => {
-                  navigator.clipboard.writeText(modifiedText);
-                  showToastNotification('Modified text copied!');
-                }}
-                title="Copy modified text"
-              >
-                <CopyIcon width={15} height={15} />
-              </button>
-              <div className="characters-count">
-                {modifiedText.length} characters
-              </div>
+            <div className="diff-count">
+              {diffs.filter(d => d.type !== 'equal').length} changes found
             </div>
           </div>
+
+          <div className="diff-viewer-wrapper">
+            <DiffViewer
+              oldValue={originalText}
+              newValue={modifiedText}
+              splitView={true}
+              compareMethod={DiffMethod.CHARS}
+              disableWordDiff={false}
+              showDiffOnly={false}
+              extraLinesSurroundingDiff={5}
+              useDarkTheme={darkMode}
+              renderContent={(str) => highlightSyntax(str, originalLanguage)}
+              styles={{
+                diffContainer: {
+                  overflowX: 'auto',
+                  width: '100%',
+                },
+                contentText: {
+                  wordBreak: 'break-all',
+                }
+              }}
+            />
+        </div>
         </div>
       </div>
 
-      <div className="diff-container">
-        <div className="diff-header">
-          <h2>Difference</h2>
-          <div className="diff-stats">
-            {originalText.length > 0 && modifiedText.length > 0 && (
-              <span className="similarity-indicator">
-                Similarity: {Math.round((1 - Math.abs(originalText.length - modifiedText.length) / Math.max(originalText.length, modifiedText.length)) * 100)}%
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="diff-viewer-wrapper">
-          <DiffViewer
-            oldValue={originalText}
-            newValue={modifiedText}
-            splitView={true}
-            compareMethod={DiffMethod.CHARS}
-            disableWordDiff={false}
-            showDiffOnly={false}
-            renderContent={(str) => highlightSyntax(str, originalLanguage)}
-            styles={{
-              diffContainer: {
-                overflowX: 'auto',
-                width: '100%',
-              },
-              contentText: {
-                wordBreak: 'break-all',
-              },
-              useDarkTheme: darkMode
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Toast notification */}
+      {/* Toast Notification */}
       {showToast && (
-        <div className="toast-notification">
+        <div className="toast">
           <div className="toast-content">
-            <div className="toast-message">{toastMessage}</div>
+            {toastMessage}
           </div>
         </div>
       )}
