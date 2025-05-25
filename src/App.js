@@ -1,7 +1,7 @@
-import { Copy, Moon, Sun, RefreshCw, Trash2, Code, ArrowUpDown, Wand2, ArrowUpAZ, Settings } from 'lucide-react';import './CodeDiff.css';
+import { Copy, Moon, Sun, RefreshCw, Trash2, Code, ArrowUpDown, Wand2, ArrowUpAZ } from 'lucide-react';
+import './CodeDiff.css';
 import React, { useState, useEffect } from 'react';
 import DiffViewer, { DiffMethod } from 'react-diff-viewer';
-import { ReactComponent as CopyIcon } from './copy.svg';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-json';
@@ -14,17 +14,18 @@ import 'prismjs/themes/prism.css';
 function App() {
   const [originalText, setOriginalText] = useState('');
   const [modifiedText, setModifiedText] = useState('');
-  const [originalLanguage, setOriginalLanguage] = useState('text');
-  const [language, setLanguage] = useState('javascript');
+  const [originalLanguage, setOriginalLanguage] = useState('text'); // State for original language
+  const [modifiedLanguage, setModifiedLanguage] = useState('text'); // State for modified language
+  const [language, setLanguage] = useState('javascript'); // This state seems to be for overall highlighting, keep it for now
   const [darkMode, setDarkMode] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [diffMode, setDiffMode] = useState('split'); // 'split' or 'unified'
 
-    // Language options
+    // Language options (This can be used for a dropdown if you add one later)
   const languageOptions = [
     { value: 'javascript', label: 'JavaScript' },
-    { value: 'python', label: 'Python' },
+    { value: 'python', 'label': 'Python' },
     { value: 'java', label: 'Java' },
     { value: 'cpp', label: 'C++' },
     { value: 'css', label: 'CSS' },
@@ -38,24 +39,25 @@ function App() {
 
   // Auto-detect language based on content
   const detectLanguage = (text) => {
+    if (!text.trim()) return 'text'; // If empty, default to text
     if (isValidJSON(text)) return 'json';
-    if (text.includes('<!DOCTYPE') || text.includes('<html>')) return 'html';
-    if (text.includes('def ') && text.includes(':')) return 'python';
-    if (text.includes('function ') || text.includes('=>') || text.includes('const ')) return 'javascript';
-    if (text.includes('SELECT ') || text.includes('FROM ')) return 'sql';
-    if (text.includes('#include') || text.includes('int main')) return 'cpp';
+    if (text.includes('<!DOCTYPE') || text.includes('<html>') || text.includes('<body')) return 'html';
+    if (text.includes('def ') && text.includes(':') && !text.includes('{')) return 'python'; // Added !text.includes('{') to differentiate from JS
+    if (text.includes('function ') || text.includes('=>') || text.includes('const ') || text.includes('let ') || text.includes('var ')) return 'javascript';
+    if (text.includes('SELECT ') || text.includes('FROM ') || text.includes('INSERT INTO ') || text.includes('UPDATE ') || text.includes('DELETE FROM ')) return 'sql';
+    if (text.includes('#include') || text.includes('int main(') || text.includes('using namespace std;')) return 'cpp';
+    if (text.includes('{') && text.includes(';') && (text.includes(':') || text.includes('body')) && !isValidJSON(text)) return 'css'; // Basic CSS detection
     return 'text';
   };
 
   // Auto-detect language when text changes
   useEffect(() => {
-    if (originalText || modifiedText) {
-      const detectedLang = detectLanguage(originalText || modifiedText);
-      if (detectedLang !== 'text' && language === 'text') {
-        setLanguage(detectedLang);
-      }
-    }
-  }, [originalText, modifiedText, language]);
+    setOriginalLanguage(detectLanguage(originalText));
+  }, [originalText]);
+
+  useEffect(() => {
+    setModifiedLanguage(detectLanguage(modifiedText));
+  }, [modifiedText]);
 
 
   // JSON detection function
@@ -216,8 +218,6 @@ function App() {
     setOriginalText(modifiedText);
     setModifiedText(temp);
     showToastMessage('Content swapped!');
-
-
   };
 // Syntax highlighting with basic patterns
   const highlightSyntax = (text, lang) => {
@@ -329,7 +329,7 @@ function App() {
               <div className="panel-info">
                 <h3 className="panel-title">
                   Original
-                  {originalIsJSON && <span className="json-badge">JSON</span>}
+                  {originalLanguage !== 'text' && <span className="json-badge"> {originalLanguage.toUpperCase()}</span>}
                 </h3>
                 <p>{originalText.length} chars</p>
               </div>
@@ -376,7 +376,7 @@ function App() {
               <div className="panel-info">
                 <h3 className="panel-title">
                   Modified
-                  {modifiedIsJSON && <span className="json-badge">JSON</span>}
+                  {modifiedLanguage !== 'text' && <span className="json-badge"> {modifiedLanguage.toUpperCase()}</span>}
                 </h3>
                 <p>{modifiedText.length} chars</p>
               </div>
@@ -440,7 +440,6 @@ function App() {
               showDiffOnly={false}
               extraLinesSurroundingDiff={5}
               useDarkTheme={darkMode}
-              renderContent={(str) => highlightSyntax(str, originalLanguage)}
               styles={{
                 diffContainer: {
                   overflowX: 'auto',
