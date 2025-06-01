@@ -1,6 +1,6 @@
 import { Copy, Moon, Sun, RefreshCw, Trash2, Code, ArrowUpDown, Wand2, ArrowUpAZ } from 'lucide-react';
 import './CodeDiff.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Keep useRef for textarea itself if still used elsewhere, but not for line numbers
 import DiffViewer, { DiffMethod } from 'react-diff-viewer';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-javascript';
@@ -14,15 +14,21 @@ import 'prismjs/themes/prism.css';
 function App() {
   const [originalText, setOriginalText] = useState('');
   const [modifiedText, setModifiedText] = useState('');
-  const [originalLanguage, setOriginalLanguage] = useState('text'); // State for original language
-  const [modifiedLanguage, setModifiedLanguage] = useState('text'); // State for modified language
-  const [language, setLanguage] = useState('javascript'); // This state seems to be for overall highlighting, keep it for now
+  const [originalLanguage, setOriginalLanguage] = useState('text');
+  const [modifiedLanguage, setModifiedLanguage] = useState('text');
+  const [language, setLanguage] = useState('javascript');
   const [darkMode, setDarkMode] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [diffMode, setDiffMode] = useState('split'); // 'split' or 'unified'
+  const [diffMode, setDiffMode] = useState('split');
 
-    // Language options (This can be used for a dropdown if you add one later)
+  // Removed: useRef hooks for line numbers and textarea (unless you need the textarea ref for something else)
+  // const originalTextareaRef = useRef(null);
+  // const originalLineNumbersRef = useRef(null);
+  // const modifiedTextareaRef = useRef(null);
+  // const modifiedLineNumbersRef = useRef(null);
+
+  // Language options (This can be used for a dropdown if you add one later)
   const languageOptions = [
     { value: 'javascript', label: 'JavaScript' },
     { value: 'python', 'label': 'Python' },
@@ -39,24 +45,26 @@ function App() {
 
   // Auto-detect language based on content
   const detectLanguage = (text) => {
-    if (!text.trim()) return 'text'; // If empty, default to text
+    if (!text.trim()) return 'text';
     if (isValidJSON(text)) return 'json';
     if (text.includes('<!DOCTYPE') || text.includes('<html>') || text.includes('<body')) return 'html';
-    if (text.includes('def ') && text.includes(':') && !text.includes('{')) return 'python'; // Added !text.includes('{') to differentiate from JS
+    if (text.includes('def ') && text.includes(':') && !text.includes('{')) return 'python';
     if (text.includes('function ') || text.includes('=>') || text.includes('const ') || text.includes('let ') || text.includes('var ')) return 'javascript';
     if (text.includes('SELECT ') || text.includes('FROM ') || text.includes('INSERT INTO ') || text.includes('UPDATE ') || text.includes('DELETE FROM ')) return 'sql';
     if (text.includes('#include') || text.includes('int main(') || text.includes('using namespace std;')) return 'cpp';
-    if (text.includes('{') && text.includes(';') && (text.includes(':') || text.includes('body')) && !isValidJSON(text)) return 'css'; // Basic CSS detection
+    if (text.includes('{') && text.includes(';') && (text.includes(':') || text.includes('body')) && !isValidJSON(text)) return 'css';
     return 'text';
   };
 
   // Auto-detect language when text changes
   useEffect(() => {
     setOriginalLanguage(detectLanguage(originalText));
+    // Removed: updateLineNumbers(originalText, originalLineNumbersRef);
   }, [originalText]);
 
   useEffect(() => {
     setModifiedLanguage(detectLanguage(modifiedText));
+    // Removed: updateLineNumbers(modifiedText, modifiedLineNumbersRef);
   }, [modifiedText]);
 
 
@@ -154,7 +162,7 @@ function App() {
     for (let i = 0; i < maxLines; i++) {
       const originalLine = originalLines[i] || '';
       const modifiedLine = modifiedLines[i] || '';
-      
+
       if (originalLine === modifiedLine) {
         diffs.push({
           type: 'equal',
@@ -219,12 +227,18 @@ function App() {
     setModifiedText(temp);
     showToastMessage('Content swapped!');
   };
-// Syntax highlighting with basic patterns
+
+  // Removed: generateLineNumbers and updateLineNumbers functions
+  // Removed: handleScroll function
+  // Removed: useEffect for initial line number update
+
+
+// Syntax highlighting with basic patterns (existing, keep as is)
   const highlightSyntax = (text, lang) => {
     if (!text) return '';
-    
+
     let highlightedText = text;
-    
+
     switch (lang) {
       case 'javascript':
         highlightedText = text
@@ -235,7 +249,7 @@ function App() {
           .replace(/'([^'\\]|\\.)*'/g, '<span style="color: #032f62;">$&</span>')
           .replace(/`([^`\\]|\\.)*`/g, '<span style="color: #032f62;">$&</span>');
         break;
-      
+
       case 'python':
         highlightedText = text
           .replace(/(def|class|if|elif|else|for|while|return|import|from|as|try|except|finally|with|lambda|yield|async|await|pass|break|continue)\b/g, '<span style="color: #0969da; font-weight: bold;">$1</span>')
@@ -243,7 +257,7 @@ function App() {
           .replace(/"([^"\\]|\\.)*"/g, '<span style="color: #032f62;">$&</span>')
           .replace(/'([^'\\]|\\.)*'/g, '<span style="color: #032f62;">$&</span>');
         break;
-      
+
       case 'json':
         highlightedText = text
           .replace(/"([^"\\]|\\.)*"(?=\s*:)/g, '<span style="color: #0969da; font-weight: bold;">$&</span>')
@@ -251,14 +265,14 @@ function App() {
           .replace(/\b(true|false|null)\b/g, '<span style="color: #e36209; font-weight: bold;">$1</span>')
           .replace(/\b\d+\.?\d*\b/g, '<span style="color: #e36209;">$&</span>');
         break;
-      
+
       case 'css':
         highlightedText = text
           .replace(/([a-zA-Z-]+)(?=\s*:)/g, '<span style="color: #0969da;">$1</span>')
           .replace(/:\s*([^;]+)/g, ': <span style="color: #032f62;">$1</span>')
           .replace(/\/\*[\s\S]*?\*\//g, '<span style="color: #6a737d; font-style: italic;">$&</span>');
         break;
-      
+
       case 'html':
         highlightedText = text
           .replace(/&lt;(\/?[a-zA-Z][^&gt;]*)&gt;/g, '<span style="color: #116329;">&lt;$1&gt;</span>')
@@ -267,9 +281,10 @@ function App() {
           .replace(/"([^"]*)"/g, '<span style="color: #032f62;">"$1"</span>');
         break;
     }
-    
+
     return highlightedText;
   };
+
 
   return (
     <div className={`app ${darkMode ? 'dark-mode' : 'light-mode'}`}>
@@ -280,10 +295,9 @@ function App() {
             <Code className="header-icon" />
             <div className="header-text">
               <h1>Code Diff</h1>
-              <p>Compare and analyze code differences</p>
             </div>
           </div>
-          
+
           <div className="header-controls">
             <button
               onClick={() => setDiffMode(diffMode === 'split' ? 'unified' : 'split')}
@@ -292,7 +306,7 @@ function App() {
             >
               <ArrowUpDown className="control-icon" />
             </button>
-            
+
             <button
               onClick={swapContent}
               className="control-btn"
@@ -300,7 +314,7 @@ function App() {
             >
               <RefreshCw className="control-icon" />
             </button>
-            
+
             <button
               onClick={clearAll}
               className="control-btn"
@@ -308,7 +322,7 @@ function App() {
             >
               <Trash2 className="control-icon" />
             </button>
-            
+
             <button
               onClick={() => setDarkMode(!darkMode)}
               className="control-btn"
@@ -362,12 +376,22 @@ function App() {
                 </button>
               </div>
             </div>
-            <textarea
-              value={originalText}
-              onChange={(e) => setOriginalText(e.target.value)}
-              placeholder="Enter original text here..."
-              className="text-input"
-            />
+            {/* New structure for line numbers and textarea */}
+            <div className="textarea-container"> {/* This will be the main wrapper */}
+              <pre className="line-numbers-pre">
+                {/* Dynamically generate line numbers based on originalText */}
+                {originalText.split('\n').map((_, i) => (
+                  <span key={i}>{i + 1}</span>
+                ))}
+              </pre>
+              <textarea
+                value={originalText}
+                onChange={(e) => setOriginalText(e.target.value)}
+                placeholder="Enter original text here..."
+                className="text-input"
+                wrap="off" /* Important for line numbers to align */
+              />
+            </div>
           </div>
 
           {/* Modified Text */}
@@ -409,12 +433,22 @@ function App() {
                 </button>
               </div>
             </div>
-            <textarea
-              value={modifiedText}
-              onChange={(e) => setModifiedText(e.target.value)}
-              placeholder="Enter modified text here..."
-              className="text-input"
-            />
+            {/* New structure for line numbers and textarea */}
+            <div className="textarea-container"> {/* This will be the main wrapper */}
+              <pre className="line-numbers-pre">
+                {/* Dynamically generate line numbers based on modifiedText */}
+                {modifiedText.split('\n').map((_, i) => (
+                  <span key={i}>{i + 1}</span>
+                ))}
+              </pre>
+              <textarea
+                value={modifiedText}
+                onChange={(e) => setModifiedText(e.target.value)}
+                placeholder="Enter modified text here..."
+                className="text-input"
+                wrap="off" /* Important for line numbers to align */
+              />
+            </div>
           </div>
         </div>
 
