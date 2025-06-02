@@ -1,23 +1,210 @@
-import { Copy, Moon, Sun, RefreshCw, Trash2, Code, ArrowUpDown, Wand2, ArrowUpAZ } from 'lucide-react'; // ArrowUpDown is still needed
-import './App.css'; // Your existing CSS file
+import hljs from 'highlight.js/lib/core';
+
+// Themes (pick one or add your own)
+import 'highlight.js/styles/github.css';
+
+// Register many common languages
+import javascript from 'highlight.js/lib/languages/javascript';
+import typescript from 'highlight.js/lib/languages/typescript';
+import python from 'highlight.js/lib/languages/python';
+import json from 'highlight.js/lib/languages/json';
+import xml from 'highlight.js/lib/languages/xml';
+import html from 'highlight.js/lib/languages/xml';
+import bash from 'highlight.js/lib/languages/bash';
+import cpp from 'highlight.js/lib/languages/cpp';
+import csharp from 'highlight.js/lib/languages/csharp';
+import css from 'highlight.js/lib/languages/css';
+import go from 'highlight.js/lib/languages/go';
+import java from 'highlight.js/lib/languages/java';
+import kotlin from 'highlight.js/lib/languages/kotlin';
+import lua from 'highlight.js/lib/languages/lua';
+import php from 'highlight.js/lib/languages/php';
+import ruby from 'highlight.js/lib/languages/ruby';
+import rust from 'highlight.js/lib/languages/rust';
+import sql from 'highlight.js/lib/languages/sql';
+import yaml from 'highlight.js/lib/languages/yaml';
+import ini from 'highlight.js/lib/languages/ini';
+import powershell from 'highlight.js/lib/languages/powershell';
+import dockerfile from 'highlight.js/lib/languages/dockerfile';
+import makefile from 'highlight.js/lib/languages/makefile';
+import perl from 'highlight.js/lib/languages/perl';
+import markdown from 'highlight.js/lib/languages/markdown';
+import objectivec from 'highlight.js/lib/languages/objectivec';
+import scss from 'highlight.js/lib/languages/scss';
+import swift from 'highlight.js/lib/languages/swift';
+import r from 'highlight.js/lib/languages/r';
+
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('typescript', typescript);
+hljs.registerLanguage('python', python);
+hljs.registerLanguage('json', json);
+hljs.registerLanguage('xml', xml);
+hljs.registerLanguage('html', html);
+hljs.registerLanguage('bash', bash);
+hljs.registerLanguage('cpp', cpp);
+hljs.registerLanguage('csharp', csharp);
+hljs.registerLanguage('css', css);
+hljs.registerLanguage('go', go);
+hljs.registerLanguage('java', java);
+hljs.registerLanguage('kotlin', kotlin);
+hljs.registerLanguage('lua', lua);
+hljs.registerLanguage('php', php);
+hljs.registerLanguage('ruby', ruby);
+hljs.registerLanguage('rust', rust);
+hljs.registerLanguage('sql', sql);
+hljs.registerLanguage('yaml', yaml);
+hljs.registerLanguage('ini', ini);
+hljs.registerLanguage('powershell', powershell);
+hljs.registerLanguage('dockerfile', dockerfile);
+hljs.registerLanguage('makefile', makefile);
+hljs.registerLanguage('perl', perl);
+hljs.registerLanguage('markdown', markdown);
+hljs.registerLanguage('objectivec', objectivec);
+hljs.registerLanguage('scss', scss);
+hljs.registerLanguage('swift', swift);
+hljs.registerLanguage('r', r);
+
+import { Copy, Moon, Sun, RefreshCw, Trash2, Code, ArrowUpDown, Wand2, ArrowUpAZ } from 'lucide-react';
+import './App.css';
 import React, { useState, useEffect } from 'react';
 import DiffViewer, { DiffMethod } from 'react-diff-viewer';
-import Editor from '@monaco-editor/react'; // Monaco Editor for input
+import Editor from '@monaco-editor/react';
 
-// Helper to map detected language to Monaco's language identifiers
+// --- Updated and Expanded Language Definitions ---
+
+// Expanded Language options for dropdown (sorted alphabetically)
+const languageOptions = [
+  { value: 'abap', label: 'ABAP' },
+  { value: 'apex', label: 'Apex' },
+  { value: 'azcli', label: 'Azure CLI' },
+  { value: 'bash', label: 'Bash/Shell' },
+  { value: 'bat', label: 'Batch' },
+  { value: 'bicep', label: 'Bicep' },
+  { value: 'c', label: 'C' },
+  { value: 'cameligo', label: 'CameLIGO' },
+  { value: 'clojure', label: 'Clojure' },
+  { value: 'coffeescript', label: 'CoffeeScript' },
+  { value: 'cpp', label: 'C++' },
+  { value: 'csharp', label: 'C#' },
+  { value: 'css', label: 'CSS' },
+  { value: 'cypher', label: 'Cypher' },
+  { value: 'dart', label: 'Dart' },
+  { value: 'dockerfile', label: 'Dockerfile' },
+  { value: 'ecl', label: 'ECL' },
+  { value: 'elixir', label: 'Elixir' },
+  { value: 'fsharp', label: 'F#' },
+  { value: 'freemarker', label: 'FreeMarker' },
+  { value: 'go', label: 'Go' },
+  { value: 'graphql', label: 'GraphQL' },
+  { value: 'handlebars', label: 'Handlebars' },
+  { value: 'hcl', label: 'HCL' },
+  { value: 'html', label: 'HTML' },
+  { value: 'ini', label: 'INI' },
+  { value: 'java', label: 'Java' },
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'json', label: 'JSON' },
+  { value: 'julia', label: 'Julia' },
+  { value: 'kotlin', label: 'Kotlin' },
+  { value: 'less', label: 'LESS' },
+  { value: 'liquid', label: 'Liquid' },
+  { value: 'lua', label: 'Lua' },
+  { value: 'm3', label: 'Modula-3' },
+  { value: 'markdown', label: 'Markdown' },
+  { value: 'mips', label: 'MIPS Assembly' },
+  { value: 'msdax', label: 'MSDAX' },
+  { value: 'objective-c', label: 'Objective-C' },
+  { value: 'pascal', label: 'Pascal' },
+  { value: 'pascaligo', label: 'PascalIGO' },
+  { value: 'perl', label: 'Perl' },
+  { value: 'php', label: 'PHP' },
+  { value: 'text', label: 'Plain Text' },
+  { value: 'powershell', label: 'PowerShell' },
+  { value: 'powerquery', label: 'PowerQuery M' },
+  { value: 'protobuf', label: 'Protocol Buffers' },
+  { value: 'pug', label: 'Pug / Jade' },
+  { value: 'python', label: 'Python' },
+  { value: 'qsharp', label: 'Q#' },
+  { value: 'r', label: 'R' },
+  { value: 'razor', label: 'Razor (CSHTML)' },
+  { value: 'redis', label: 'Redis' },
+  { value: 'restructuredtext', label: 'reStructuredText' },
+  { value: 'ruby', label: 'Ruby' },
+  { value: 'rust', label: 'Rust' },
+  { value: 'sb', label: 'Small Basic' },
+  { value: 'scala', label: 'Scala' },
+  { value: 'scheme', label: 'Scheme' },
+  { value: 'scss', label: 'SCSS' },
+  { value: 'solidity', label: 'Solidity' },
+  { value: 'sparql', label: 'SPARQL' },
+  { value: 'sql', label: 'SQL' },
+  { value: 'st', label: 'Structured Text' },
+  { value: 'swift', label: 'Swift' },
+  { value: 'systemverilog', label: 'SystemVerilog' },
+  { value: 'tcl', label: 'Tcl' },
+  { value: 'twig', label: 'Twig' },
+  { value: 'typescript', label: 'TypeScript' },
+  { value: 'vb', label: 'Visual Basic .NET' },
+  { value: 'verilog', label: 'Verilog' },
+  { value: 'xml', label: 'XML' },
+  { value: 'yaml', label: 'YAML' }
+];
+languageOptions.sort((a, b) => a.label.localeCompare(b.label));
+
+
+// Updated Helper to map detected language to Monaco's language identifiers
 const getMonacoLanguage = (detectedLang) => {
   switch (detectedLang) {
-    case 'text':
-      return 'plaintext';
-    case 'bash':
-      return 'shell';
-    case 'html':
-      return 'html';
-    case 'cpp':
-      return 'cpp';
+    case 'text': return 'plaintext';
+    case 'bash': return 'shell';
+    case 'csharp': return 'csharp';
+    case 'cpp': return 'cpp';
+    case 'objective-c': return 'objective-c';
+    case 'fsharp': return 'fsharp';
+    case 'markdown': return 'markdown';
+    case 'powershell': return 'powershell';
+    case 'python': return 'python';
+    case 'ruby': return 'ruby';
+    case 'rust': return 'rust';
+    case 'typescript': return 'typescript';
+    case 'vb': return 'vb';
+    case 'yaml': return 'yaml';
+    case 'freemarker': return 'freemarker2';
+    case 'solidity': return 'sol';
+    case 'protobuf': return 'proto';
     default:
-      return detectedLang; // Works for js, python, json, css, sql etc.
+      return detectedLang;
   }
+};
+
+// JSON detection function (as provided in your original code)
+const isValidJSON = (str) => {
+  if (!str || !str.trim()) return false; // Added null check for safety
+  try {
+    JSON.parse(str);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+const detectLanguage = (text) => {
+  if (!text || !text.trim()) return 'text';
+
+  const result = hljs.highlightAuto(text);
+  let lang = result.language || 'text';
+
+  // 🔍 SQL fallback: match SQL patterns if hljs misses it
+  if (
+    /(?:SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|JOIN|CREATE|DROP|ALTER|TABLE|VALUES)\b/i.test(text) &&
+    /;/.test(text) &&
+    text.split('\n').length > 1
+  ) {
+    lang = 'sql';
+  }
+
+  console.log(lang, 'detected language'); // Debugging output
+
+  return lang;
 };
 
 function App() {
@@ -28,57 +215,19 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [diffMode, setDiffMode] = useState('split'); // 'split' or 'unified'
-
-  // Language options (for potential dropdown, not directly used for auto-detect)
-  const languageOptions = [
-    { value: 'javascript', label: 'JavaScript' },
-    { value: 'python', label: 'Python' },
-    { value: 'java', label: 'Java' },
-    { value: 'cpp', label: 'C++' },
-    { value: 'css', label: 'CSS' },
-    { value: 'html', label: 'HTML' },
-    { value: 'json', label: 'JSON' },
-    { value: 'xml', label: 'XML' },
-    { value: 'sql', label: 'SQL' },
-    { value: 'bash', label: 'Bash' },
-    { value: 'text', label: 'Plain Text' }
-  ];
-
-  // JSON detection function
-  const isValidJSON = (str) => {
-    if (!str.trim()) return false;
-    try {
-      JSON.parse(str);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
-
-  // Auto-detect language based on content
-  const detectLanguage = (text) => {
-    if (!text.trim()) return 'text';
-    if (isValidJSON(text)) return 'json';
-    if (text.includes('<!DOCTYPE') || text.includes('<html>') || text.includes('<body')) return 'html';
-    if ((text.includes('def ') || text.includes('import ') || text.includes('class ')) && !text.includes('{') && text.includes(':')) return 'python';
-    if (text.includes('function ') || text.includes('=>') || text.includes('const ') || text.includes('let ') || text.includes('var ')) return 'javascript';
-    if (text.includes('SELECT ') || text.includes('FROM ') || text.includes('INSERT INTO ') || text.includes('UPDATE ') || text.includes('DELETE FROM ')) return 'sql';
-    if (text.includes('#include') || text.includes('int main(') || text.includes('using namespace std;')) return 'cpp';
-    if (text.includes('{') && text.includes(';') && (text.includes(':') || text.includes('body')) && !isValidJSON(text)) return 'css';
-    if (text.startsWith('#!/bin/bash') || text.startsWith('#!/bin/sh') || (text.includes('echo ') && text.includes('fi') && !text.includes('<?php'))) return 'bash';
-    return 'text';
-  };
+  const [diffMode, setDiffMode] = useState('split');
 
   useEffect(() => {
-    setOriginalLanguage(detectLanguage(originalText));
+    // Debounce or delay detection slightly if performance becomes an issue on very rapid typing
+    const detected = detectLanguage(originalText);
+    setOriginalLanguage(detected);
   }, [originalText]);
 
   useEffect(() => {
-    setModifiedLanguage(detectLanguage(modifiedText));
+    const detected = detectLanguage(modifiedText);
+    setModifiedLanguage(detected);
   }, [modifiedText]);
 
-  // Beautify JSON function
   const beautifyJSONText = (text) => {
     try {
       const parsed = JSON.parse(text);
@@ -89,7 +238,6 @@ function App() {
     }
   };
 
-  // Sort JSON keys function
   const sortJSONText = (text) => {
     try {
       const parsed = JSON.parse(text);
@@ -147,7 +295,6 @@ function App() {
     }
   };
   
-  // Generate diff for the count display
   const generateDiff = () => {
     if (!originalText.trim() && !modifiedText.trim()) {
       return [];
@@ -173,7 +320,7 @@ function App() {
     }
     return diffs;
   };
-  const diffs = generateDiff(); // Used for the count display
+  const diffs = generateDiff();
 
   const showToastMessage = (message) => {
     setToastMessage(message);
@@ -190,6 +337,8 @@ function App() {
   const clearAll = () => {
     setOriginalText('');
     setModifiedText('');
+    setOriginalLanguage('text'); // Reset language on clear
+    setModifiedLanguage('text'); // Reset language on clear
     showToastMessage('All content cleared!');
   };
 
@@ -206,8 +355,8 @@ function App() {
   const monacoEditorOptions = {
     selectOnLineNumbers: true,
     automaticLayout: true,
-    wordWrap: 'on', // You had this 'on' in your last version
-    minimap: { enabled: true }, // You had this 'true'
+    wordWrap: 'on',
+    minimap: { enabled: true },
     scrollBeyondLastLine: false,
     fontSize: 14,
     lineNumbers: 'on',
@@ -224,7 +373,6 @@ function App() {
             <div className="header-text"><h1>Code Diff</h1></div>
           </div>
           <div className="header-controls">
-            {/* <button onClick={() => setDiffMode(diffMode === 'split' ? 'unified' : 'split')} className="control-btn" title="Toggle diff view"><ArrowUpDown className="control-icon" /></button> */}
             <button onClick={swapContent} className="control-btn" title="Swap content"><RefreshCw className="control-icon" /></button>
             <button onClick={clearAll} className="control-btn" title="Clear all"><Trash2 className="control-icon" /></button>
             <button onClick={() => setDarkMode(!darkMode)} className="control-btn" title="Toggle theme">{darkMode ? <Sun className="control-icon" /> : <Moon className="control-icon" />}</button>
@@ -238,9 +386,10 @@ function App() {
             <div className="panel-header">
               <div className="panel-info">
                 <h3 className="panel-title">Original
-                  {originalLanguage !== 'text' && <span className="json-badge">{originalLanguage.toUpperCase()}</span>}
+                  {originalLanguage !== 'text' && <span className="json-badge">{languageOptions.find(opt => opt.value === originalLanguage)?.label || originalLanguage.toUpperCase()}</span>}
                 </h3>
-                <p>{originalText === '' ? 0 : originalText.split('\n').length} lines, {modifiedText.length} chars</p>              </div>
+                <p>{originalText === '' ? 0 : originalText.split('\n').length} lines, {originalText.length} chars</p>
+              </div>
               <div className="panel-buttons">
                 {originalLanguage === 'json' && (
                   <>
@@ -253,7 +402,7 @@ function App() {
             </div>
             <div className="editor-container">
               <Editor
-                height="500px" // Your specified height
+                height="500px"
                 language={getMonacoLanguage(originalLanguage)}
                 value={originalText}
                 theme={darkMode ? 'vs-dark' : 'vs'}
@@ -267,9 +416,10 @@ function App() {
             <div className="panel-header">
               <div className="panel-info">
                 <h3 className="panel-title">Changed
-                  {modifiedLanguage !== 'text' && <span className="json-badge">{modifiedLanguage.toUpperCase()}</span>}
+                  {modifiedLanguage !== 'text' && <span className="json-badge">{languageOptions.find(opt => opt.value === modifiedLanguage)?.label || modifiedLanguage.toUpperCase()}</span>}
                 </h3>
-                <p>{modifiedText === '' ? 0 : modifiedText.split('\n').length} lines, {modifiedText.length} chars</p>              </div>
+                <p>{modifiedText === '' ? 0 : modifiedText.split('\n').length} lines, {modifiedText.length} chars</p>
+              </div>
               <div className="panel-buttons">
                 {modifiedLanguage === 'json' && (
                   <>
@@ -282,7 +432,7 @@ function App() {
             </div>
             <div className="editor-container">
               <Editor
-                height="500px" // Your specified height
+                height="500px"
                 language={getMonacoLanguage(modifiedLanguage)}
                 value={modifiedText}
                 theme={darkMode ? 'vs-dark' : 'vs'}
@@ -293,18 +443,17 @@ function App() {
           </div>
         </div>
 
-<div className="diff-panel">
+        <div className="diff-panel">
           <div className="diff-header">
             <div className="diff-title">
               <Code className="diff-icon" />
               <h3>Differences</h3>
             </div>
-            {/* NEW: Container for diff count and view toggle button */}
             <div className="diff-meta-controls">
               <div className="diff-count">{diffs.filter(d => d.type !== 'equal').length} changes found</div>
               <button
                 onClick={() => setDiffMode(prevMode => prevMode === 'split' ? 'unified' : 'split')}
-                className="control-btn diff-view-toggle-btn" // Re-use control-btn styles
+                className="control-btn diff-view-toggle-btn"
                 title={diffMode === 'split' ? "Switch to Unified View" : "Switch to Split View"}
               >
                 <ArrowUpDown className="control-icon" />
@@ -315,7 +464,7 @@ function App() {
             <DiffViewer
               oldValue={originalText}
               newValue={modifiedText}
-              splitView={diffMode === 'split'} // Controlled by state
+              splitView={diffMode === 'split'}
               compareMethod={DiffMethod.CHARS}
               disableWordDiff={false}
               showDiffOnly={false}
@@ -324,10 +473,6 @@ function App() {
               styles={{
                 diffContainer: { overflowX: 'auto', width: '100%' },
                 contentText: { wordBreak: 'break-all' },
-                // variables: {
-                //   dark: { addedBackground: '#202124', removedBackground: '#202124' },
-                //   light: { addedBackground: '#e6ffed', removedBackground: '#ffeef0' }
-                // }
               }}
             />
           </div>
