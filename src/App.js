@@ -25,7 +25,7 @@ function App() {
   const [modifiedText, setModifiedText] = useState('');
   const [originalLanguage, setOriginalLanguage] = useState('text');
   const [modifiedLanguage, setModifiedLanguage] = useState('text');
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [diffMode, setDiffMode] = useState('split'); // 'split' or 'unified'
@@ -324,10 +324,10 @@ function App() {
               styles={{
                 diffContainer: { overflowX: 'auto', width: '100%' },
                 contentText: { wordBreak: 'break-all' },
-                variables: {
-                  dark: { addedBackground: '#043A0F', removedBackground: '#5A1D1D' },
-                  light: { addedBackground: '#e6ffed', removedBackground: '#ffeef0' }
-                }
+                // variables: {
+                //   dark: { addedBackground: '#202124', removedBackground: '#202124' },
+                //   light: { addedBackground: '#e6ffed', removedBackground: '#ffeef0' }
+                // }
               }}
             />
           </div>
