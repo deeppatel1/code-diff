@@ -1,38 +1,26 @@
 {
-  "name": "diff-checker",
-  "version": "0.1.0",
-  "private": true,
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "depcheck": "^1.4.7",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.7"
+  },
   "dependencies": {
-    "@codemirror/lang-css": "^6.3.1",
-    "@codemirror/lang-html": "^6.4.9",
-    "@codemirror/lang-javascript": "^6.2.2",
-    "@codemirror/lang-json": "^6.0.1",
-    "@codemirror/lang-python": "^6.1.7",
-    "@uiw/react-codemirror": "^4.23.7",
-    "codemirror": "^5.65.18",
-    "cra-template": "1.2.0",
-    "diff-match-patch": "^1.0.5",
-    "js-beautify": "^1.15.4",
-    "json-formatter-js": "^2.5.23",
-    "prismjs": "^1.29.0",
-    "react": "^19.0.0",
-    "react-diff-view": "^3.3.1",
+    "@monaco-editor/react": "^4.7.0",
+    "@uiw/react-codemirror": "^4.23.12",
+    "lucide-react": "^0.511.0",
+    "monaco-editor": "^0.52.2",
+    "prismjs": "^1.30.0",
+    "react": "^19.1.0",
     "react-diff-viewer": "^3.1.1",
-    "react-dom": "^19.0.0",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^4.2.4"
+    "react-dom": "^19.1.0",
+    "view": "^1.1.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -45,8 +33,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "prettier": "^3.4.2"
   }
 }
