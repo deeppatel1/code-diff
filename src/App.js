@@ -461,11 +461,11 @@ function App() {
             </div>
           </div>
           <div className="diff-viewer-wrapper">
-            <DiffViewer
+<DiffViewer
               oldValue={originalText}
               newValue={modifiedText}
               splitView={diffMode === 'split'}
-              compareMethod={DiffMethod.CHARS}
+              compareMethod={originalText.length > 2000 || modifiedText.length > 2000 ? DiffMethod.LINES : DiffMethod.CHARS}
               disableWordDiff={false}
               showDiffOnly={false}
               extraLinesSurroundingDiff={5}

@@ -761,3 +761,7 @@ body {
    /* ... other styles ... */
    border-color: transparent;
  }
+
+.diff-viewer-wrapper {
+  overflow-x: auto;
+}
