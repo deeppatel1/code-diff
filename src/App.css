@@ -35,8 +35,11 @@
   box-sizing: border-box;
 }
 
-body {
+html, body, #root {
   margin: 0;
+}
+
+body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -154,6 +157,7 @@ body {
   margin: 0 auto;
   padding: 1.5rem 1rem;
 }
+
 
 /* Input grid */
 .input-grid {
@@ -366,6 +370,8 @@ body {
   border: 1px solid;
   border-radius: 0.5rem;
   transition: all 0.3s ease;
+  max-height: 800px;
+  overflow-y: auto
 }
 
 .light-mode .diff-panel {
@@ -764,4 +770,13 @@ body {
 
 .diff-viewer-wrapper {
   overflow-x: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-bar {
+  padding: 20px;
+  font-size: 1.2rem;
+  color: var(--dark-text-secondary); /* Or a suitable color for light/dark mode */
 }
