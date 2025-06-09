@@ -1,12 +1,3 @@
-# Dependencies
-/node_modules
-
-# Production build folder
-/build
-/dist
-/.vite
-/out
-
 # Logs
 logs
 *.log
@@ -16,20 +7,18 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+node_modules
+dist
+dist-ssr
+*.local
 
-# IDE and OS specific
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
 .idea
-.vscode
+.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-.DS_Store
-Thumbs.db
