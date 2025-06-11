@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Copy, Moon, Sun, RefreshCw, Trash2, Code, ArrowUpDown, Wand2, ArrowUpAZ } from 'lucide-react';
+import { Code } from 'lucide-react';
 import * as monaco from 'monaco-editor';
 import './App.css';
 
@@ -53,11 +53,7 @@ export default function App() {
         lineNumbers: 'on',
         glyphMargin: false,
         folding: false,
-        diffAlgorithm: 'legacy',
-        colors: {
-          'editor.background': '#1e1e1e',
-          'editor.foreground': '#f8f8f2'
-        }
+        diffAlgorithm: 'legacy'
       });
 
       const originalModel = monaco.editor.createModel('', originalLanguage);

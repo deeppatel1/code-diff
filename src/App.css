@@ -181,11 +181,6 @@
   border-bottom: 1px solid var(--dark-border);
 }
 
-.editor-container {
-  flex: 1;
-  overflow: hidden;
-}
-
 .app-footer {
   padding: 0.5rem 1rem;
   background: var(--dark-bg-secondary);
