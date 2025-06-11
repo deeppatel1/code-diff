@@ -2,9 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ensure the editor really fills the screen */
 html, body, #root {
-  height: 100%;
   margin: 0;
   padding: 0;
+  height: 100%;
+  background: #1e1e1e;
+  color: #c5c5c5;
+  font-family: sans-serif;
+}
+
+// src/App.css
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.app-header,
+.app-footer {
+  padding: 1rem;
+  background: #252526;
+  text-align: center;
+  color: #ffffff;
+  font-size: 1.2rem;
+}
+.app-main {
+  flex: 1;
+  padding: 1rem;
+  overflow: auto;
+}
+.editors {
+  display: flex;
+  flex-direction: column;
+}
+@media (min-width: 768px) {
+  .editors {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+.compare-button {
+  margin: 1rem auto;
+  padding: 0.75rem 1.5rem;
+  background: #0e639c;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.compare-button:hover {
+  background: #1177bb;
 }

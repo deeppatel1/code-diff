@@ -1,1 +1,21 @@
-@import "tailwindcss";
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #1e1e1e;
+  color: #c5c5c5;
+  margin: 0;
+}
+.app-header,
+.app-footer {
+  padding: 0.5rem;
+  background: #252526;
+  text-align: center;
+  color: #ffffff;
+}
+.app-header {
+  font-size: 1.5rem;
+}
+.app-footer {
+  font-size: 0.9rem;
+}
