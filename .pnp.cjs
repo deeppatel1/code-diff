@@ -39,6 +39,8 @@ const RAW_RUNTIME_STATE =
           ["eslint-plugin-react-hooks", "virtual:f1efa9e88b71509759a7d4606f4bef298e09c71c53aef72724f4b3aade73c98eaf942658c11d1780a9884c3ac2d4ce16460bd425a26e6dcb04bd450c82ae66d1#npm:5.2.0"],\
           ["eslint-plugin-react-refresh", "virtual:f1efa9e88b71509759a7d4606f4bef298e09c71c53aef72724f4b3aade73c98eaf942658c11d1780a9884c3ac2d4ce16460bd425a26e6dcb04bd450c82ae66d1#npm:0.4.20"],\
           ["globals", "npm:16.2.0"],\
+          ["highlight.js", "npm:11.11.1"],\
+          ["lucide-react", "virtual:f1efa9e88b71509759a7d4606f4bef298e09c71c53aef72724f4b3aade73c98eaf942658c11d1780a9884c3ac2d4ce16460bd425a26e6dcb04bd450c82ae66d1#npm:0.513.0"],\
           ["monaco-editor", "npm:0.52.2"],\
           ["postcss", "npm:8.5.4"],\
           ["react", "npm:19.1.0"],\
@@ -1702,6 +1704,8 @@ const RAW_RUNTIME_STATE =
           ["eslint-plugin-react-hooks", "virtual:f1efa9e88b71509759a7d4606f4bef298e09c71c53aef72724f4b3aade73c98eaf942658c11d1780a9884c3ac2d4ce16460bd425a26e6dcb04bd450c82ae66d1#npm:5.2.0"],\
           ["eslint-plugin-react-refresh", "virtual:f1efa9e88b71509759a7d4606f4bef298e09c71c53aef72724f4b3aade73c98eaf942658c11d1780a9884c3ac2d4ce16460bd425a26e6dcb04bd450c82ae66d1#npm:0.4.20"],\
           ["globals", "npm:16.2.0"],\
+          ["highlight.js", "npm:11.11.1"],\
+          ["lucide-react", "virtual:f1efa9e88b71509759a7d4606f4bef298e09c71c53aef72724f4b3aade73c98eaf942658c11d1780a9884c3ac2d4ce16460bd425a26e6dcb04bd450c82ae66d1#npm:0.513.0"],\
           ["monaco-editor", "npm:0.52.2"],\
           ["postcss", "npm:8.5.4"],\
           ["react", "npm:19.1.0"],\
@@ -2229,6 +2233,15 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["highlight.js", [\
+      ["npm:11.11.1", {\
+        "packageLocation": "../../../.yarn/berry/cache/highlight.js-npm-11.11.1-1afef66f5e-10c0.zip/node_modules/highlight.js/",\
+        "packageDependencies": [\
+          ["highlight.js", "npm:11.11.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["http-cache-semantics", [\
       ["npm:4.2.0", {\
         "packageLocation": "../../../.yarn/berry/cache/http-cache-semantics-npm-4.2.0-fadacfb3ad-10c0.zip/node_modules/http-cache-semantics/",\
@@ -2610,6 +2623,28 @@ const RAW_RUNTIME_STATE =
         "packageDependencies": [\
           ["lru-cache", "npm:5.1.1"],\
           ["yallist", "npm:3.1.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["lucide-react", [\
+      ["npm:0.513.0", {\
+        "packageLocation": "../../../.yarn/berry/cache/lucide-react-npm-0.513.0-28d1b5b8fd-10c0.zip/node_modules/lucide-react/",\
+        "packageDependencies": [\
+          ["lucide-react", "npm:0.513.0"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:f1efa9e88b71509759a7d4606f4bef298e09c71c53aef72724f4b3aade73c98eaf942658c11d1780a9884c3ac2d4ce16460bd425a26e6dcb04bd450c82ae66d1#npm:0.513.0", {\
+        "packageLocation": "./.yarn/__virtual__/lucide-react-virtual-1ec94ad61a/4/.yarn/berry/cache/lucide-react-npm-0.513.0-28d1b5b8fd-10c0.zip/node_modules/lucide-react/",\
+        "packageDependencies": [\
+          ["@types/react", "npm:19.1.6"],\
+          ["lucide-react", "virtual:f1efa9e88b71509759a7d4606f4bef298e09c71c53aef72724f4b3aade73c98eaf942658c11d1780a9884c3ac2d4ce16460bd425a26e6dcb04bd450c82ae66d1#npm:0.513.0"],\
+          ["react", "npm:19.1.0"]\
+        ],\
+        "packagePeers": [\
+          "@types/react",\
+          "react"\
         ],\
         "linkType": "HARD"\
       }]\
