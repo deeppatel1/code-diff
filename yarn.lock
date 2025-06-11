@@ -657,9 +657,11 @@ __metadata:
   dependencies:
     "@monaco-editor/react": "npm:^4.4.6"
     "@vitejs/plugin-react": "npm:^3.0.0"
+    lucide-react: "npm:^0.514.0"
     monaco-editor: "npm:^0.52.2"
     react: "npm:^18.0.0"
     react-dom: "npm:^18.0.0"
+    react-refresh: "npm:^0.17.0"
     vite: "npm:^4.0.0"
   languageName: unknown
   linkType: soft
@@ -1039,6 +1041,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lucide-react@npm:^0.514.0":
+  version: 0.514.0
+  resolution: "lucide-react@npm:0.514.0"
+  peerDependencies:
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/83d781e5036b53a1b0f3be05d43c80675c8d65ff59901f7db1868ba36d3fa159cb459f4c3974781a4105062a1aa7df8a57ac70192a455b95afec7281ad751ffb
+  languageName: node
+  linkType: hard
+
 "magic-string@npm:^0.27.0":
   version: 0.27.0
   resolution: "magic-string@npm:0.27.0"
@@ -1318,6 +1329,13 @@ __metadata:
   version: 0.14.2
   resolution: "react-refresh@npm:0.14.2"
   checksum: 10c0/875b72ef56b147a131e33f2abd6ec059d1989854b3ff438898e4f9310bfcc73acff709445b7ba843318a953cb9424bcc2c05af2b3d80011cee28f25aef3e2ebb
+  languageName: node
+  linkType: hard
+
+"react-refresh@npm:^0.17.0":
+  version: 0.17.0
+  resolution: "react-refresh@npm:0.17.0"
+  checksum: 10c0/002cba940384c9930008c0bce26cac97a9d5682bc623112c2268ba0c155127d9c178a9a5cc2212d560088d60dfd503edd808669a25f9b377f316a32361d0b23c
   languageName: node
   linkType: hard
 

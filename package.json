@@ -9,9 +9,11 @@
   },
   "dependencies": {
     "@monaco-editor/react": "^4.4.6",
+    "lucide-react": "^0.514.0",
     "monaco-editor": "^0.52.2",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "react-refresh": "^0.17.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^3.0.0",

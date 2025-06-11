@@ -1,21 +1,135 @@
+:root {
+  --light-bg: #F9F9F9;
+  --light-bg-secondary: #ffffff;
+  --light-text: #111827;
+  --light-text-secondary: #6b7280;
+  --light-border: #e5e7eb;
+  --light-hover: #f3f4f6;
+  /* Updated Dark Mode Variables (Gemini-inspired grays) */
+  --dark-bg: #202124; /* Main background - A common Google dark gray */
+  --dark-bg-secondary: #303134; /* For cards, panels, slightly lighter */
+  --dark-text: #E8EAED; /* Primary text - Off-white for better readability */
+  --dark-text-secondary: #9AA0A6; /* Secondary text - A softer gray */
+  --dark-border: #3C4043; /* Borders - Visible but not too stark */
+  --dark-hover: #38393C; /* Hover state for elements on secondary bg */
+
+  --blue-500: #89B4FA; /* Adjusted blue for better contrast on new dark grays */
+  --red-50: #fef2f2; /* These can remain if they are for specific UI elements not general theme */
+  --red-800: #991b1b;
+  --red-200: #fecaca;
+  --red-900-30: rgba(240, 128, 128, 0.3); /* Lighter red for dark mode transparency */
+  --red-900-20: rgba(240, 128, 128, 0.2);
+  --green-50: #f0fdf4;
+  --green-800: #166534;
+  --green-200: #bbf7d0;
+  --green-900-30: rgba(144, 238, 144, 0.3); /* Lighter green for dark mode transparency */
+  --green-900-20: rgba(144, 238, 144, 0.2);
+  --red-500: #F28B82; /* Adjusted red for dark mode */
+  --green-500: #81C995; /* Adjusted green for dark mode */
+  --gray-500: #9AA0A6; /* Align with dark-text-secondary if used similarly */
+}
+
 .app {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #1e1e1e;
-  color: #c5c5c5;
-  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
 }
-.app-header,
-.app-footer {
-  padding: 0.5rem;
-  background: #252526;
-  text-align: center;
-  color: #ffffff;
-}
+
 .app-header {
-  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  /* background: #0d1117; */
+  color: #f0f6fc;
+  flex-shrink: 0;
+  border-bottom: 1px solid #21262d;
 }
-.app-footer {
-  font-size: 0.9rem;
+
+/* Global styles */
+* {
+  box-sizing: border-box;
+}
+.light-mode .header {
+  border-color: var(--light-border);
+  background-color: var(--light-bg-secondary);
+}
+
+.dark-mode .header {
+  border-color: var(--dark-border);
+  background-color: var(--dark-bg-secondary);
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-icon {
+  width: 2rem;
+  height: 2rem;
+  color: var(--blue-500);
+}
+
+.header-text h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.header-text p {
+  margin: 0;
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-btn {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.light-mode .control-btn {
+  color: var(--light-text);
+}
+
+.dark-mode .control-btn {
+  color: var(--dark-text);
+}
+
+.light-mode .control-btn:hover {
+  background-color: var(--light-hover);
+}
+
+.dark-mode .control-btn:hover {
+  background-color: var(--dark-hover);
+}
+
+
+.editor-container {
+  flex: 1;
+  overflow: hidden;
 }
