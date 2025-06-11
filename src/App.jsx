@@ -6,12 +6,18 @@ import './App.css';
 export default function App() {
   const containerRef = useRef(null);
   const diffEditorRef = useRef(null);
-  const [language, setLanguage] = useState('plaintext');
-  
-  // Diff mode: 'split' for side-by-side, 'classic' for inline unified
+  const [originalLanguage, setOriginalLanguage] = useState('plaintext');
+  const [modifiedLanguage, setModifiedLanguage] = useState('plaintext');
+  const [originalStats, setOriginalStats] = useState({ lines: 0, characters: 0 });
+  const [modifiedStats, setModifiedStats] = useState({ lines: 0, characters: 0 });
   const diffMode = 'classic';
-  
-  // Simple language detection based on content heuristics
+
+  const calculateStats = (content) => {
+    const lines = content ? content.split('\n').length : 0;
+    const characters = content ? content.length : 0;
+    return { lines, characters };
+  };
+
   const detectLanguage = (code) => {
     const t = code.trim();
     if (!t) return 'plaintext';
@@ -20,6 +26,10 @@ export default function App() {
     if (t.startsWith('<') && t.endsWith('>')) return 'html';
     try { JSON.parse(code); return 'json'; } catch {};
     if (/^def\s+\w+\(/.test(t) || (t.includes('import ') && t.includes(':'))) return 'python';
+    if (/^\s*#include/.test(t) || /int\s+main\s*\(/.test(t)) return 'c';
+    if (/^\s*package\s+\w+/.test(t) || /public\s+class/.test(t)) return 'java';
+    if (/^\s*using\s+System/.test(t) || /namespace\s+\w+/.test(t)) return 'csharp';
+    if (/^\s*SELECT\s+/.test(t.toUpperCase()) || /^\s*CREATE\s+/.test(t.toUpperCase())) return 'sql';
     return 'plaintext';
   };
 
@@ -36,52 +46,68 @@ export default function App() {
         fontFamily: 'Monaco, Menlo, "Courier New", monospace',
         fontSize: 14,
         lineHeight: 20,
-        minimap: { enabled: false },
+        minimap: { enabled: true },
         scrollBeyondLastLine: false,
         wordWrap: 'on',
         renderWhitespace: 'boundary',
         lineNumbers: 'on',
         glyphMargin: false,
         folding: false,
-        // Undocumented see https://github.com/Microsoft/vscode/issues/30795#issuecomment-410998882
-        // lineDecorationsWidth: '5px',
-        // lineNumbersMinChars: '5px',
-        diffAlgorithm: "legacy",
+        diffAlgorithm: 'legacy',
         colors: {
-          // Customize editor colors
           'editor.background': '#1e1e1e',
           'editor.foreground': '#f8f8f2'
         }
       });
 
-      // Initialize models for original and modified panes
-      const originalModel = monaco.editor.createModel('', language);
-      const modifiedModel = monaco.editor.createModel('', language);
+      const originalModel = monaco.editor.createModel('', originalLanguage);
+      const modifiedModel = monaco.editor.createModel('', modifiedLanguage);
       diffEditorRef.current.setModel({ original: originalModel, modified: modifiedModel });
 
-      // Update language dynamically when content changes
-      const updateLang = () => {
+      const updateOriginal = () => {
         const code = originalModel.getValue();
         const newLang = detectLanguage(code);
-        setLanguage(newLang);
-        monaco.editor.setModelLanguage(originalModel, newLang);
-        monaco.editor.setModelLanguage(modifiedModel, newLang);
+        const stats = calculateStats(code);
+        if (newLang !== originalLanguage) {
+          setOriginalLanguage(newLang);
+          monaco.editor.setModelLanguage(originalModel, newLang);
+        }
+        setOriginalStats(stats);
       };
 
-      originalModel.onDidChangeContent(updateLang);
-      modifiedModel.onDidChangeContent(updateLang);
+      const updateModified = () => {
+        const code = modifiedModel.getValue();
+        const newLang = detectLanguage(code);
+        const stats = calculateStats(code);
+        if (newLang !== modifiedLanguage) {
+          setModifiedLanguage(newLang);
+          monaco.editor.setModelLanguage(modifiedModel, newLang);
+        }
+        setModifiedStats(stats);
+      };
+
+      originalModel.onDidChangeContent(updateOriginal);
+      modifiedModel.onDidChangeContent(updateModified);
+      setOriginalStats(calculateStats(''));
+      setModifiedStats(calculateStats(''));
     }
-  }, [language]);
+  }, [originalLanguage, modifiedLanguage]);
 
   return (
     <div className="app">
       <div className="app-header">
-          <div className="header-left">
-            <Code className="header-icon" />
-            <div className="header-text"><h1>Code Diff</h1></div>
-          </div>
+        <div className="header-left">
+          <Code className="header-icon" />
+          <div className="header-text"><h1>Code Diff</h1></div>
+        </div>
       </div>
       <div className="editor-container" ref={containerRef} />
+      <div className="app-footer">
+        <div className="footer-stats">
+          <div className="stats-display">{originalStats.lines} lines, {originalStats.characters} characters</div>
+          <div className="stats-display">{modifiedStats.lines} lines, {modifiedStats.characters} characters</div>
+        </div>
+      </div>
     </div>
   );
 }
