@@ -98,7 +98,7 @@ html, body, #root {
 }
 
 .header-text h1:hover {
-  transform: translateY(-2px);
+  transform: scale(1.1);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
@@ -182,7 +182,7 @@ html, body, #root {
 
 .json-btn:hover {
   background: #7aa3f0;
-  transform: translateY(-1px);
+  transform: scale(1.05); /* Applied scale */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -215,7 +215,7 @@ html, body, #root {
 
 .view-toggle-btn:hover {
   background-color: var(--dark-hover);
-  transform: translateY(-1px);
+  transform: scale(1.05); /* Applied scale */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
