@@ -5,28 +5,37 @@
   --light-text-secondary: #6b7280;
   --light-border: #e5e7eb;
   --light-hover: #f3f4f6;
-  /* Updated Dark Mode Variables (Gemini-inspired grays) */
-  --dark-bg: #202124; /* Main background - A common Google dark gray */
-  --dark-bg-secondary: #303134; /* For cards, panels, slightly lighter */
-  --dark-text: #E8EAED; /* Primary text - Off-white for better readability */
-  --dark-text-secondary: #9AA0A6; /* Secondary text - A softer gray */
-  --dark-border: #3C4043; /* Borders - Visible but not too stark */
-  --dark-hover: #38393C; /* Hover state for elements on secondary bg */
+  --dark-bg: #484848;
+  --dark-bg-secondary: #383838;
+  --dark-text: #E8EAED;
+  --dark-text-secondary: #9AA0A6;
+  --dark-border: #3C4043;
+  --dark-hover: #38393C;
 
-  --blue-500: #89B4FA; /* Adjusted blue for better contrast on new dark grays */
-  --red-50: #fef2f2; /* These can remain if they are for specific UI elements not general theme */
+  --blue-500: #89B4FA;
+  --red-50: #fef2f2;
   --red-800: #991b1b;
   --red-200: #fecaca;
-  --red-900-30: rgba(240, 128, 128, 0.3); /* Lighter red for dark mode transparency */
+  --red-900-30: rgba(240, 128, 128, 0.3);
   --red-900-20: rgba(240, 128, 128, 0.2);
   --green-50: #f0fdf4;
   --green-800: #166534;
   --green-200: #bbf7d0;
-  --green-900-30: rgba(144, 238, 144, 0.3); /* Lighter green for dark mode transparency */
+  --green-900-30: rgba(144, 238, 144, 0.3);
   --green-900-20: rgba(144, 238, 144, 0.2);
-  --red-500: #F28B82; /* Adjusted red for dark mode */
-  --green-500: #81C995; /* Adjusted green for dark mode */
-  --gray-500: #9AA0A6; /* Align with dark-text-secondary if used similarly */
+  --red-500: #F28B82;
+  --green-500: #81C995;
+  --gray-500: #9AA0A6;
+}
+
+/* reset.css */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  border: none !important;
+  box-shadow: none !important;
+  height: 100%;
+  width: 100%;
 }
 
 .app {
@@ -38,20 +47,29 @@
 
 .app-header {
   display: flex;
+  justify-content: center;
   align-items: center;
-  padding: 1rem;
-  background: var(--dark-bg-secondary); /* Use dark mode variable for consistency */
-  color: var(--dark-text); /* Use dark mode variable for consistency */
+  padding: .6rem;
+  color: var(--dark-text);
   flex-shrink: 0;
-  border-bottom: 1px solid var(--dark-border); /* Use dark mode variable for consistency */
+  border-bottom: 1px solid var(--dark-border);
+  position: relative;
+  z-index: 10;
+  background: linear-gradient(
+    180deg,
+    var(--dark-bg-secondary) 0%,
+    rgba(56, 56, 56, 0.95) 60%
+  );
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  background: var(--dark-bg-secondary);
+
+
+  background: rgba(56, 56, 56, 0.7);
+  backdrop-filter: blur(6px);
+
 }
 
-/* Global styles */
-* {
-  box-sizing: border-box;
-}
-
-/* Light/Dark mode header styles (keep these if you have a theme toggle) */
+/* Light/Dark mode header variants */
 .light-mode .header {
   border-color: var(--light-border);
   background-color: var(--light-bg-secondary);
@@ -62,36 +80,44 @@
   background-color: var(--dark-bg-secondary);
 }
 
-/* .header-content was not directly used in the provided React component, removed for clarity */
-
 .header-left {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  margin-left: -70px;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 2rem; /* Increased space between Original and Modified editor info */
+  gap: 2rem;
 }
 
 .header-icon {
   width: 2rem;
   height: 2rem;
   color: var(--blue-500);
+  transition: transform 0.2s ease, color 0.2s ease, filter 0.2s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.header-icon:hover {
+  transform: scale(1.1);
+  color: var(--blue-500);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
 }
 
 .header-text h1 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: bold;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+  transition: transform 0.2s ease, text-shadow 0.2s ease;
 }
 
-.header-text p {
-  margin: 0;
-  font-size: 0.875rem;
-  opacity: 0.7;
+.header-text h1:hover {
+  transform: translateY(-2px);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
 .control-btn {
@@ -100,7 +126,7 @@
   border-radius: 0.5rem;
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,6 +146,8 @@
 
 .dark-mode .control-btn:hover {
   background-color: var(--dark-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .editor-container {
@@ -127,7 +155,6 @@
   overflow: hidden;
 }
 
-/* New container for each editor's info (stats + language) */
 .editor-info {
   display: flex;
   flex-direction: column;
@@ -135,7 +162,6 @@
   gap: 0.5rem;
 }
 
-/* New styles for statistics display */
 .stats-display {
   color: var(--dark-text-secondary);
   font-size: 0.85rem;
@@ -144,46 +170,35 @@
   opacity: 0.9;
 }
 
-/* Updated styles for language display in header */
 .language-display {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--dark-text-secondary); /* A subtle color for the "Original:" text */
+  color: var(--dark-text-secondary);
   font-size: 0.9rem;
 }
 
 .language-tag {
-  background-color: var(--green-500); /* Green background for the tag */
-  color: var(--dark-bg); /* Dark text for contrast on green */
+  background-color: var(--green-500);
+  color: var(--dark-bg);
   padding: 0.25rem 0.75rem;
-  border-radius: 0.75rem; /* More rounded corners for a "pill" shape */
+  border-radius: 0.75rem;
   font-weight: bold;
   font-size: 0.85rem;
   text-transform: uppercase;
 }
 
-.app {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
-}
-
-.app-header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-  background: var(--dark-bg-secondary);
-  color: var(--dark-text);
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--dark-border);
-}
-
 .app-footer {
   padding: 0.5rem 1rem;
   background: var(--dark-bg-secondary);
+  position: relative;
+  z-index: 10;
+  background: linear-gradient(
+    0deg,
+    var(--dark-bg-secondary) 0%,
+    rgba(56, 56, 56, 0.95) 60%
+  );
+  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.25);
 }
 
 .footer-stats {
@@ -192,19 +207,60 @@
   width: 100%;
 }
 
-.stats-display {
-  color: var(--dark-text-secondary);
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-align: center;
-  opacity: 0.9;
-}
-
 .stats-display:first-child {
   justify-self: start;
 }
 
 .stats-display:last-child {
   justify-self: end;
+}
+
+/* 🔥 Aggressively hide every Monaco sash 🔥 */
+.sash,
+.sash-horizontal,
+.sash-vertical,
+.monaco-sash,
+.monaco-sash-horizontal,
+.monaco-sash-vertical,
+.monaco-diff-editor .sash {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+}
+
+/* also target any generated class names containing “sash” */
+*[class*="sash"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* collapse the gutter */
+.gutter.monaco-editor,
+.monaco-editor .gutter {
+  width: 0px !important;
+  min-width: 0px !important;
+}
+
+/* remove focus outlines */
+.view-lines.monaco-mouse-cursor-text,
+.view-lines.monaco-mouse-cursor-text:focus,
+.view-lines.monaco-mouse-cursor-text:focus-within,
+.view-lines.monaco-mouse-cursor-text:focus-visible {
+  outline: none !important;
+  border: none !important;
+}
+
+/* override VS Code focus-border variable */
+.monaco-editor,
+.monaco-editor * {
+  --vscode-focusBorder: transparent !important;
 }
 
