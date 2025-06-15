@@ -52,7 +52,6 @@ html, body, #root {
   padding: .6rem;
   color: var(--dark-text);
   flex-shrink: 0;
-  /* border-bottom: 1px solid var(--dark-border); */
   position: relative;
   z-index: 10;
   background: linear-gradient(
@@ -69,28 +68,11 @@ html, body, #root {
 
 }
 
-/* Light/Dark mode header variants */
-.light-mode .header {
-  border-color: var(--light-border);
-  background-color: var(--light-bg-secondary);
-}
-
-.dark-mode .header {
-  border-color: var(--dark-border);
-  background-color: var(--dark-bg-secondary);
-}
-
 .header-left {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-left: -70px;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
 }
 
 .header-icon {
@@ -120,46 +102,9 @@ html, body, #root {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
-.control-btn {
-  padding: 0.5rem;
-  border: none;
-  border-radius: 0.5rem;
-  background: transparent;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.light-mode .control-btn {
-  color: var(--light-text);
-}
-
-.dark-mode .control-btn {
-  color: var(--dark-text);
-}
-
-.light-mode .control-btn:hover {
-  background-color: var(--light-hover);
-}
-
-.dark-mode .control-btn:hover {
-  background-color: var(--dark-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
 .editor-container {
   flex: 1;
   overflow: hidden;
-}
-
-.editor-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .stats-display {
@@ -170,26 +115,8 @@ html, body, #root {
   opacity: 0.9;
 }
 
-.language-display {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--dark-text-secondary);
-  font-size: 0.9rem;
-}
-
-.language-tag {
-  background-color: var(--green-500);
-  color: var(--dark-bg);
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.75rem;
-  font-weight: bold;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-}
-
 .app-footer {
-  padding: 0.5rem 1rem;
+  padding: 0.2rem 1rem;
   background: var(--dark-bg-secondary);
   position: relative;
   z-index: 10;
@@ -215,55 +142,11 @@ html, body, #root {
   justify-self: end;
 }
 
-/* 🔥 Aggressively hide every Monaco sash 🔥 */
-.sash,
-.sash-horizontal,
-.sash-vertical,
-.monaco-sash,
-.monaco-sash-horizontal,
-.monaco-sash-vertical,
-.monaco-diff-editor .sash {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  max-width: 0 !important;
-  max-height: 0 !important;
-}
-
-/* also target any generated class names containing “sash” */
-*[class*="sash"] {
-  display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-}
-
-/* collapse the gutter */
-.gutter.monaco-editor,
-.monaco-editor .gutter {
-  width: 0px !important;
-  min-width: 0px !important;
-}
-
-/* remove focus outlines */
-.view-lines.monaco-mouse-cursor-text,
-.view-lines.monaco-mouse-cursor-text:focus,
-.view-lines.monaco-mouse-cursor-text:focus-within,
-.view-lines.monaco-mouse-cursor-text:focus-visible {
-  outline: none !important;
-  border: none !important;
-}
-
 /* override VS Code focus-border variable */
 .monaco-editor,
 .monaco-editor * {
   --vscode-focusBorder: transparent !important;
 }
-
 
 .stats-display {
   color: var(--dark-text-secondary);
@@ -282,42 +165,60 @@ html, body, #root {
   text-transform: uppercase;
 }
 
-/* Remove json-controls and related styles as they are no longer needed */
-/* .json-controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  padding-bottom: 0.5rem;
-}
-
-.json-controls-left {
-  justify-self: start;
-  display: flex;
-  gap: 0.5rem;
-}
-
-.json-controls-right {
-  justify-self: end;
-  display: flex;
-  gap: 0.5rem;
-} */
-
 .json-btn {
-  padding: 0.2rem 0.5rem; /* Adjusted padding for inline */
+  padding: 0.2rem 0.5rem;
   background: var(--blue-500);
   color: var(--dark-bg);
   border: none;
   border-radius: 0.375rem;
-  font-size: 0.65rem; /* Adjusted font size for inline */
+  font-size: 0.65rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   text-transform: uppercase;
   letter-spacing: 0.025em;
-  margin-left: 0.5rem; /* Add some space from the text */
+  margin-left: 0.5rem;
 }
 
 .json-btn:hover {
   background: #7aa3f0;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.footer-stats {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  width: 100%;
+  align-items: center;
+}
+
+.view-toggle-container {
+  display: flex;
+  justify-content: center;
+  margin-left: -64px;
+}
+
+.view-toggle-btn {
+  padding: 0.25rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  height: fit-content;
+}
+
+.view-toggle-btn:hover {
+  background-color: var(--dark-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.view-toggle-btn svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
 }
