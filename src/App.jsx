@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Code, Columns, AlignLeft, Sparkles } from 'lucide-react';
+import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Indent, AlignJustify } from 'lucide-react'; // Import new icons
 import * as monaco from 'monaco-editor';
+import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
+import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
 import prettier from 'prettier/standalone';
 import parserBabel from 'prettier/parser-babel';
 import parserHtml from 'prettier/parser-html';
@@ -8,6 +10,7 @@ import parserCss from 'prettier/parser-postcss';
 import parserMarkdown from 'prettier/parser-markdown';
 import parserYaml from 'prettier/parser-yaml';
 import parserTypescript from 'prettier/parser-typescript';
+import * as yaml from 'js-yaml'; // Import js-yaml
 import './App.css';
 
 // Configure Monaco Environment
@@ -60,25 +63,22 @@ class CodeBeautifier {
   constructor() {
     // Prettier-supported languages
     this.prettierLanguages = {
-      'javascript': { parser: 'babel', plugins: [parserBabel] },
-      'jsx': { parser: 'babel', plugins: [parserBabel] },
-      'typescript': { parser: 'typescript', plugins: [parserTypescript] },
-      'tsx': { parser: 'typescript', plugins: [parserTypescript] },
-      'html': { parser: 'html', plugins: [parserHtml] },
-      'xml': { parser: 'html', plugins: [parserHtml] },
-      'css': { parser: 'css', plugins: [parserCss] },
-      'scss': { parser: 'scss', plugins: [parserCss] },
-      'less': { parser: 'less', plugins: [parserCss] },
-      'markdown': { parser: 'markdown', plugins: [parserMarkdown] },
-      'yaml': { parser: 'yaml', plugins: [parserYaml] },
-      'yml': { parser: 'yaml', plugins: [parserYaml] }
+      javascript: { parser: 'babel', plugins: [parserBabel] },
+      typescript: { parser: 'typescript', plugins: [parserTypescript] },
+      tsx: { parser: 'typescript', plugins: [parserTypescript] },
+      html: { parser: 'html', plugins: [parserHtml] },
+      xml: { parser: 'html', plugins: [parserHtml] },
+      css: { parser: 'css', plugins: [parserCss] },
+      scss: { parser: 'css', plugins: [parserCss] },  // ← both scss/less
+      less: { parser: 'css', plugins: [parserCss] },
+      markdown: { parser: 'markdown', plugins: [parserMarkdown] },
+      yaml: { parser: 'yaml', plugins: [parserYaml] },
+      yml: { parser: 'yaml', plugins: [parserYaml] },
     };
 
-    // Default Prettier configuration
+    // Default Prettier configuration - will be updated dynamically
     this.prettierConfig = {
       printWidth: 80,
-      tabWidth: 2,
-      useTabs: false,
       semi: true,
       singleQuote: true,
       quoteProps: 'as-needed',
@@ -109,8 +109,8 @@ class CodeBeautifier {
   // Check if a language is supported for beautification
   isBeautifiable(language) {
     const normalizedLang = language?.toLowerCase();
-    return this.prettierLanguages.hasOwnProperty(normalizedLang) || 
-           this.customFormatters.hasOwnProperty(normalizedLang);
+    return this.prettierLanguages.hasOwnProperty(normalizedLang) ||
+      this.customFormatters.hasOwnProperty(normalizedLang);
   }
 
   // Get all supported languages
@@ -119,13 +119,13 @@ class CodeBeautifier {
   }
 
   // Main beautify function
-  async beautify(code, language) {
+  async beautify(code, language, indentationOptions = {}) {
     if (!code || typeof code !== 'string') {
       throw new Error('Invalid code input');
     }
 
     const normalizedLang = language?.toLowerCase();
-    
+
     if (!this.isBeautifiable(normalizedLang)) {
       throw new Error(`Language '${language}' is not supported for beautification`);
     }
@@ -133,7 +133,8 @@ class CodeBeautifier {
     try {
       // Use custom formatter if available
       if (this.customFormatters[normalizedLang]) {
-        return await this.customFormatters[normalizedLang](code);
+        // Pass indentationSize to custom formatters if they support it
+        return await this.customFormatters[normalizedLang](code, { indentSize: indentationSize });
       }
 
       // Use Prettier for supported languages
@@ -142,7 +143,9 @@ class CodeBeautifier {
         const formatted = await prettier.format(code, {
           ...this.prettierConfig,
           parser: config.parser,
-          plugins: config.plugins
+          plugins: config.plugins,
+          tabWidth: indentationSize, // Apply dynamic indentation size
+          useTabs: useTabs // Apply dynamic useTabs
         });
         return formatted;
       }
@@ -155,20 +158,44 @@ class CodeBeautifier {
   }
 
   // JSON formatter
-  formatJson(code) {
+  formatJson(code, options = {}) {
+    const { indentSize = 2 } = options; // Default to 2 if not provided
     try {
       const parsed = JSON.parse(code);
-      return JSON.stringify(parsed, null, 2);
+      return JSON.stringify(parsed, null, indentSize); // Use dynamic indentSize
     } catch (error) {
-      throw new Error(`Invalid JSON: ${error.message}`);
+      const lines = code.split('\n');
+      let formattedLines = [];
+      let allLinesParsed = true;
+
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+        if (trimmedLine.length === 0) {
+          formattedLines.push('');
+          continue;
+        }
+        try {
+          const parsedLine = JSON.parse(trimmedLine);
+          formattedLines.push(JSON.stringify(parsedLine, null, indentSize)); // Use dynamic indentSize
+        } catch {
+          formattedLines.push(line);
+          allLinesParsed = false;
+        }
+      }
+
+      if (allLinesParsed && formattedLines.some(l => l !== '')) {
+        return formattedLines.join('\n');
+      } else {
+        throw new Error(`Invalid JSON: ${error.message}`);
+      }
     }
   }
 
   // Python formatter (basic indentation and spacing)
-  formatPython(code) {
+  formatPython(code, options = {}) {
+    const { indentSize = 4 } = options; // Default to 4 if not provided
     const lines = code.split('\n');
     let indentLevel = 0;
-    const indentSize = 4;
     let formatted = [];
     let inString = false;
     let stringChar = '';
@@ -180,7 +207,6 @@ class CodeBeautifier {
         continue;
       }
 
-      // Handle string detection (basic)
       for (let char of trimmed) {
         if ((char === '"' || char === "'") && !inString) {
           inString = true;
@@ -191,69 +217,58 @@ class CodeBeautifier {
         }
       }
 
-      // Don't format inside strings
       if (inString) {
         formatted.push(line);
         continue;
       }
 
-      // Decrease indent for certain keywords
-      if (/^(except|elif|else|finally|case)/.test(trimmed) || 
-          trimmed === 'else:' || trimmed === 'finally:') {
+      if (/^(except|elif|else|finally|case)/.test(trimmed) ||
+        trimmed === 'else:' || trimmed === 'finally:') {
         indentLevel = Math.max(0, indentLevel - 1);
       }
 
-      // Add proper indentation
-      const indentedLine = ' '.repeat(indentLevel * indentSize) + trimmed;
+      const indentedLine = ' '.repeat(indentLevel * indentSize) + trimmed; // Use dynamic indentSize
       formatted.push(indentedLine);
 
-      // Increase indent after certain patterns
-      if (trimmed.endsWith(':') && 
-          !/^#/.test(trimmed) && 
-          !trimmed.includes('"""') && 
-          !trimmed.includes("'''")) {
+      if (trimmed.endsWith(':') &&
+        !/^#/.test(trimmed) &&
+        !trimmed.includes('"""') &&
+        !trimmed.includes("'''")) {
         indentLevel++;
       }
-
-      // Handle function/class definitions
-      if (/^(def|class|if|for|while|with|try|except|elif|else|finally)\s/.test(trimmed) || 
-          trimmed.endsWith(':')) {
-        // Already handled above
-      }
     }
-
     return formatted.join('\n');
   }
 
   // Java formatter (basic)
-  formatJava(code) {
+  formatJava(code, options) {
     return this.formatCStyleLanguage(code, {
       keywords: ['public', 'private', 'protected', 'static', 'final', 'class', 'interface', 'enum'],
-      indentSize: 4
+      ...options
     });
   }
 
   // C formatter
-  formatC(code) {
+  formatC(code, options) {
     return this.formatCStyleLanguage(code, {
       keywords: ['int', 'char', 'float', 'double', 'void', 'struct', 'typedef'],
-      indentSize: 4
+      ...options
     });
   }
 
   // C++ formatter
-  formatCpp(code) {
+  formatCpp(code, options) {
     return this.formatCStyleLanguage(code, {
       keywords: ['int', 'char', 'float', 'double', 'void', 'class', 'struct', 'namespace'],
-      indentSize: 4
+      ...options
     });
   }
 
   // C# formatter
-  formatCSharp(code) {
+  formatCSharp(code, options) {
     return this.formatCStyleLanguage(code, {
       keywords: ['public', 'private', 'protected', 'static', 'class', 'interface', 'namespace'],
-      indentSize: 4
+      ...options
     });
   }
 
@@ -290,34 +305,34 @@ class CodeBeautifier {
   }
 
   // PHP formatter
-  formatPhp(code) {
+  formatPhp(code, options) {
     return this.formatCStyleLanguage(code, {
       keywords: ['function', 'class', 'interface', 'trait', 'namespace'],
-      indentSize: 4
+      ...options
     });
   }
 
   // Go formatter (basic)
-  formatGo(code) {
+  formatGo(code, options) {
     return this.formatCStyleLanguage(code, {
       keywords: ['func', 'type', 'struct', 'interface', 'package'],
-      indentSize: 4
+      ...options
     });
   }
 
   // Rust formatter (basic)
-  formatRust(code) {
+  formatRust(code, options) {
     return this.formatCStyleLanguage(code, {
       keywords: ['fn', 'struct', 'enum', 'impl', 'trait', 'mod'],
-      indentSize: 4
+      ...options
     });
   }
 
   // Ruby formatter (basic)
-  formatRuby(code) {
+  formatRuby(code, options = {}) {
+    const { indentSize = 2 } = options;
     const lines = code.split('\n');
     let indentLevel = 0;
-    const indentSize = 2;
     let formatted = [];
 
     for (let line of lines) {
@@ -338,7 +353,7 @@ class CodeBeautifier {
 
       // Increase indent after certain keywords
       if (/^(def|class|module|if|unless|while|until|for|begin|case)\b/.test(trimmed) ||
-          /\bdo\b/.test(trimmed)) {
+        /\bdo\b/.test(trimmed)) {
         indentLevel++;
       }
     }
@@ -355,7 +370,7 @@ class CodeBeautifier {
     ];
 
     let formatted = code.toUpperCase();
-    
+
     // Add line breaks before major keywords
     keywords.forEach(keyword => {
       const regex = new RegExp(`\\b${keyword}\\b`, 'g');
@@ -368,14 +383,14 @@ class CodeBeautifier {
   }
 
   // Kotlin formatter (basic)
-  formatKotlin(code) {
+  formatKotlin(code, options) {
     return this.formatCStyleLanguage(code, {
       keywords: ['fun', 'class', 'interface', 'object', 'package'],
-      indentSize: 4
+      ...options
     });
   }
 
-  // JSON utility methods (keeping for backward compatibility)
+  // JSON utility methods
   compactJson(jsonString) {
     try {
       const parsed = JSON.parse(jsonString);
@@ -385,7 +400,8 @@ class CodeBeautifier {
     }
   }
 
-  sortJson(jsonString) {
+  sortJson(jsonString, options = {}) {
+    const { indentSize = 2 } = options;
     try {
       const parsed = JSON.parse(jsonString);
       const sortObject = (obj) => {
@@ -402,9 +418,28 @@ class CodeBeautifier {
         return obj;
       };
       const sorted = sortObject(parsed);
-      return JSON.stringify(sorted, null, 2);
+      return JSON.stringify(sorted, null, indentSize); // Use dynamic indentSize
     } catch (error) {
       throw new Error(`Invalid JSON: ${error.message}`);
+    }
+  }
+
+  // Conversion methods
+  convertJsonToYaml(jsonString) {
+    try {
+      const obj = JSON.parse(jsonString);
+      return yaml.dump(obj);
+    } catch (error) {
+      throw new Error(`Invalid JSON: ${error.message}`);
+    }
+  }
+
+  convertYamlToJson(yamlString) {
+    try {
+      const obj = yaml.load(yamlString);
+      return JSON.stringify(obj, null, 2);
+    } catch (error) {
+      throw new Error(`Invalid YAML: ${error.message}`);
     }
   }
 }
@@ -432,8 +467,26 @@ export default function App() {
     const t = code.trim();
     if (!t) return 'plaintext';
     if (t.startsWith('#!')) return 'bash';
-    try { JSON.parse(code); return 'json'; } catch {}
-    if (/^\s*import\s+React\s+from\s+['"]react['"]/.test(t) || /<\w+[^>]*>.*<\/\w+>/.test(t) && t.includes(';')) return 'jsx';
+    try {
+      // JSON detection: Try to parse as JSON first
+      const parsedJson = JSON.parse(code);
+      return 'json';
+    } catch (jsonError) {
+      // If not valid JSON, try to parse as YAML
+      try {
+        const parsedYaml = yaml.load(code);
+        // A simple heuristic for YAML: check if it's an object/array and not just a single scalar
+        if (typeof parsedYaml === 'object' && parsedYaml !== null && Object.keys(parsedYaml).length > 0) {
+          return 'yaml';
+        }
+        if (Array.isArray(parsedYaml) && parsedYaml.length > 0) {
+          return 'yaml';
+        }
+      } catch (yamlError) {
+        // Not JSON or YAML, continue with other detections
+      }
+    }
+    if (/^\s*import\s+React\s+/.test(t) || (/<\w+/.test(t) && t.includes(';'))) return 'javascript';
     if (t.startsWith('<') && t.endsWith('>')) return 'html';
     if (/^\s*(interface|type|enum)\s+\w+/.test(t) || (t.includes('import ') && t.includes(' from ') && t.includes(';'))) return 'typescript';
     if (/^\s*import\s.+from/.test(t) || t.includes('function(') || t.includes('const ') || t.includes('let ')) return 'javascript';
@@ -450,23 +503,27 @@ export default function App() {
     if (/^\s*using\s+System/.test(t) || /namespace\s+\w+/.test(t)) return 'csharp';
     if (/^\s*SELECT\s+/.test(t.toUpperCase()) || /^\s*CREATE\s+/.test(t.toUpperCase())) return 'sql';
     if (/^\s*#\s+/.test(t) || /^\[.*\]\(.*\)/.test(t)) return 'markdown';
-    if (/^\s*---/.test(t) || /^\s*\w+:\s*/.test(t)) return 'yaml';
+    // YAML check is now earlier using js-yaml
     return 'plaintext';
   };
 
   // Enhanced beautification handlers
   const handleBeautifyOriginal = async () => {
     if (!diffEditorRef.current) return;
-    
+
     setIsBeautifying(prev => ({ ...prev, original: true }));
-    
+
     try {
       const model = diffEditorRef.current.getOriginalEditor().getModel();
+      // if Monaco ever reports 'jsx', force it back to 'javascript'
+      const language = model.getLanguageId() === 'jsx'
+        ? 'javascript'
+        : model.getLanguageId();
+
       const code = model.getValue();
-      const language = originalLanguage;
 
       if (beautifierRef.current.isBeautifiable(language)) {
-        const beautified = await beautifierRef.current.beautify(code, language);
+        const beautified = await beautifierRef.current.beautify(code, language, { indentationSize, useTabs });
         model.setValue(beautified);
       } else {
         console.warn(`Beautification not supported for ${language}`);
@@ -481,16 +538,17 @@ export default function App() {
 
   const handleBeautifyModified = async () => {
     if (!diffEditorRef.current) return;
-    
+
     setIsBeautifying(prev => ({ ...prev, modified: true }));
-    
+
     try {
       const model = diffEditorRef.current.getModifiedEditor().getModel();
+      const language = model.getLanguageId() === 'jsx' ? 'javascript' : model.getLanguageId();
+
       const code = model.getValue();
-      const language = modifiedLanguage;
 
       if (beautifierRef.current.isBeautifiable(language)) {
-        const beautified = await beautifierRef.current.beautify(code, language);
+        const beautified = await beautifierRef.current.beautify(code, language, { indentationSize, useTabs });
         model.setValue(beautified);
       } else {
         console.warn(`Beautification not supported for ${language}`);
@@ -502,12 +560,12 @@ export default function App() {
     }
   };
 
-  // JSON utility handlers (keeping for backward compatibility)
+  // JSON utility handlers
   const handleSortOriginal = async () => {
     if (diffEditorRef.current && originalLanguage === 'json') {
       try {
         const model = diffEditorRef.current.getOriginalEditor().getModel();
-        const sorted = beautifierRef.current.sortJson(model.getValue());
+        const sorted = beautifierRef.current.sortJson(model.getValue(), { indentationSize });
         model.setValue(sorted);
       } catch (error) {
         console.error('JSON sorting failed:', error);
@@ -527,11 +585,39 @@ export default function App() {
     }
   };
 
+  // Conversion handlers
+  const handleConvertOriginalToYaml = async () => {
+    if (diffEditorRef.current && originalLanguage === 'json') {
+      try {
+        const model = diffEditorRef.current.getOriginalEditor().getModel();
+        const yamlContent = beautifierRef.current.convertJsonToYaml(model.getValue());
+        model.setValue(yamlContent);
+        monaco.editor.setModelLanguage(model, 'yaml'); // Change language to YAML
+      } catch (error) {
+        console.error('JSON to YAML conversion failed:', error);
+      }
+    }
+  };
+
+  const handleConvertOriginalToJson = async () => {
+    if (diffEditorRef.current && originalLanguage === 'yaml') {
+      try {
+        const model = diffEditorRef.current.getOriginalEditor().getModel();
+        const jsonContent = beautifierRef.current.convertYamlToJson(model.getValue());
+        model.setValue(jsonContent);
+        monaco.editor.setModelLanguage(model, 'json'); // Change language to JSON
+      } catch (error) {
+        console.error('YAML to JSON conversion failed:', error);
+      }
+    }
+  };
+
+
   const handleSortModified = async () => {
     if (diffEditorRef.current && modifiedLanguage === 'json') {
       try {
         const model = diffEditorRef.current.getModifiedEditor().getModel();
-        const sorted = beautifierRef.current.sortJson(model.getValue());
+        const sorted = beautifierRef.current.sortJson(model.getValue(), { indentationSize });
         model.setValue(sorted);
       } catch (error) {
         console.error('JSON sorting failed:', error);
@@ -547,6 +633,32 @@ export default function App() {
         model.setValue(compacted);
       } catch (error) {
         console.error('JSON compacting failed:', error);
+      }
+    }
+  };
+
+  const handleConvertModifiedToYaml = async () => {
+    if (diffEditorRef.current && modifiedLanguage === 'json') {
+      try {
+        const model = diffEditorRef.current.getModifiedEditor().getModel();
+        const yamlContent = beautifierRef.current.convertJsonToYaml(model.getValue());
+        model.setValue(yamlContent);
+        monaco.editor.setModelLanguage(model, 'yaml'); // Change language to YAML
+      } catch (error) {
+        console.error('JSON to YAML conversion failed:', error);
+      }
+    }
+  };
+
+  const handleConvertModifiedToJson = async () => {
+    if (diffEditorRef.current && modifiedLanguage === 'yaml') {
+      try {
+        const model = diffEditorRef.current.getModifiedEditor().getModel();
+        const jsonContent = beautifierRef.current.convertYamlToJson(model.getValue());
+        model.setValue(jsonContent);
+        monaco.editor.setModelLanguage(model, 'json'); // Change language to JSON
+      } catch (error) {
+        console.error('YAML to JSON conversion failed:', error);
       }
     }
   };
@@ -642,44 +754,65 @@ export default function App() {
               <span className="language-indicator">{originalLanguage}</span>
             )}
             {isLanguageBeautifiable(originalLanguage) && (
-              <button 
-                className={`beautify-btn ${isBeautifying.original ? 'beautifying' : ''}`}
+              <button
+                className="beautify-btn"
                 onClick={handleBeautifyOriginal}
-                disabled={isBeautifying.original}
                 title={`Beautify ${originalLanguage}`}
               >
-                {isBeautifying.original ? (
-                  <>
-                    <Sparkles size={12} className="spinning" />
-                    Beautifying...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={12} />
-                    Beautify
-                  </>
-                )}
+                <Sparkles size={12} />
+                Beautify
               </button>
             )}
             {originalLanguage === 'json' && (
               <>
-                <button className="json-btn" onClick={handleSortOriginal}>Sort</button>
-                <button className="json-btn" onClick={handleCompactOriginal}>Minify</button>
+                <button
+                  className="beautify-btn"
+                  onClick={handleSortOriginal}
+                  title="Sort JSON"
+                >
+                  <SortAsc size={12} /> Sort
+                </button>
+                <button
+                  className="beautify-btn"
+                  onClick={handleCompactOriginal}
+                  title="Minify JSON"
+                >
+                  <Minimize size={12} /> Minify
+                </button>
+                <button
+                  className="beautify-btn convert-btn"
+                  onClick={handleConvertOriginalToYaml}
+                  title="Convert JSON to YAML"
+                >
+                  <Wand size={12} /> JSON to YAML
+                </button>
+              </>
+            )}
+            {originalLanguage === 'yaml' && (
+              <>
+                <button
+                  className="beautify-btn convert-btn"
+                  onClick={handleConvertOriginalToJson}
+                  title="Convert YAML to JSON"
+                >
+                  <Wand size={12} /> YAML to JSON
+                </button>
               </>
             )}
           </div>
           <div className="view-toggle-container">
-            <button 
+            <button
               className="view-toggle-btn"
               onClick={() => setIsSideBySide(!isSideBySide)}
               title={isSideBySide ? "Switch to Unified View" : "Switch to Side-by-Side View"}
             >
               {isSideBySide ? <AlignLeft size={20} /> : <Columns size={16} />}
             </button>
+
           </div>
           <div className="stats-display">
             {isLanguageBeautifiable(modifiedLanguage) && (
-              <button 
+              <button
                 className={`beautify-btn ${isBeautifying.modified ? 'beautifying' : ''}`}
                 onClick={handleBeautifyModified}
                 disabled={isBeautifying.modified}
@@ -700,8 +833,38 @@ export default function App() {
             )}
             {modifiedLanguage === 'json' && (
               <>
-                <button className="json-btn" onClick={handleSortModified}>Sort</button>
-                <button className="json-btn" onClick={handleCompactModified}>Minify</button>
+                <button
+                  className="beautify-btn"
+                  onClick={handleSortModified}
+                  title="Sort JSON"
+                >
+                  <SortAsc size={12} /> Sort
+                </button>
+                <button
+                  className="beautify-btn"
+                  onClick={handleCompactModified}
+                  title="Minify JSON"
+                >
+                  <Minimize size={12} /> Minify
+                </button>
+                <button
+                  className="beautify-btn convert-btn"
+                  onClick={handleConvertModifiedToYaml}
+                  title="Convert JSON to YAML"
+                >
+                  <Wand size={12} /> JSON to YAML
+                </button>
+              </>
+            )}
+            {modifiedLanguage === 'yaml' && (
+              <>
+                <button
+                  className="beautify-btn convert-btn"
+                  onClick={handleConvertModifiedToJson}
+                  title="Convert YAML to JSON"
+                >
+                  <Wand size={12} /> YAML to JSON
+                </button>
               </>
             )}
             {modifiedLanguage !== 'plaintext' && (
