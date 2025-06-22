@@ -13,6 +13,9 @@
   --dark-hover: #38393C;
 
   --blue-500: #89B4FA;
+  --blue-600: #7aa3f0;
+  --purple-500: #B794F6;
+  --purple-600: #9F7AEA;
   --red-50: #fef2f2;
   --red-800: #991b1b;
   --red-200: #fecaca;
@@ -61,11 +64,8 @@ html, body, #root {
   );
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
   background: var(--dark-bg-secondary);
-
-
   background: rgba(56, 56, 56, 0.7);
   backdrop-filter: blur(6px);
-
 }
 
 .header-left {
@@ -113,6 +113,9 @@ html, body, #root {
   font-weight: 500;
   text-align: center;
   opacity: 0.9;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .app-footer {
@@ -130,8 +133,9 @@ html, body, #root {
 
 .footer-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr auto 1fr;
   width: 100%;
+  align-items: center;
 }
 
 .stats-display:first-child {
@@ -148,23 +152,67 @@ html, body, #root {
   --vscode-focusBorder: transparent !important;
 }
 
-.stats-display {
-  color: var(--dark-text-secondary);
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-align: center;
-  opacity: 0.9;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .language-indicator {
   color: var(--blue-500);
   font-weight: 600;
   text-transform: uppercase;
+  padding: 0.1rem 0.3rem;
+  background: rgba(137, 180, 250, 0.1);
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
 }
 
+/* Enhanced Beautify Button */
+.beautify-btn {
+  padding: 0.25rem 0.6rem;
+  background: linear-gradient(135deg, var(--blue-500), var(--blue-600));
+  color: black;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.beautify-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--purple-600), var(--purple-500));
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(183, 148, 246, 0.3);
+}
+
+.beautify-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.beautify-btn.beautifying {
+  background: linear-gradient(135deg, var(--purple-600), var(--purple-500));
+}
+
+.beautify-btn .spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* JSON-specific buttons */
 .json-btn {
   padding: 0.2rem 0.5rem;
   background: var(--blue-500);
@@ -181,16 +229,9 @@ html, body, #root {
 }
 
 .json-btn:hover {
-  background: #7aa3f0;
-  transform: scale(1.05); /* Applied scale */
+  background: var(--blue-600);
+  transform: scale(1.05);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.footer-stats {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  width: 100%;
-  align-items: center;
 }
 
 .view-toggle-container {
