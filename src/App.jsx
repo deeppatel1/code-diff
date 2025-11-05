@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Indent, AlignJustify } from 'lucide-react'; // Import new icons
+import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Indent, AlignJustify, Sun, Moon } from 'lucide-react'; // Import new icons
 import * as monaco from 'monaco-editor';
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
@@ -60,6 +60,31 @@ monaco.editor.defineTheme('airbnb-dark-diff', {
   }
 });
 monaco.editor.setTheme('airbnb-dark-diff');
+
+monaco.editor.defineTheme('airbnb-light-diff', {
+  base: 'vs',
+  inherit: true,
+  rules: [],
+  colors: {
+    'editor.background': '#F8F9FB',
+    'editor.foreground': '#1F2933',
+    'editor.selectionBackground': '#FFE08280',
+    'editor.selectionHighlightBackground': '#FFE08240',
+    'editor.inactiveSelectionBackground': '#FFE08233',
+    'diffEditor.removedLineBackground': '#FFE9E9CC',
+    'diffEditorGutter.removedLineBackground': '#FFD4D4CC',
+    'diffEditor.removedTextBackground': '#FCA5A5AA',
+    'diffEditor.insertedLineBackground': '#E8F5E9CC',
+    'diffEditorGutter.insertedLineBackground': '#D1F6D5CC',
+    'diffEditor.insertedTextBackground': '#A7F3D0AA',
+    'diffEditor.border': '#D1D5DB',
+  }
+});
+
+const MONACO_THEME_BY_MODE = {
+  dark: 'airbnb-dark-diff',
+  light: 'airbnb-light-diff'
+};
 
 // Enhanced beautifier class with multiple formatter support
 class CodeBeautifier {
@@ -458,6 +483,7 @@ export default function App() {
   const [modifiedStats, setModifiedStats] = useState({ lines: 0, characters: 0 });
   const [isSideBySide, setIsSideBySide] = useState(true);
   const [isBeautifying, setIsBeautifying] = useState({ original: false, modified: false });
+  const [themeMode, setThemeMode] = useState('dark');
 
   // Helper functions
   const calculateStats = code => ({
@@ -672,6 +698,24 @@ export default function App() {
   };
 
   useEffect(() => {
+    const rootElement = document.documentElement;
+    const themeClass = themeMode === 'dark' ? 'theme-dark' : 'theme-light';
+    rootElement.classList.remove('theme-dark', 'theme-light');
+    rootElement.classList.add(themeClass);
+
+    const monacoTheme = MONACO_THEME_BY_MODE[themeMode] ?? MONACO_THEME_BY_MODE.dark;
+    monaco.editor.setTheme(monacoTheme);
+
+    if (diffEditorRef.current) {
+      diffEditorRef.current.updateOptions({ theme: monacoTheme });
+    }
+
+    return () => {
+      rootElement.classList.remove(themeClass);
+    };
+  }, [themeMode]);
+
+  useEffect(() => {
     if (!containerRef.current || diffEditorRef.current) return;
 
     diffEditorRef.current = monaco.editor.createDiffEditor(containerRef.current, {
@@ -704,9 +748,7 @@ export default function App() {
     // Add breathing room above/below the first and last lines in both panes
     diffEditorRef.current.getOriginalEditor().updateOptions({
       padding: { top: 16, bottom: 16 },
-      // lineDecorationsWidth: 0,/
       lineNumbersMinChars: 1,
-      // glyphMargin: true
     });
     diffEditorRef.current.getModifiedEditor().updateOptions({
       padding: { top: 16, bottom: 16, right: 20 }
@@ -761,6 +803,16 @@ export default function App() {
         <div className="header-left">
           <Code className="header-icon" />
           <div className="header-text"><h1>Code Diff</h1></div>
+        </div>
+        <div className="header-actions">
+          <button
+            className="theme-toggle-btn"
+            onClick={() => setThemeMode(prev => (prev === 'dark' ? 'light' : 'dark'))}
+            title={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            {themeMode === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            <span>{themeMode === 'dark' ? 'Light' : 'Dark'}</span>
+          </button>
         </div>
       </div>
       <div className="editor-container" ref={containerRef} />

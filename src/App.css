@@ -29,6 +29,24 @@
   --red-500: #F28B82;
   --green-500: #81C995;
   --gray-500: #9AA0A6;
+  --page-background: var(--dark-bg);
+  --page-text-color: var(--dark-text);
+}
+
+html.theme-dark {
+  --page-background: var(--dark-bg);
+  --page-text-color: var(--dark-text);
+}
+
+html.theme-light {
+  --page-background: var(--light-bg);
+  --page-text-color: var(--light-text);
+  --dark-bg: var(--light-bg);
+  --dark-bg-secondary: var(--light-bg-secondary);
+  --dark-text: var(--light-text);
+  --dark-text-secondary: var(--light-text-secondary);
+  --dark-border: var(--light-border);
+  --dark-hover: var(--light-hover);
 }
 
 /* reset.css */
@@ -39,6 +57,9 @@ html, body, #root {
   box-shadow: none !important;
   height: 100%;
   width: 100%;
+  background: var(--page-background);
+  color: var(--page-text-color);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .app {
@@ -87,6 +108,66 @@ html, body, #root {
   transform: scale(1.1);
   color: var(--blue-500);
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+.header-actions {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+}
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid var(--dark-border);
+  background: rgba(137, 180, 250, 0.15);
+  color: var(--dark-text);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(137, 180, 250, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle-btn span {
+  line-height: 1;
+}
+
+html.theme-light .app-header {
+  background: #f6f8fa;
+  box-shadow: inset 0 -1px 0 #d0d7de;
+  color: #24292f;
+  backdrop-filter: none;
+}
+
+html.theme-light .app-footer {
+  background: #f6f8fa;
+  box-shadow: inset 0 1px 0 #d0d7de;
+  color: #57606a;
+}
+
+html.theme-light .theme-toggle-btn {
+  border-color: #d0d7de;
+  background: #e7edf3;
+  color: #24292f;
+}
+
+html.theme-light .theme-toggle-btn:hover {
+  background: #dce3ea;
+  box-shadow: 0 4px 8px rgba(27, 31, 36, 0.12);
 }
 
 .header-text h1 {
@@ -233,7 +314,7 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--dark-text);
   height: fit-content;
 }
 

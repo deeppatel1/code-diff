@@ -2,7 +2,7 @@ html, body, #root {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: #1e1e1e;
-  color: #c5c5c5;
+  background: var(--page-background);
+  color: var(--page-text-color);
   font-family: sans-serif;
 }
