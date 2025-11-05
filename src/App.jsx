@@ -699,6 +699,13 @@ export default function App() {
     const originalModel = monaco.editor.createModel('', originalLanguage);
     const modifiedModel = monaco.editor.createModel('', modifiedLanguage);
     diffEditorRef.current.setModel({ original: originalModel, modified: modifiedModel });
+    // Add breathing room above/below the first and last lines in both panes
+    diffEditorRef.current.getOriginalEditor().updateOptions({
+      padding: { top: 16, bottom: 16 }
+    });
+    diffEditorRef.current.getModifiedEditor().updateOptions({
+      padding: { top: 16, bottom: 16 }
+    });
 
     // Update handlers
     const updateOriginal = () => {
