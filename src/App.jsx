@@ -48,17 +48,18 @@ monaco.editor.defineTheme('airbnb-dark-diff', {
     { token: 'string.value.json', foreground: '56d364' },
     { token: 'string.json', foreground: '56d364' },
     { token: 'number.json', foreground: 'ffa657' },
-    { token: 'keyword.json', foreground: 'f85149' }, // true/false/null
+    { token: 'keyword.json', foreground: 'f85149' },
     { token: 'operator.json', foreground: '8b949e' },
     { token: 'delimiter.bracket.json', foreground: '8b949e' }
   ],
   colors: {
     'editor.background': '#0d1117',
     'editor.foreground': '#c9d1d9',
-    'editor.selectionBackground': '#1f6feb33',
-    'editor.selectionHighlightBackground': '#1f6feb22',
-    'editor.inactiveSelectionBackground': '#1f6feb1a',
-    'diffEditor.removedLineBackground': '#2d1618',
+    'editor.selectionBackground': '#4a5568',
+    'editor.selectionHighlightBackground': '#3a4555',
+    'editor.inactiveSelectionBackground': '#3a4555',
+    'editor.selectionForeground': '#ffffff',
+    // 'diffEditor.removedLineBackground': '#2d1618',
     'diffEditorGutter.removedLineBackground': '#3a1e22',
     'diffEditor.removedTextBackground': '#da363355',
     'diffEditor.insertedLineBackground': '#102820',
@@ -67,6 +68,7 @@ monaco.editor.defineTheme('airbnb-dark-diff', {
     'diffEditor.border': '#30363d',
   }
 });
+
 monaco.editor.defineTheme('airbnb-light-diff', {
   base: 'vs',
   inherit: true,
@@ -82,10 +84,11 @@ monaco.editor.defineTheme('airbnb-light-diff', {
   colors: {
     'editor.background': '#ffffff',
     'editor.foreground': '#24292f',
-    'editor.selectionBackground': '#0969da33',
-    'editor.selectionHighlightBackground': '#0969da22',
-    'editor.inactiveSelectionBackground': '#0969da22',
-    'diffEditor.removedLineBackground': '#ffebe9',
+    'editor.selectionBackground': '#add6ff',
+    'editor.selectionHighlightBackground': '#d4e5ff',
+    'editor.inactiveSelectionBackground': '#d4e5ff',
+    'editor.selectionForeground': '#000000',
+    // 'diffEditor.removedLineBackground': '#ffebe9',
     'diffEditorGutter.removedLineBackground': '#ffdce0',
     'diffEditor.removedTextBackground': '#ff818240',
     'diffEditor.insertedLineBackground': '#dafbe1',
@@ -113,7 +116,7 @@ monaco.editor.defineTheme('airbnb-synthwave-diff', {
     'editor.selectionBackground': '#FF7EDB55',
     'editor.selectionHighlightBackground': '#FF7EDB30',
     'editor.inactiveSelectionBackground': '#FF7EDB20',
-    'diffEditor.removedLineBackground': '#3B264F80',
+    // 'diffEditor.removedLineBackground': '#3B264F80',
     'diffEditorGutter.removedLineBackground': '#4B2F6B80',
     'diffEditor.removedTextBackground': '#FF6B8B77',
     'diffEditor.insertedLineBackground': '#142F4B80',
@@ -141,7 +144,7 @@ monaco.editor.defineTheme('airbnb-cute-diff', {
     'editor.selectionBackground': '#ff75d540',
     'editor.selectionHighlightBackground': '#ff75d530',
     'editor.inactiveSelectionBackground': '#ff75d530',
-    'diffEditor.removedLineBackground': '#47132f80',
+    // 'diffEditor.removedLineBackground': '#47132f80',
     'diffEditorGutter.removedLineBackground': '#54173a80',
     'diffEditor.removedTextBackground': '#ff5ea880',
     'diffEditor.insertedLineBackground': '#2a1f4d80',
