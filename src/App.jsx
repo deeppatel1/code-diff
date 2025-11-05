@@ -678,13 +678,13 @@ export default function App() {
       theme: 'airbnb-dark-diff',
       automaticLayout: true,
       renderSideBySide: isSideBySide,
+      splitViewDefaultRatio: 0.55,
       enableSplitViewResizing: false,
       useInlineViewWhenSpaceIsLimited: false,
       minimap: { enabled: true },
       fontFamily: 'Monaco, Menlo, "Courier New", monospace',
       fontSize: 14,
       lineHeight: 20,
-      scrollBeyondLastLine: true,
       wordWrap: 'on',
       renderWhitespace: 'boundary',
       lineNumbers: 'on',
@@ -693,7 +693,9 @@ export default function App() {
       diffAlgorithm: 'legacy',
       lineNumbersMinChars: 3,
       originalEditable: true,
-      readOnly: false
+      readOnly: false,
+      scrollBeyondLastLine: false,
+      scrollBeyondLastColumn: 3
     });
 
     const originalModel = monaco.editor.createModel('', originalLanguage);
@@ -701,10 +703,13 @@ export default function App() {
     diffEditorRef.current.setModel({ original: originalModel, modified: modifiedModel });
     // Add breathing room above/below the first and last lines in both panes
     diffEditorRef.current.getOriginalEditor().updateOptions({
-      padding: { top: 16, bottom: 16 }
+      padding: { top: 16, bottom: 16 },
+      // lineDecorationsWidth: 0,/
+      lineNumbersMinChars: 1,
+      // glyphMargin: true
     });
     diffEditorRef.current.getModifiedEditor().updateOptions({
-      padding: { top: 16, bottom: 16 }
+      padding: { top: 16, bottom: 16, right: 20 }
     });
 
     // Update handlers
@@ -743,7 +748,10 @@ export default function App() {
 
   useEffect(() => {
     if (diffEditorRef.current) {
-      diffEditorRef.current.updateOptions({ renderSideBySide: isSideBySide });
+      diffEditorRef.current.updateOptions({
+        renderSideBySide: isSideBySide,
+        splitViewDefaultRatio: 0.512
+      });
     }
   }, [isSideBySide]);
 
