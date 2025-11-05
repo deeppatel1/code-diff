@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Indent, AlignJustify, Sun, Moon } from 'lucide-react'; // Import new icons
+import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Indent, AlignJustify, Sun, Moon, Palette } from 'lucide-react'; // Import new icons
 import * as monaco from 'monaco-editor';
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
@@ -39,52 +39,72 @@ if (typeof window !== 'undefined') {
   };
 }
 
-// Define custom diff theme
+// Define custom diff themes
 monaco.editor.defineTheme('airbnb-dark-diff', {
   base: 'vs-dark',
   inherit: true,
   rules: [],
   colors: {
-    'editor.background': '#181A1B',
-    'editor.foreground': '#c5c5c5',
-    'editor.selectionBackground': '#ffd54f66',
-    'editor.selectionHighlightBackground': '#ffd54f33',
-    'editor.inactiveSelectionBackground': '#ffd54f33',
-    'diffEditor.removedLineBackground': '#2d1b1b66',
-    'diffEditorGutter.removedLineBackground': '#3d1f1f66',
-    'diffEditor.removedTextBackground': '#c24b4b66',
-    'diffEditor.insertedLineBackground': '#121c1466',
-    'diffEditorGutter.insertedLineBackground': '#1f3d2366',
-    'diffEditor.insertedTextBackground': '#2d5a3566',
-    'diffEditor.border': '#3C3C3C',
+    'editor.background': '#0d1117',
+    'editor.foreground': '#c9d1d9',
+    'editor.selectionBackground': '#1f6feb33',
+    'editor.selectionHighlightBackground': '#1f6feb22',
+    'editor.inactiveSelectionBackground': '#1f6feb1a',
+    'diffEditor.removedLineBackground': '#2d1618',
+    'diffEditorGutter.removedLineBackground': '#3a1e22',
+    'diffEditor.removedTextBackground': '#da363355',
+    'diffEditor.insertedLineBackground': '#102820',
+    'diffEditorGutter.insertedLineBackground': '#15372a',
+    'diffEditor.insertedTextBackground': '#2ea04340',
+    'diffEditor.border': '#30363d',
   }
 });
-monaco.editor.setTheme('airbnb-dark-diff');
-
 monaco.editor.defineTheme('airbnb-light-diff', {
   base: 'vs',
   inherit: true,
   rules: [],
   colors: {
-    'editor.background': '#F8F9FB',
-    'editor.foreground': '#1F2933',
-    'editor.selectionBackground': '#FFE08280',
-    'editor.selectionHighlightBackground': '#FFE08240',
-    'editor.inactiveSelectionBackground': '#FFE08233',
-    'diffEditor.removedLineBackground': '#FFE9E9CC',
-    'diffEditorGutter.removedLineBackground': '#FFD4D4CC',
-    'diffEditor.removedTextBackground': '#FCA5A5AA',
-    'diffEditor.insertedLineBackground': '#E8F5E9CC',
-    'diffEditorGutter.insertedLineBackground': '#D1F6D5CC',
-    'diffEditor.insertedTextBackground': '#A7F3D0AA',
-    'diffEditor.border': '#D1D5DB',
+    'editor.background': '#ffffff',
+    'editor.foreground': '#24292f',
+    'editor.selectionBackground': '#0969da33',
+    'editor.selectionHighlightBackground': '#0969da22',
+    'editor.inactiveSelectionBackground': '#0969da22',
+    'diffEditor.removedLineBackground': '#ffebe9',
+    'diffEditorGutter.removedLineBackground': '#ffdce0',
+    'diffEditor.removedTextBackground': '#ff818240',
+    'diffEditor.insertedLineBackground': '#dafbe1',
+    'diffEditorGutter.insertedLineBackground': '#aceebb',
+    'diffEditor.insertedTextBackground': '#2ea04329',
+    'diffEditor.border': '#d0d7de',
+  }
+});
+
+monaco.editor.defineTheme('airbnb-synthwave-diff', {
+  base: 'vs-dark',
+  inherit: true,
+  rules: [],
+  colors: {
+    'editor.background': '#2B213A',
+    'editor.foreground': '#F8F7FF',
+    'editor.selectionBackground': '#FF7EDB55',
+    'editor.selectionHighlightBackground': '#FF7EDB30',
+    'editor.inactiveSelectionBackground': '#FF7EDB20',
+    'diffEditor.removedLineBackground': '#3B264F80',
+    'diffEditorGutter.removedLineBackground': '#4B2F6B80',
+    'diffEditor.removedTextBackground': '#FF6B8B77',
+    'diffEditor.insertedLineBackground': '#142F4B80',
+    'diffEditorGutter.insertedLineBackground': '#1C3D6180',
+    'diffEditor.insertedTextBackground': '#7DF9FF77',
+    'diffEditor.border': '#FF8DD280',
   }
 });
 
 const MONACO_THEME_BY_MODE = {
   dark: 'airbnb-dark-diff',
-  light: 'airbnb-light-diff'
+  light: 'airbnb-light-diff',
+  synthwave: 'airbnb-synthwave-diff'
 };
+monaco.editor.setTheme(MONACO_THEME_BY_MODE.dark);
 
 // Enhanced beautifier class with multiple formatter support
 class CodeBeautifier {
@@ -484,6 +504,26 @@ export default function App() {
   const [isSideBySide, setIsSideBySide] = useState(true);
   const [isBeautifying, setIsBeautifying] = useState({ original: false, modified: false });
   const [themeMode, setThemeMode] = useState('dark');
+  const themeSequence = ['dark', 'light', 'synthwave'];
+  const themeLabels = {
+    dark: 'GitHub Dark',
+    light: 'GitHub Light',
+    synthwave: 'SynthWave84'
+  };
+  const themeIcons = {
+    dark: <Moon size={16} />,
+    light: <Sun size={16} />,
+    synthwave: <Palette size={16} />
+  };
+  const getNextTheme = current => {
+    const idx = themeSequence.indexOf(current);
+    const nextIndex = idx >= 0 ? (idx + 1) % themeSequence.length : 0;
+    return themeSequence[nextIndex];
+  };
+  const nextTheme = getNextTheme(themeMode);
+  const themeIcon = themeIcons[themeMode] ?? themeIcons.dark;
+  const themeLabel = themeLabels[themeMode] ?? themeLabels.dark;
+  const nextThemeLabel = themeLabels[nextTheme] ?? nextTheme;
 
   // Helper functions
   const calculateStats = code => ({
@@ -699,8 +739,8 @@ export default function App() {
 
   useEffect(() => {
     const rootElement = document.documentElement;
-    const themeClass = themeMode === 'dark' ? 'theme-dark' : 'theme-light';
-    rootElement.classList.remove('theme-dark', 'theme-light');
+    const themeClass = `theme-${themeMode}`;
+    rootElement.classList.remove('theme-dark', 'theme-light', 'theme-synthwave');
     rootElement.classList.add(themeClass);
 
     const monacoTheme = MONACO_THEME_BY_MODE[themeMode] ?? MONACO_THEME_BY_MODE.dark;
@@ -718,16 +758,17 @@ export default function App() {
   useEffect(() => {
     if (!containerRef.current || diffEditorRef.current) return;
 
+    const initialTheme = MONACO_THEME_BY_MODE[themeMode] ?? MONACO_THEME_BY_MODE.dark;
     diffEditorRef.current = monaco.editor.createDiffEditor(containerRef.current, {
-      theme: 'airbnb-dark-diff',
+      theme: initialTheme,
       automaticLayout: true,
       renderSideBySide: isSideBySide,
-      splitViewDefaultRatio: 0.55,
+      splitViewDefaultRatio: 0.512,
       enableSplitViewResizing: false,
       useInlineViewWhenSpaceIsLimited: false,
-      minimap: { enabled: true },
-      fontFamily: 'Monaco, Menlo, "Courier New", monospace',
-      fontSize: 14,
+      minimap: { enabled: false },
+      fontFamily: 'ui-monospace, SFMono-Regular, SFMono, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+      fontSize: 13,
       lineHeight: 20,
       wordWrap: 'on',
       renderWhitespace: 'boundary',
@@ -753,6 +794,10 @@ export default function App() {
     diffEditorRef.current.getModifiedEditor().updateOptions({
       padding: { top: 16, bottom: 16, right: 20 }
     });
+    diffEditorRef.current.updateOptions({
+      splitViewDefaultRatio: 0.512
+    });
+    diffEditorRef.current.layout();
 
     // Update handlers
     const updateOriginal = () => {
@@ -786,7 +831,7 @@ export default function App() {
     updateOriginal();
     updateModified();
 
-  }, [isSideBySide]);
+  }, [isSideBySide, themeMode]);
 
   useEffect(() => {
     if (diffEditorRef.current) {
@@ -794,8 +839,9 @@ export default function App() {
         renderSideBySide: isSideBySide,
         splitViewDefaultRatio: 0.512
       });
+      diffEditorRef.current.layout();
     }
-  }, [isSideBySide]);
+  }, [isSideBySide, themeMode]);
 
   return (
     <div className="app">
@@ -807,11 +853,11 @@ export default function App() {
         <div className="header-actions">
           <button
             className="theme-toggle-btn"
-            onClick={() => setThemeMode(prev => (prev === 'dark' ? 'light' : 'dark'))}
-            title={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            onClick={() => setThemeMode(prev => getNextTheme(prev))}
+            title={`Switch to ${nextThemeLabel}`}
           >
-            {themeMode === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-            <span>{themeMode === 'dark' ? 'Light' : 'Dark'}</span>
+            {themeIcon}
+            <span>Theme: {themeLabel}</span>
           </button>
         </div>
       </div>
