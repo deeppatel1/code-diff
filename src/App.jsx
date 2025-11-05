@@ -47,12 +47,15 @@ monaco.editor.defineTheme('airbnb-dark-diff', {
   colors: {
     'editor.background': '#181A1B',
     'editor.foreground': '#c5c5c5',
-    'diffEditor.removedLineBackground': '#2d1b1b',
-    'diffEditorGutter.removedLineBackground': '#3d1f1f',
-    'diffEditor.removedTextBackground': '#c24b4b',
-    'diffEditor.insertedLineBackground': '#121c14',
-    'diffEditorGutter.insertedLineBackground': '#1f3d23',
-    'diffEditor.insertedTextBackground': '#2d5a35',
+    'editor.selectionBackground': '#ffd54f66',
+    'editor.selectionHighlightBackground': '#ffd54f33',
+    'editor.inactiveSelectionBackground': '#ffd54f33',
+    'diffEditor.removedLineBackground': '#2d1b1b66',
+    'diffEditorGutter.removedLineBackground': '#3d1f1f66',
+    'diffEditor.removedTextBackground': '#c24b4b66',
+    'diffEditor.insertedLineBackground': '#121c1466',
+    'diffEditorGutter.insertedLineBackground': '#1f3d2366',
+    'diffEditor.insertedTextBackground': '#2d5a3566',
     'diffEditor.border': '#3C3C3C',
   }
 });
