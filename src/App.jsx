@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Indent, AlignJustify, Sun, Moon, Palette } from 'lucide-react'; // Import new icons
+import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Indent, AlignJustify, Sun, Moon, Palette, Heart } from 'lucide-react'; // Import new icons
 import * as monaco from 'monaco-editor';
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
@@ -43,7 +43,15 @@ if (typeof window !== 'undefined') {
 monaco.editor.defineTheme('airbnb-dark-diff', {
   base: 'vs-dark',
   inherit: true,
-  rules: [],
+  rules: [
+    { token: 'string.key.json', foreground: '79c0ff' },
+    { token: 'string.value.json', foreground: '56d364' },
+    { token: 'string.json', foreground: '56d364' },
+    { token: 'number.json', foreground: 'ffa657' },
+    { token: 'keyword.json', foreground: 'f85149' }, // true/false/null
+    { token: 'operator.json', foreground: '8b949e' },
+    { token: 'delimiter.bracket.json', foreground: '8b949e' }
+  ],
   colors: {
     'editor.background': '#0d1117',
     'editor.foreground': '#c9d1d9',
@@ -62,7 +70,15 @@ monaco.editor.defineTheme('airbnb-dark-diff', {
 monaco.editor.defineTheme('airbnb-light-diff', {
   base: 'vs',
   inherit: true,
-  rules: [],
+  rules: [
+    { token: 'string.key.json', foreground: '005cc5' },
+    { token: 'string.value.json', foreground: '116329' },
+    { token: 'string.json', foreground: '116329' },
+    { token: 'number.json', foreground: '6f42c1' },
+    { token: 'keyword.json', foreground: 'd73a49' },
+    { token: 'operator.json', foreground: '6e7781' },
+    { token: 'delimiter.bracket.json', foreground: '6e7781' }
+  ],
   colors: {
     'editor.background': '#ffffff',
     'editor.foreground': '#24292f',
@@ -82,7 +98,15 @@ monaco.editor.defineTheme('airbnb-light-diff', {
 monaco.editor.defineTheme('airbnb-synthwave-diff', {
   base: 'vs-dark',
   inherit: true,
-  rules: [],
+  rules: [
+    { token: 'string.key.json', foreground: 'FF7EDB' },
+    { token: 'string.value.json', foreground: 'FFF780' },
+    { token: 'string.json', foreground: 'FFF780' },
+    { token: 'number.json', foreground: '7DF9FF' },
+    { token: 'keyword.json', foreground: 'FFA6FF' },
+    { token: 'operator.json', foreground: 'C084F5' },
+    { token: 'delimiter.bracket.json', foreground: 'C084F5' }
+  ],
   colors: {
     'editor.background': '#2B213A',
     'editor.foreground': '#F8F7FF',
@@ -99,10 +123,39 @@ monaco.editor.defineTheme('airbnb-synthwave-diff', {
   }
 });
 
+monaco.editor.defineTheme('airbnb-cute-diff', {
+  base: 'vs-dark',
+  inherit: true,
+  rules: [
+    { token: 'string.key.json', foreground: 'ff6fb7' },
+    { token: 'string.value.json', foreground: 'ffefef' },
+    { token: 'string.json', foreground: 'ffefef' },
+    { token: 'number.json', foreground: 'ffc8dd' },
+    { token: 'keyword.json', foreground: 'ff9ace' },
+    { token: 'operator.json', foreground: 'ffb3d6' },
+    { token: 'delimiter.bracket.json', foreground: 'ffb3d6' }
+  ],
+  colors: {
+    'editor.background': '#2b1432',
+    'editor.foreground': '#ffe5f4',
+    'editor.selectionBackground': '#ff75d540',
+    'editor.selectionHighlightBackground': '#ff75d530',
+    'editor.inactiveSelectionBackground': '#ff75d530',
+    'diffEditor.removedLineBackground': '#47132f80',
+    'diffEditorGutter.removedLineBackground': '#54173a80',
+    'diffEditor.removedTextBackground': '#ff5ea880',
+    'diffEditor.insertedLineBackground': '#2a1f4d80',
+    'diffEditorGutter.insertedLineBackground': '#39276880',
+    'diffEditor.insertedTextBackground': '#ffd7f580',
+    'diffEditor.border': '#ff9ad780'
+  }
+});
+
 const MONACO_THEME_BY_MODE = {
   dark: 'airbnb-dark-diff',
   light: 'airbnb-light-diff',
-  synthwave: 'airbnb-synthwave-diff'
+  synthwave: 'airbnb-synthwave-diff',
+  pink: 'airbnb-cute-diff'
 };
 monaco.editor.setTheme(MONACO_THEME_BY_MODE.dark);
 
@@ -504,16 +557,18 @@ export default function App() {
   const [isSideBySide, setIsSideBySide] = useState(true);
   const [isBeautifying, setIsBeautifying] = useState({ original: false, modified: false });
   const [themeMode, setThemeMode] = useState('dark');
-  const themeSequence = ['dark', 'light', 'synthwave'];
+  const themeSequence = ['dark', 'light', 'synthwave', 'pink'];
   const themeLabels = {
-    dark: 'GitHub Dark',
-    light: 'GitHub Light',
-    synthwave: 'SynthWave84'
+    dark: 'Dark',
+    light: 'Light',
+    synthwave: 'Purple',
+    pink: 'Pink'
   };
   const themeIcons = {
     dark: <Moon size={16} />,
     light: <Sun size={16} />,
-    synthwave: <Palette size={16} />
+    synthwave: <Palette size={16} />,
+    pink: <Heart size={16} />
   };
   const getNextTheme = current => {
     const idx = themeSequence.indexOf(current);
@@ -740,7 +795,7 @@ export default function App() {
   useEffect(() => {
     const rootElement = document.documentElement;
     const themeClass = `theme-${themeMode}`;
-    rootElement.classList.remove('theme-dark', 'theme-light', 'theme-synthwave');
+    rootElement.classList.remove('theme-dark', 'theme-light', 'theme-synthwave', 'theme-pink');
     rootElement.classList.add(themeClass);
 
     const monacoTheme = MONACO_THEME_BY_MODE[themeMode] ?? MONACO_THEME_BY_MODE.dark;

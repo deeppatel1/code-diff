@@ -92,6 +92,25 @@ html.theme-synthwave {
   --button-border: rgba(255, 126, 219, 0.5);
 }
 
+html.theme-pink {
+  --page-background: #251228;
+  --page-text-color: #ffecf6;
+  --dark-bg: #251228;
+  --dark-bg-secondary: #3c1b44;
+  --dark-text: #ffecf6;
+  --dark-text-secondary: #ffb3d6;
+  --dark-border: rgba(255, 150, 200, 0.6);
+  --dark-hover: rgba(255, 150, 200, 0.25);
+  --header-bg: #3c1b44;
+  --header-border: transparent;
+  --footer-bg: #3c1b44;
+  --footer-border: transparent;
+  --button-bg: rgba(255, 150, 200, 0.35);
+  --button-hover-bg: rgba(255, 200, 220, 0.45);
+  --button-text: #ffecf6;
+  --button-border: rgba(255, 150, 200, 0.7);
+}
+
 /* reset.css */
 html, body, #root {
   margin: 0;
