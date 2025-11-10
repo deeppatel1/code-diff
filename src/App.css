@@ -83,9 +83,9 @@ html.theme-synthwave {
   --dark-border: rgba(248, 247, 255, 0.22);
   --dark-hover: rgba(248, 247, 255, 0.12);
   --header-bg: rgb(36, 27, 48);
-  --header-border: transparent;
+  --header-border: rgba(173, 126, 255, 0.45);
   --footer-bg: rgb(36, 27, 48);
-  --footer-border: transparent;
+  --footer-border: rgba(173, 126, 255, 0.45);
   --button-bg: rgba(255, 126, 219, 0.18);
   --button-hover-bg: rgba(125, 249, 255, 0.25);
   --button-text: #f8f7ff;
@@ -93,22 +93,22 @@ html.theme-synthwave {
 }
 
 html.theme-pink {
-  --page-background: #251228;
-  --page-text-color: #ffecf6;
-  --dark-bg: #251228;
-  --dark-bg-secondary: #3c1b44;
-  --dark-text: #ffecf6;
-  --dark-text-secondary: #ffb3d6;
-  --dark-border: rgba(255, 150, 200, 0.6);
-  --dark-hover: rgba(255, 150, 200, 0.25);
-  --header-bg: #3c1b44;
-  --header-border: transparent;
-  --footer-bg: #3c1b44;
-  --footer-border: transparent;
-  --button-bg: rgba(255, 150, 200, 0.35);
-  --button-hover-bg: rgba(255, 200, 220, 0.45);
-  --button-text: #ffecf6;
-  --button-border: rgba(255, 150, 200, 0.7);
+  --page-background: #ffeaf5;
+  --page-text-color: #391930;
+  --dark-bg: #ffeaf5;
+  --dark-bg-secondary: #ffd4eb;
+  --dark-text: #391930;
+  --dark-text-secondary: #8f4f7d;
+  --dark-border: rgba(190, 83, 147, 0.35);
+  --dark-hover: rgba(190, 83, 147, 0.18);
+  --header-bg: #ffd4eb;
+  --header-border: rgba(190, 83, 147, 0.35);
+  --footer-bg: #ffd4eb;
+  --footer-border: rgba(190, 83, 147, 0.35);
+  --button-bg: rgba(190, 83, 147, 0.15);
+  --button-hover-bg: rgba(190, 83, 147, 0.3);
+  --button-text: #3f1735;
+  --button-border: rgba(190, 83, 147, 0.35);
 }
 
 /* reset.css */
@@ -248,6 +248,23 @@ html.theme-synthwave .monaco-editor-background {
   gap: 0.5rem;
   flex-wrap: wrap; /* Allow items to wrap */
 }
+.metric-group {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: var(--dark-text);
+}
+
+.metric-group.align-right {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.metric {
+  font-variant-numeric: tabular-nums;
+}
 
 .app-footer {
   padding: 0.2rem 1rem;
@@ -272,6 +289,7 @@ html.theme-synthwave .monaco-editor-background {
 .stats-display:last-child {
   justify-self: end;
 }
+
 
 /* override VS Code focus-border variable */
 .monaco-editor,
@@ -347,14 +365,15 @@ html.theme-synthwave .monaco-editor-background {
 .view-toggle-container {
   display: flex;
   justify-content: center;
+  align-items: center;
   margin-left: -23px;
 }
 
 .view-toggle-btn {
   padding: 0.25rem;
-  border: none;
+  border: 1px solid var(--button-border);
   border-radius: 0.375rem;
-  background: transparent;
+  background: var(--button-bg);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -365,11 +384,24 @@ html.theme-synthwave .monaco-editor-background {
 }
 
 .view-toggle-btn:hover {
-  background-color: var(--dark-hover);
+  background-color: var(--button-hover-bg);
   transform: scale(1.05); /* Applied scale */
   box-shadow: none;
 }
 
 .view-toggle-btn svg {
   filter: none;
+}
+
+.stats-display.modified-panel {
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modified-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
 }
