@@ -16,7 +16,7 @@ export default defineConfig(({ command }) => ({
     port: 3000
   },
   test: {
-    environment: 'node',
+    environment: 'jsdom',
     globals: true,
     include: ['src/**/*.test.{js,jsx}']
   }

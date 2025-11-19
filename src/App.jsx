@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Sun, Moon, Palette, Heart } from 'lucide-react';
+import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Sun, Moon, Palette, Heart, ChevronDown } from 'lucide-react';
 import * as monaco from 'monaco-editor';
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
@@ -164,7 +164,7 @@ export default function App() {
   const [modifiedStats, setModifiedStats] = useState({ lines: 0, characters: 0, words: 0 });
   const [isSideBySide, setIsSideBySide] = useState(true);
   const [isBeautifying, setIsBeautifying] = useState({ original: false, modified: false });
-  const [themeMode, setThemeMode] = useState('dark');
+  const [themeMode, setThemeMode] = useState('light');
   const [indentationSize] = useState(4);
   const [useTabs] = useState(false);
   const themeSequence = ['dark', 'light', 'synthwave', 'pink'];
@@ -460,18 +460,30 @@ export default function App() {
     <div className="app">
       <div className="app-header">
         <div className="header-left">
-          <Code className="header-icon" />
+          <svg width="40" height="32" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="header-icon">
+            <path d="M14 19L6 12L14 5" stroke="#da3633" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M22 5L30 12L22 19" stroke="#2ea043" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           <div className="header-text"><h1>Code Diff</h1></div>
         </div>
         <div className="header-actions">
-          <button
-            className="theme-toggle-btn"
-            onClick={() => setThemeMode(prev => getNextTheme(prev))}
-            title={`Switch to ${nextThemeLabel}`}
-          >
-            {themeIcon}
-            <span>Theme: {themeLabel}</span>
-          </button>
+          <div className="theme-dropdown">
+            <select
+              className="theme-dropdown-select"
+              value={themeMode}
+              onChange={(e) => setThemeMode(e.target.value)}
+              title="Select Theme"
+            >
+              {themeSequence.map(theme => (
+                <option key={theme} value={theme}>
+                  {themeLabels[theme]}
+                </option>
+              ))}
+            </select>
+            <span className="theme-dropdown-icon">{themeIcon}</span>
+            <span className="theme-dropdown-label">{themeLabel}</span>
+            <ChevronDown size={14} className="theme-dropdown-arrow" />
+          </div>
         </div>
       </div>
       <div className="editor-container" ref={containerRef} />

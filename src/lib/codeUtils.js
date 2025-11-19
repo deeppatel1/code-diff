@@ -330,7 +330,7 @@ export class CodeBeautifier {
   }
 
   sortJson(jsonString, options = {}) {
-    const { indentSize = 2 } = options;
+    const { indentationSize = 2 } = options;
     try {
       const parsed = JSON.parse(jsonString);
       const sortObject = obj => {
@@ -347,7 +347,7 @@ export class CodeBeautifier {
         return obj;
       };
       const sorted = sortObject(parsed);
-      return JSON.stringify(sorted, null, indentSize);
+      return JSON.stringify(sorted, null, indentationSize);
     } catch (error) {
       throw new Error(`Invalid JSON: ${error.message}`);
     }

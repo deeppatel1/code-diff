@@ -39,6 +39,11 @@
   --button-hover-bg: #30363d;
   --button-text: var(--dark-text);
   --button-border: var(--header-border);
+  --dropdown-bg: #21262d;
+  --dropdown-text: var(--dark-text);
+  --dropdown-border: var(--header-border);
+  --dropdown-hover-bg: #30363d;
+  --language-indicator-color: var(--blue-500);
 }
 
 html.theme-dark {
@@ -52,6 +57,11 @@ html.theme-dark {
   --button-hover-bg: #30363d;
   --button-text: var(--dark-text);
   --button-border: var(--header-border);
+  --dropdown-bg: #21262d;
+  --dropdown-text: var(--dark-text);
+  --dropdown-border: var(--header-border);
+  --dropdown-hover-bg: #30363d;
+  --language-indicator-color: var(--blue-500);
 }
 
 html.theme-light {
@@ -71,6 +81,11 @@ html.theme-light {
   --button-hover-bg: #d0d7de;
   --button-text: #24292f;
   --button-border: #d0d7de;
+  --dropdown-bg: #e7edf3;
+  --dropdown-text: #24292f;
+  --dropdown-border: #d0d7de;
+  --dropdown-hover-bg: #d0d7de;
+  --language-indicator-color: #0969da;
 }
 
 html.theme-synthwave {
@@ -90,6 +105,11 @@ html.theme-synthwave {
   --button-hover-bg: rgba(125, 249, 255, 0.25);
   --button-text: #f8f7ff;
   --button-border: rgba(255, 126, 219, 0.5);
+  --dropdown-bg: rgba(255, 126, 219, 0.18);
+  --dropdown-text: #f8f7ff;
+  --dropdown-border: rgba(255, 126, 219, 0.5);
+  --dropdown-hover-bg: rgba(125, 249, 255, 0.25);
+  --language-indicator-color: #ff7edb;
 }
 
 html.theme-pink {
@@ -109,10 +129,17 @@ html.theme-pink {
   --button-hover-bg: rgba(190, 83, 147, 0.3);
   --button-text: #3f1735;
   --button-border: rgba(190, 83, 147, 0.35);
+  --dropdown-bg: rgba(190, 83, 147, 0.15);
+  --dropdown-text: #3f1735;
+  --dropdown-border: rgba(190, 83, 147, 0.35);
+  --dropdown-hover-bg: rgba(190, 83, 147, 0.3);
+  --language-indicator-color: #d03592;
 }
 
 /* reset.css */
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   border: none !important;
@@ -154,17 +181,14 @@ html, body, #root {
 }
 
 .header-icon {
-  width: 2rem;
-  height: 2rem;
-  color: var(--blue-500);
-  transition: transform 0.2s ease, color 0.2s ease, filter 0.2s ease;
-  filter: none;
+  width: 40px;
+  height: 32px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
 }
 
 .header-icon:hover {
-  transform: scale(1.1);
-  color: var(--blue-600);
-  filter: none;
+  transform: scale(1.05);
 }
 
 .header-actions {
@@ -177,32 +201,97 @@ html, body, #root {
 }
 
 
-.theme-toggle-btn {
+.theme-dropdown {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.65rem;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
   border-radius: 9999px;
-  border: 1px solid var(--button-border);
-  background: var(--button-bg);
-  color: var(--button-text);
-  cursor: pointer;
+  border: 1px solid var(--dropdown-border);
+  background: var(--dropdown-bg);
+  color: var(--dropdown-text);
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   transition: background 0.2s ease, transform 0.2s ease;
   box-shadow: none;
+  cursor: pointer;
+  position: relative;
+  /* Needed for absolute positioning of select */
 }
 
-.theme-toggle-btn:hover {
-  background: var(--button-hover-bg);
+.theme-dropdown:hover {
+  background: var(--dropdown-hover-bg);
   transform: translateY(-1px);
   box-shadow: none;
 }
 
-.theme-toggle-btn span {
+.theme-dropdown-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  /* Let clicks pass through */
+}
+
+.theme-dropdown-select {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  /* Hide the default select but keep it clickable */
+  cursor: pointer;
+  appearance: none;
+  z-index: 1;
+  /* Ensure it's on top */
+}
+
+.theme-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 9999px;
+  border: 1px solid var(--button-border);
+  background: var(--button-bg);
+  color: var(--button-text);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.theme-dropdown:hover {
+  background: var(--button-hover-bg);
+  transform: translateY(-1px);
+}
+
+.theme-dropdown-select {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.theme-dropdown-icon {
+  display: flex;
+  align-items: center;
+}
+
+.theme-dropdown-label {
   line-height: 1;
+}
+
+.theme-dropdown-arrow {
+  opacity: 0.7;
 }
 
 
@@ -223,14 +312,19 @@ html.theme-synthwave .monaco-editor-background {
 .header-text h1 {
   margin: 0;
   font-size: 1.5rem;
-  font-weight: bold;
+  font-weight: 800;
   text-shadow: none;
   transition: transform 0.2s ease;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  letter-spacing: -0.05em;
+  color: var(--dark-text);
 }
 
 .header-text h1:hover {
-  transform: scale(1.1);
+  transform: scale(1.02);
 }
+
+
 
 .editor-container {
   flex: 1;
@@ -246,8 +340,10 @@ html.theme-synthwave .monaco-editor-background {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-wrap: wrap; /* Allow items to wrap */
+  flex-wrap: wrap;
+  /* Allow items to wrap */
 }
+
 .metric-group {
   display: flex;
   gap: 0.4rem;
@@ -298,7 +394,7 @@ html.theme-synthwave .monaco-editor-background {
 }
 
 .language-indicator {
-  color: var(--blue-500);
+  color: var(--language-indicator-color);
   font-weight: 600;
   text-transform: uppercase;
   padding: 0.1rem 0.3rem;
@@ -326,7 +422,8 @@ html.theme-synthwave .monaco-editor-background {
   gap: 0.25rem;
   position: relative;
   overflow: hidden;
-  white-space: nowrap; /* Prevent text wrapping inside button */
+  white-space: nowrap;
+  /* Prevent text wrapping inside button */
   box-shadow: none;
 }
 
@@ -354,6 +451,7 @@ html.theme-synthwave .monaco-editor-background {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -385,7 +483,8 @@ html.theme-synthwave .monaco-editor-background {
 
 .view-toggle-btn:hover {
   background-color: var(--button-hover-bg);
-  transform: scale(1.05); /* Applied scale */
+  transform: scale(1.05);
+  /* Applied scale */
   box-shadow: none;
 }
 
