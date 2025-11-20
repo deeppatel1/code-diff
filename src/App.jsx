@@ -145,6 +145,8 @@ monaco.editor.defineTheme('airbnb-cute-diff', {
   }
 });
 
+const THEME_STORAGE_KEY = 'diffright-theme-mode';
+
 const MONACO_THEME_BY_MODE = {
   dark: 'airbnb-dark-diff',
   light: 'airbnb-light-diff',
@@ -164,7 +166,10 @@ export default function App() {
   const [modifiedStats, setModifiedStats] = useState({ lines: 0, characters: 0, words: 0 });
   const [isSideBySide, setIsSideBySide] = useState(true);
   const [isBeautifying, setIsBeautifying] = useState({ original: false, modified: false });
-  const [themeMode, setThemeMode] = useState('light');
+  const [themeMode, setThemeMode] = useState(() => {
+    if (typeof window === 'undefined') return 'light';
+    return localStorage.getItem(THEME_STORAGE_KEY) ?? 'light';
+  });
   const [indentationSize] = useState(4);
   const [useTabs] = useState(false);
   const themeSequence = ['dark', 'light', 'synthwave', 'pink'];
@@ -351,6 +356,11 @@ export default function App() {
   };
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(THEME_STORAGE_KEY, themeMode);
+  }, [themeMode]);
+
+  useEffect(() => {
     const rootElement = document.documentElement;
     const themeClass = `theme-${themeMode}`;
     rootElement.classList.remove('theme-dark', 'theme-light', 'theme-synthwave', 'theme-pink');
@@ -464,7 +474,7 @@ export default function App() {
             <path d="M14 19L6 12L14 5" stroke="#da3633" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M22 5L30 12L22 19" stroke="#2ea043" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <div className="header-text"><h1>Code Diff</h1></div>
+          <div className="header-text"><h1>Diff Please</h1></div>
         </div>
         <div className="header-actions">
           <div className="theme-dropdown">

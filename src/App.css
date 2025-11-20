@@ -183,12 +183,32 @@ body,
 .header-icon {
   width: 40px;
   height: 32px;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease, filter 0.3s ease;
   flex-shrink: 0;
+  cursor: pointer;
+}
+
+.header-icon path {
+  transition: transform 0.3s ease, stroke 0.3s ease, opacity 0.3s ease;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .header-icon:hover {
-  transform: scale(1.05);
+  transform: scale(1.08) rotate(-2deg);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.15));
+}
+
+.header-icon:hover path:first-child {
+  transform: translateX(-3px);
+  stroke: #ff5c5c;
+  opacity: 0.85;
+}
+
+.header-icon:hover path:last-child {
+  transform: translateX(3px);
+  stroke: #50d27e;
+  opacity: 0.95;
 }
 
 .header-actions {
@@ -314,14 +334,9 @@ html.theme-synthwave .monaco-editor-background {
   font-size: 1.5rem;
   font-weight: 800;
   text-shadow: none;
-  transition: transform 0.2s ease;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   letter-spacing: -0.05em;
   color: var(--dark-text);
-}
-
-.header-text h1:hover {
-  transform: scale(1.02);
 }
 
 
