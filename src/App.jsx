@@ -5,6 +5,7 @@ import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution'
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
 import './App.css';
 import { CodeBeautifier, calculateStats, detectLanguage } from './lib/codeUtils';
+import MarkdownReader from './MarkdownReader';
 
 // Configure Monaco Environment
 if (typeof window !== 'undefined') {
@@ -160,6 +161,7 @@ export default function App() {
   const diffEditorRef = useRef(null);
   const beautifierRef = useRef(new CodeBeautifier());
 
+  const [mode, setMode] = useState('diff'); // 'diff' | 'markdown'
   const [originalLanguage, setOriginalLanguage] = useState('plaintext');
   const [modifiedLanguage, setModifiedLanguage] = useState('plaintext');
   const [originalStats, setOriginalStats] = useState({ lines: 0, characters: 0, words: 0 });
@@ -477,6 +479,20 @@ export default function App() {
           <div className="header-text"><h1>Diff Please</h1></div>
         </div>
         <div className="header-actions">
+          <div className="mode-toggle">
+            <button
+              className={`mode-btn ${mode === 'diff' ? 'active' : ''}`}
+              onClick={() => setMode('diff')}
+            >
+              Diff
+            </button>
+            <button
+              className={`mode-btn ${mode === 'markdown' ? 'active' : ''}`}
+              onClick={() => setMode('markdown')}
+            >
+              Markdown
+            </button>
+          </div>
           <div className="theme-dropdown">
             <select
               className="theme-dropdown-select"
@@ -496,144 +512,151 @@ export default function App() {
           </div>
         </div>
       </div>
-      <div className="editor-container" ref={containerRef} />
-      <div className="app-footer">
-        <div className="footer-stats">
-          <div className="stats-display">
-            <div className="metric-group">
-              <span className="metric">{originalStats.lines} lines</span>
-              <span className="metric">{originalStats.words} words</span>
-              <span className="metric">{originalStats.characters} chars</span>
-            </div>
-            {originalLanguage !== 'plaintext' && (
-              <span className="language-indicator">{originalLanguage}</span>
-            )}
-            {isLanguageBeautifiable(originalLanguage) && (
-              <button
-                className="beautify-btn"
-                onClick={handleBeautifyOriginal}
-                title={`Beautify ${originalLanguage}`}
-              >
-                <Sparkles size={12} />
-                Beautify
-              </button>
-            )}
-            {originalLanguage === 'json' && (
-              <>
+
+      {mode === 'diff' ? (
+        <>
+          <div className="editor-container" ref={containerRef} />
+          <div className="app-footer">
+            <div className="footer-stats">
+              <div className="stats-display">
+                <div className="metric-group">
+                  <span className="metric">{originalStats.lines} lines</span>
+                  <span className="metric">{originalStats.words} words</span>
+                  <span className="metric">{originalStats.characters} chars</span>
+                </div>
+                {originalLanguage !== 'plaintext' && (
+                  <span className="language-indicator">{originalLanguage}</span>
+                )}
+                {isLanguageBeautifiable(originalLanguage) && (
+                  <button
+                    className="beautify-btn"
+                    onClick={handleBeautifyOriginal}
+                    title={`Beautify ${originalLanguage}`}
+                  >
+                    <Sparkles size={12} />
+                    Beautify
+                  </button>
+                )}
+                {originalLanguage === 'json' && (
+                  <>
+                    <button
+                      className="beautify-btn"
+                      onClick={handleSortOriginal}
+                      title="Sort JSON"
+                    >
+                      <SortAsc size={12} /> Sort
+                    </button>
+                    <button
+                      className="beautify-btn"
+                      onClick={handleCompactOriginal}
+                      title="Minify JSON"
+                    >
+                      <Minimize size={12} /> Minify
+                    </button>
+                    <button
+                      className="beautify-btn convert-btn"
+                      onClick={handleConvertOriginalToYaml}
+                      title="Convert JSON to YAML"
+                    >
+                      <Wand size={12} /> JSON to YAML
+                    </button>
+                  </>
+                )}
+                {originalLanguage === 'yaml' && (
+                  <>
+                    <button
+                      className="beautify-btn convert-btn"
+                      onClick={handleConvertOriginalToJson}
+                      title="Convert YAML to JSON"
+                    >
+                      <Wand size={12} /> YAML to JSON
+                    </button>
+                  </>
+                )}
+              </div>
+              <div className="view-toggle-container">
                 <button
-                  className="beautify-btn"
-                  onClick={handleSortOriginal}
-                  title="Sort JSON"
+                  className="view-toggle-btn"
+                  onClick={() => setIsSideBySide(!isSideBySide)}
+                  title={isSideBySide ? "Switch to Unified View" : "Switch to Side-by-Side View"}
                 >
-                  <SortAsc size={12} /> Sort
+                  {isSideBySide ? <AlignLeft size={20} /> : <Columns size={16} />}
                 </button>
-                <button
-                  className="beautify-btn"
-                  onClick={handleCompactOriginal}
-                  title="Minify JSON"
-                >
-                  <Minimize size={12} /> Minify
-                </button>
-                <button
-                  className="beautify-btn convert-btn"
-                  onClick={handleConvertOriginalToYaml}
-                  title="Convert JSON to YAML"
-                >
-                  <Wand size={12} /> JSON to YAML
-                </button>
-              </>
-            )}
-            {originalLanguage === 'yaml' && (
-              <>
-                <button
-                  className="beautify-btn convert-btn"
-                  onClick={handleConvertOriginalToJson}
-                  title="Convert YAML to JSON"
-                >
-                  <Wand size={12} /> YAML to JSON
-                </button>
-              </>
-            )}
-          </div>
-          <div className="view-toggle-container">
-            <button
-              className="view-toggle-btn"
-              onClick={() => setIsSideBySide(!isSideBySide)}
-              title={isSideBySide ? "Switch to Unified View" : "Switch to Side-by-Side View"}
-            >
-              {isSideBySide ? <AlignLeft size={20} /> : <Columns size={16} />}
-            </button>
-          </div>
-          <div className="stats-display modified-panel">
-            <div className="modified-actions">
-              {modifiedLanguage !== 'plaintext' && (
-                <span className="language-indicator">{modifiedLanguage}</span>
-              )}
-              {isLanguageBeautifiable(modifiedLanguage) && (
-                <button
-                  className={`beautify-btn ${isBeautifying.modified ? 'beautifying' : ''}`}
-                  onClick={handleBeautifyModified}
-                  disabled={isBeautifying.modified}
-                  title={`Beautify ${modifiedLanguage}`}
-                >
-                  {isBeautifying.modified ? (
+              </div>
+              <div className="stats-display modified-panel">
+                <div className="modified-actions">
+                  {modifiedLanguage !== 'plaintext' && (
+                    <span className="language-indicator">{modifiedLanguage}</span>
+                  )}
+                  {isLanguageBeautifiable(modifiedLanguage) && (
+                    <button
+                      className={`beautify-btn ${isBeautifying.modified ? 'beautifying' : ''}`}
+                      onClick={handleBeautifyModified}
+                      disabled={isBeautifying.modified}
+                      title={`Beautify ${modifiedLanguage}`}
+                    >
+                      {isBeautifying.modified ? (
+                        <>
+                          <Sparkles size={12} className="spinning" />
+                          Beautifying...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={12} />
+                          Beautify
+                        </>
+                      )}
+                    </button>
+                  )}
+                  {modifiedLanguage === 'json' && (
                     <>
-                      <Sparkles size={12} className="spinning" />
-                      Beautifying...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={12} />
-                      Beautify
+                      <button
+                        className="beautify-btn"
+                        onClick={handleSortModified}
+                        title="Sort JSON"
+                      >
+                        <SortAsc size={12} /> Sort
+                      </button>
+                      <button
+                        className="beautify-btn"
+                        onClick={handleCompactModified}
+                        title="Minify JSON"
+                      >
+                        <Minimize size={12} /> Minify
+                      </button>
+                      <button
+                        className="beautify-btn convert-btn"
+                        onClick={handleConvertModifiedToYaml}
+                        title="Convert JSON to YAML"
+                      >
+                        <Wand size={12} /> JSON to YAML
+                      </button>
                     </>
                   )}
-                </button>
-              )}
-              {modifiedLanguage === 'json' && (
-                <>
-                  <button
-                    className="beautify-btn"
-                    onClick={handleSortModified}
-                    title="Sort JSON"
-                  >
-                    <SortAsc size={12} /> Sort
-                  </button>
-                  <button
-                    className="beautify-btn"
-                    onClick={handleCompactModified}
-                    title="Minify JSON"
-                  >
-                    <Minimize size={12} /> Minify
-                  </button>
-                  <button
-                    className="beautify-btn convert-btn"
-                    onClick={handleConvertModifiedToYaml}
-                    title="Convert JSON to YAML"
-                  >
-                    <Wand size={12} /> JSON to YAML
-                  </button>
-                </>
-              )}
-              {modifiedLanguage === 'yaml' && (
-                <>
-                  <button
-                    className="beautify-btn convert-btn"
-                    onClick={handleConvertModifiedToJson}
-                    title="Convert YAML to JSON"
-                  >
-                    <Wand size={12} /> YAML to JSON
-                  </button>
-                </>
-              )}
-            </div>
-            <div className="metric-group align-right">
-              <span className="metric">{modifiedStats.lines} lines</span>
-              <span className="metric">{modifiedStats.words} words</span>
-              <span className="metric">{modifiedStats.characters} chars</span>
+                  {modifiedLanguage === 'yaml' && (
+                    <>
+                      <button
+                        className="beautify-btn convert-btn"
+                        onClick={handleConvertModifiedToJson}
+                        title="Convert YAML to JSON"
+                      >
+                        <Wand size={12} /> YAML to JSON
+                      </button>
+                    </>
+                  )}
+                </div>
+                <div className="metric-group align-right">
+                  <span className="metric">{modifiedStats.lines} lines</span>
+                  <span className="metric">{modifiedStats.words} words</span>
+                  <span className="metric">{modifiedStats.characters} chars</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      ) : (
+        <MarkdownReader themeMode={themeMode} />
+      )}
     </div>
   );
 }
