@@ -3,8 +3,11 @@ import 'monaco-editor/min/vs/editor/editor.main.css';
 import './index.css';   // *then* your App.css/index.css
 import App from './App';
 import { createRoot } from 'react-dom/client';
-import { inject } from '@vercel/analytics';
+import { Analytics } from '@vercel/analytics/react';
 
-inject(); // enable Vercel Web Analytics
-
-createRoot(document.getElementById('root')).render(<App />);
+createRoot(document.getElementById('root')).render(
+    <>
+        <App />
+        <Analytics />
+    </>
+);
