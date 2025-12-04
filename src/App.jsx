@@ -500,6 +500,13 @@ export default function App() {
         </div>
       </div>
 
+      <section className="seo-intro" aria-label="Code diff overview">
+        <div className="seo-intro-content">
+          <h2>Instant side-by-side code diff with beautify, JSON tools, and Monaco precision.</h2>
+          <p>Paste code, compare inline or side-by-side, auto-detect languages, beautify in one click, sort/minify JSON, convert YAML/JSON, and switch themes (Dark, Light, Purple, Pink) without sign-in or uploads.</p>
+        </div>
+      </section>
+
       <div className="editor-container" ref={containerRef} />
       <div className="app-footer">
         <div className="footer-stats">

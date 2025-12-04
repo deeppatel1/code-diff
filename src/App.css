@@ -339,6 +339,31 @@ html.theme-synthwave .monaco-editor-background {
   color: var(--dark-text);
 }
 
+.seo-intro {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
+  padding: 0.65rem 1.2rem;
+}
+
+.seo-intro-content {
+  max-width: 1024px;
+  margin: 0 auto;
+  color: var(--dark-text);
+}
+
+.seo-intro h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.seo-intro p {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+  color: var(--dark-text-secondary);
+  line-height: 1.5;
+}
 
 
 .editor-container {
