@@ -147,6 +147,9 @@ monaco.editor.defineTheme('airbnb-cute-diff', {
 });
 
 const THEME_STORAGE_KEY = 'diffright-theme-mode';
+const ORIGINAL_STORAGE_KEY = 'diffright-session-original';
+const MODIFIED_STORAGE_KEY = 'diffright-session-modified';
+const VIEW_STORAGE_KEY = 'diffright-session-view';
 
 const MONACO_THEME_BY_MODE = {
   dark: 'airbnb-dark-diff',
@@ -166,7 +169,13 @@ export default function App() {
   const [modifiedLanguage, setModifiedLanguage] = useState('plaintext');
   const [originalStats, setOriginalStats] = useState({ lines: 0, characters: 0, words: 0 });
   const [modifiedStats, setModifiedStats] = useState({ lines: 0, characters: 0, words: 0 });
-  const [isSideBySide, setIsSideBySide] = useState(true);
+  const [isSideBySide, setIsSideBySide] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    const stored = sessionStorage.getItem(VIEW_STORAGE_KEY);
+    if (stored === 'inline') return false;
+    if (stored === 'side-by-side') return true;
+    return true;
+  });
   const [isBeautifying, setIsBeautifying] = useState({ original: false, modified: false });
   const [themeMode, setThemeMode] = useState(() => {
     if (typeof window === 'undefined') return 'light';
@@ -363,6 +372,11 @@ export default function App() {
   }, [themeMode]);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    sessionStorage.setItem(VIEW_STORAGE_KEY, isSideBySide ? 'side-by-side' : 'inline');
+  }, [isSideBySide]);
+
+  useEffect(() => {
     const rootElement = document.documentElement;
     const themeClass = `theme-${themeMode}`;
     rootElement.classList.remove('theme-dark', 'theme-light', 'theme-synthwave', 'theme-pink');
@@ -411,6 +425,16 @@ export default function App() {
     const originalModel = monaco.editor.createModel('', originalLanguage);
     const modifiedModel = monaco.editor.createModel('', modifiedLanguage);
     diffEditorRef.current.setModel({ original: originalModel, modified: modifiedModel });
+    if (typeof window !== 'undefined') {
+      const savedOriginal = sessionStorage.getItem(ORIGINAL_STORAGE_KEY);
+      const savedModified = sessionStorage.getItem(MODIFIED_STORAGE_KEY);
+      if (savedOriginal !== null) {
+        originalModel.setValue(savedOriginal);
+      }
+      if (savedModified !== null) {
+        modifiedModel.setValue(savedModified);
+      }
+    }
     // Add breathing room above/below the first and last lines in both panes
     diffEditorRef.current.getOriginalEditor().updateOptions({
       padding: { top: 16, bottom: 16 },
@@ -430,6 +454,10 @@ export default function App() {
       const stats = calculateStats(val);
       const lang = detectLanguage(val);
 
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(ORIGINAL_STORAGE_KEY, val);
+      }
+
       setOriginalStats(stats);
       setOriginalLanguage(lang);
 
@@ -442,6 +470,10 @@ export default function App() {
       const val = modifiedModel.getValue();
       const stats = calculateStats(val);
       const lang = detectLanguage(val);
+
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(MODIFIED_STORAGE_KEY, val);
+      }
 
       setModifiedStats(stats);
       setModifiedLanguage(lang);
