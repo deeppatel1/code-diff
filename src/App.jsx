@@ -55,10 +55,10 @@ monaco.editor.defineTheme('airbnb-dark-diff', {
     'editor.selectionForeground': '#ffffff',
     // 'diffEditor.removedLineBackground': '#2d1618',
     'diffEditorGutter.removedLineBackground': '#3a1e22',
-    'diffEditor.removedTextBackground': '#da363355',
+    'diffEditor.removedTextBackground': '#ca181580',
     // 'diffEditor.insertedLineBackground': '#102820',
     'diffEditorGutter.insertedLineBackground': '#15372a',
-    'diffEditor.insertedTextBackground': '#2ea04340',
+    'diffEditor.insertedTextBackground': '#2ea04380',
     'diffEditor.border': '#30363d',
   }
 });
@@ -84,10 +84,10 @@ monaco.editor.defineTheme('airbnb-light-diff', {
     'editor.selectionForeground': '#000000',
     // 'diffEditor.removedLineBackground': '#ffebe9',
     'diffEditorGutter.removedLineBackground': '#ffdce0',
-    'diffEditor.removedTextBackground': '#ff818240',
+    'diffEditor.removedTextBackground': '#fb383840',
     // 'diffEditor.insertedLineBackground': '#dafbe1',
     'diffEditorGutter.insertedLineBackground': '#aceebb',
-    'diffEditor.insertedTextBackground': '#2ea04329',
+    'diffEditor.insertedTextBackground': '#0c8d2650',
     'diffEditor.border': '#d0d7de',
   }
 });
@@ -115,7 +115,7 @@ monaco.editor.defineTheme('airbnb-synthwave-diff', {
     'diffEditor.removedTextBackground': '#FF6B8B77',
     // 'diffEditor.insertedLineBackground': '#142F4B80',
     'diffEditorGutter.insertedLineBackground': '#1C3D6180',
-    'diffEditor.insertedTextBackground': '#7DF9FF77',
+    'diffEditor.insertedTextBackground': '#2ea04380',
     'diffEditor.border': '#ad7eff80',
   }
 });
@@ -139,9 +139,9 @@ monaco.editor.defineTheme('airbnb-cute-diff', {
     'editor.selectionHighlightBackground': '#f7c9e830',
     'editor.inactiveSelectionBackground': '#f7c9e820',
     'diffEditorGutter.removedLineBackground': '#ffd6e480',
-    'diffEditor.removedTextBackground': '#ffb3ce80',
+    'diffEditor.removedTextBackground': '#f9508b80',
     'diffEditorGutter.insertedLineBackground': '#e8ffe880',
-    'diffEditor.insertedTextBackground': '#c0f5c080',
+    'diffEditor.insertedTextBackground': '#64f56480',
     'diffEditor.border': '#f3aacd'
   }
 });
