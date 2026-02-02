@@ -1,12 +1,46 @@
-# React + Vite
+# Diff Please
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A fast, privacy-first code diff tool built with React, Vite, and Monaco. Compare inline or side-by-side, beautify code, run quick JSON utilities, and switch themes.
 
-Currently, two official plugins are available:
+## Features
+- Inline or side-by-side diff view
+- Monaco-powered editor with syntax detection
+- One-click beautify for supported languages
+- JSON tools: sort, minify, YAML/JSON convert
+- Theme switching (light and dark variants)
+- Local-only: no sign-in, no uploads
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Getting Started
 
-## Expanding the ESLint configuration
+### Install
+```bash
+yarn
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Run (dev)
+```bash
+yarn dev
+```
+
+Open the URL Vite prints (usually http://localhost:5173).
+
+### Build
+```bash
+yarn build
+```
+
+### Preview
+```bash
+yarn preview
+```
+
+## Scripts
+- `yarn dev` - start dev server
+- `yarn build` - production build
+- `yarn preview` - preview production build
+- `yarn test` - run tests
+
+## Tech
+- React 18
+- Vite
+- Monaco Editor
