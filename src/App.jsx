@@ -293,8 +293,8 @@ export default function App() {
   const [useTabs] = useState(false);
   const themeSequence = ['dark', 'light', 'synthwave', 'pink', 'midnight', 'arctic', 'slate', 'sky'];
   const themeLabels = {
-    dark: 'Dark',
-    light: 'Light',
+    dark: 'Night',
+    light: 'Dawn',
     synthwave: 'Neon',
     pink: 'Rose',
     midnight: 'Midnight',
