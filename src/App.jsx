@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
 import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Sun, Moon, Palette, Heart, ChevronDown } from 'lucide-react';
 import * as monaco from 'monaco-editor';
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
@@ -630,7 +632,14 @@ export default function App() {
   }, [isSideBySide, themeMode]);
 
   return (
-    <div className="app">
+    <>
+      <Helmet>
+        <title>Diff Please - Fast, Privacy-First Code Comparison Tool</title>
+        <meta name="description" content="Compare code side-by-side or inline with syntax highlighting. Privacy-first diff tool with beautify, JSON utilities, and theme support. No sign-up required." />
+        <meta name="keywords" content="code diff, compare code, diff tool, code comparison, syntax highlighting, developer tools, privacy-first" />
+        <link rel="canonical" href="https://diffplease.com/" />
+      </Helmet>
+      <div className="app">
       <div className="app-header">
         <div className="header-left">
           <svg width="40" height="32" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="header-icon">
@@ -662,17 +671,14 @@ export default function App() {
             <span className="theme-dropdown-label">{themeLabel}</span>
             <ChevronDown size={14} className="theme-dropdown-arrow" />
           </div>
+          <Link to="/faq" className="faq-button" title="FAQ">
+            ?
+          </Link>
         </div>
       </div>
 
-      <section className="seo-intro visually-hidden" aria-label="Code diff overview">
-        <div className="seo-intro-content">
-          <h2>Instant side-by-side code diff with beautify, JSON tools, and Monaco precision.</h2>
-          <p>Paste code, compare inline or side-by-side, auto-detect languages, beautify in one click, sort/minify JSON, convert YAML/JSON, and switch themes without sign-in or uploads.</p>
-        </div>
-      </section>
-
       <div className="editor-container" ref={containerRef} />
+
       <div className="app-footer">
         <div className="footer-stats">
           <div className="stats-display">
@@ -811,5 +817,6 @@ export default function App() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -422,6 +422,28 @@ body,
   opacity: 0.7;
 }
 
+.faq-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--dropdown-border);
+  background: var(--dropdown-bg);
+  color: var(--dropdown-text);
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+
+.faq-button:hover {
+  background: var(--dropdown-hover-bg);
+  transform: translateY(-1px);
+}
 
 html.theme-synthwave .monaco-editor,
 html.theme-synthwave .monaco-editor .view-lines {
@@ -446,33 +468,6 @@ html.theme-synthwave .monaco-editor-background {
   letter-spacing: -0.05em;
   color: var(--dark-text);
 }
-
-.seo-intro {
-  background: var(--header-bg);
-  border-bottom: 1px solid var(--header-border);
-  padding: 0.65rem 1.2rem;
-}
-
-.seo-intro-content {
-  max-width: 1024px;
-  margin: 0 auto;
-  color: var(--dark-text);
-}
-
-.seo-intro h2 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 750;
-  letter-spacing: -0.01em;
-}
-
-.seo-intro p {
-  margin: 0.35rem 0 0;
-  font-size: 0.95rem;
-  color: var(--dark-text-secondary);
-  line-height: 1.5;
-}
-
 
 .editor-container {
   flex: 1;

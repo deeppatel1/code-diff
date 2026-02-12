@@ -6,9 +6,28 @@ export default defineConfig(({ command }) => {
   const isBuild = command === 'build';
   const isVercel = process.env.VERCEL === '1';
   const base = isBuild ? (isVercel ? '/' : '/code-diff/') : '/';
+  const faqRewritePlugin = {
+    name: 'faq-rewrite',
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        if (req.url === '/faq' || req.url === '/faq/') {
+          req.url = '/faq/index.html';
+        }
+        next();
+      });
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        if (req.url === '/faq' || req.url === '/faq/') {
+          req.url = '/faq/index.html';
+        }
+        next();
+      });
+    }
+  };
 
   return {
-    plugins: [react()],
+    plugins: [react(), faqRewritePlugin],
     base,
     server: {
       fs: {
