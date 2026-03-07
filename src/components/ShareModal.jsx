@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Copy, Check } from 'lucide-react';
+import { IconX, IconCopy, IconCheck } from '@tabler/icons-react';
 import { db, doc, setDoc, getOrCreateAnonUser } from '../lib/firebase';
 import { nanoid } from 'nanoid';
 import { analytics } from '../services/analytics';
@@ -73,7 +73,7 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
         <DialogHeader>
           <DialogTitle>Share Diff</DialogTitle>
           <DialogClose className="bg-transparent border-none text-page-text cursor-pointer p-1 rounded hover:bg-btn-hover">
-            <X size={16} />
+            <IconX size={16} />
           </DialogClose>
         </DialogHeader>
         <div className="p-5">
@@ -99,7 +99,7 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
                 className="flex items-center gap-1 py-2 px-3.5 bg-btn-bg text-btn-text border border-btn-border rounded-md text-[0.8rem] font-semibold cursor-pointer transition-colors duration-150 whitespace-nowrap hover:bg-btn-hover"
                 onClick={handleCopy}
               >
-                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
                 {copied ? 'Copied!' : 'Copy'}
               </button>
             </div>

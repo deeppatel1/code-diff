@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { IconArrowLeft } from '@tabler/icons-react';
 
 const faqData = [
   {
@@ -83,7 +83,7 @@ export default function FAQ() {
       <div className="min-h-screen bg-page-bg text-page-text font-[-apple-system,BlinkMacSystemFont,'Segoe_UI','Noto_Sans',Helvetica,Arial,sans-serif]">
         <div className="bg-header-bg border-b border-header-border py-4 px-8 flex items-center gap-4 max-md:px-4">
           <Link to="/" className="inline-flex items-center gap-2 text-blue-500 no-underline text-[0.95rem] py-2 px-4 rounded-md transition-colors duration-200 hover:bg-btn-hover">
-            <ArrowLeft size={20} />
+            <IconArrowLeft size={20} />
             Back to Diff Tool
           </Link>
         </div>

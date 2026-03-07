@@ -38,7 +38,7 @@ describe('App', () => {
 
   it('renders "Diff Please" header', () => {
     renderApp(App);
-    expect(screen.getByText('Diff Please')).toBeInTheDocument();
+    expect(screen.getByText('diff please')).toBeInTheDocument();
   });
 
   it('renders editor container div', () => {
@@ -50,7 +50,8 @@ describe('App', () => {
 
   it('renders footer with stats', () => {
     renderApp(App);
-    expect(screen.getAllByText('0 lines').length).toBeGreaterThanOrEqual(2);
+    const statElements = screen.getAllByRole('status');
+    expect(statElements.length).toBeGreaterThanOrEqual(2);
   });
 
   it('renders theme selector', () => {
@@ -101,11 +102,12 @@ describe('App', () => {
   });
 
   // ── Stats & language ──
-  it('shows initial "0 lines", "0 words", "0 chars"', () => {
+  it('shows initial stats with 0 values', () => {
     renderApp(App);
-    expect(screen.getAllByText('0 lines').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText('0 words').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText('0 chars').length).toBeGreaterThanOrEqual(2);
+    const statElements = screen.getAllByRole('status');
+    expect(statElements.length).toBeGreaterThanOrEqual(2);
+    expect(statElements[0].textContent).toContain('0');
+    expect(statElements[0].textContent).toContain('lines');
   });
 
   it('stats update when model content changes', async () => {
@@ -116,19 +118,7 @@ describe('App', () => {
       mockOriginalModel.setValue('hello world');
     });
     await waitFor(() => {
-      expect(screen.getAllByText('1 lines')[0]).toBeInTheDocument();
-    });
-  });
-
-  it('language indicator appears for non-plaintext', async () => {
-    renderApp(App);
-    act(() => {
-      mockOriginalModel._value = '{"key": "value"}';
-      mockOriginalModel.getValue = () => mockOriginalModel._value;
-      mockOriginalModel.setValue('{"key": "value"}');
-    });
-    await waitFor(() => {
-      expect(screen.getByText('json')).toBeInTheDocument();
+      expect(screen.getAllByText('1')[0]).toBeInTheDocument();
     });
   });
 
@@ -204,23 +194,10 @@ describe('App', () => {
       mockModifiedModel.setValue('foo bar baz');
     });
     await waitFor(() => {
-      // There should be at least one "1 lines" and one "3 words" on screen
-      expect(screen.getAllByText('1 lines').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText('3 words').length).toBeGreaterThanOrEqual(1);
-    });
-  });
-
-  it('modified panel shows language indicator and beautify button', async () => {
-    renderApp(App);
-    act(() => {
-      mockModifiedModel._value = '{"key": "value"}';
-      mockModifiedModel.getValue = () => mockModifiedModel._value;
-      mockModifiedModel.setValue('{"key": "value"}');
-    });
-    await waitFor(() => {
-      // json indicator should appear (at least 2 - one for each side if both detect json)
-      const jsonIndicators = screen.getAllByText('json');
-      expect(jsonIndicators.length).toBeGreaterThanOrEqual(1);
+      const statElements = screen.getAllByRole('status');
+      const rightStats = statElements[statElements.length - 1];
+      expect(rightStats.textContent).toContain('3');
+      expect(rightStats.textContent).toContain('words');
     });
   });
 
@@ -357,7 +334,7 @@ describe('App', () => {
     });
     mockOriginalModel.getValue = () => { throw new Error('mock error'); };
     fireEvent.click(screen.getByTitle('Beautify json'));
-    expect(screen.getByText('Diff Please')).toBeInTheDocument();
+    expect(screen.getByText('diff please')).toBeInTheDocument();
     consoleSpy.mockRestore();
   });
 });

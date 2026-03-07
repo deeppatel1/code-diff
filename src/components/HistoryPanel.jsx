@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Clock, Trash2, X } from 'lucide-react';
+import { IconClock, IconTrash, IconX } from '@tabler/icons-react';
 import { getHistory, deleteSnapshot, clearHistory } from '../lib/historyStore';
 import { analytics } from '../services/analytics';
 import {
@@ -45,7 +45,7 @@ export default function HistoryPanel({ isOpen, onClose, onRestore }) {
       <SheetContent>
         <SheetHeader>
           <SheetTitle>
-            <Clock size={16} />
+            <IconClock size={16} />
             <span>History</span>
           </SheetTitle>
           <div className="flex items-center gap-2">
@@ -58,7 +58,7 @@ export default function HistoryPanel({ isOpen, onClose, onRestore }) {
               </button>
             )}
             <SheetClose className="flex items-center justify-center bg-transparent border-none text-page-text cursor-pointer p-1 rounded hover:bg-btn-hover">
-              <X size={16} />
+              <IconX size={16} />
             </SheetClose>
           </div>
         </SheetHeader>
@@ -96,7 +96,7 @@ export default function HistoryPanel({ isOpen, onClose, onRestore }) {
                 }}
                 title="Delete"
               >
-                <Trash2 size={14} />
+                <IconTrash size={14} />
               </button>
             </div>
           ))}

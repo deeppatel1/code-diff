@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Sun, Moon, Palette, Heart, Upload, Clock, Share2 } from 'lucide-react';
+import { IconCode, IconColumns, IconAlignLeft, IconSparkles, IconWand, IconSortAscending, IconMinimize, IconSun, IconMoon, IconPalette, IconHeart, IconUpload, IconClock, IconShare } from '@tabler/icons-react';
 import * as monaco from 'monaco-editor';
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
@@ -328,14 +328,14 @@ export default function App() {
     monokai: 'Monokai',
   };
   const themeIcons = {
-    dark: <Moon size={16} />,
-    light: <Sun size={16} />,
-    pink: <Heart size={16} />,
-    midnight: <Moon size={16} />,
-    sand: <Sun size={16} />,
-    slate: <Palette size={16} />,
-    sky: <Sun size={16} />,
-    monokai: <Palette size={16} />,
+    dark: <IconMoon size={16} />,
+    light: <IconSun size={16} />,
+    pink: <IconHeart size={16} />,
+    midnight: <IconMoon size={16} />,
+    sand: <IconSun size={16} />,
+    slate: <IconPalette size={16} />,
+    sky: <IconSun size={16} />,
+    monokai: <IconPalette size={16} />,
   };
   const themeGroups = [
     { label: 'Light', items: ['light', 'sand', 'sky', 'pink'] },
@@ -460,6 +460,35 @@ export default function App() {
     setDragOver(prev => ({ ...prev, [side]: false }));
   }, []);
 
+  const handleContainerDragOver = useCallback((e) => {
+    e.preventDefault();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midpoint = rect.left + rect.width / 2;
+    const side = e.clientX < midpoint ? 'original' : 'modified';
+    const other = side === 'original' ? 'modified' : 'original';
+    setDragOver(prev => {
+      if (prev[side] && !prev[other]) return prev;
+      return { [side]: true, [other]: false };
+    });
+  }, []);
+
+  const handleContainerDragLeave = useCallback((e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (e.clientX <= rect.left || e.clientX >= rect.right || e.clientY <= rect.top || e.clientY >= rect.bottom) {
+      setDragOver({ original: false, modified: false });
+    }
+  }, []);
+
+  const handleContainerDrop = useCallback((e) => {
+    e.preventDefault();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midpoint = rect.left + rect.width / 2;
+    const side = e.clientX < midpoint ? 'original' : 'modified';
+    setDragOver({ original: false, modified: false });
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFileImport(side, file);
+  }, [handleFileImport]);
+
   const handleFileInputChange = useCallback((side) => (e) => {
     const file = e.target.files?.[0];
     if (file) handleFileImport(side, file);
@@ -543,7 +572,7 @@ export default function App() {
       lineNumbers: 'on',
       glyphMargin: false,
       folding: true,
-      diffAlgorithm: 'legacy',
+      diffAlgorithm: 'advanced',
       lineNumbersMinChars: 3,
       originalEditable: true,
       readOnly: false,
@@ -691,18 +720,13 @@ export default function App() {
 
   const renderSideButtons = (side, language, isBeautifyingState) => (
     <>
-      {language !== 'plaintext' && (
-        <span className="text-lang-indicator font-semibold uppercase py-0.5 px-1.5 bg-[rgba(88,166,255,0.12)] rounded text-[0.7rem]">
-          {language}
-        </span>
-      )}
       <TipButton
         tip="Open file"
         className={`${btnBase} text-[0.6rem]`}
         onClick={() => { (side === 'original' ? originalFileRef : modifiedFileRef).current?.click(); analytics.fileOpened(side); }}
         title="Open file"
       >
-        <Upload size={12} /> Open
+        <IconUpload size={14} /> Open
       </TipButton>
       <input
         ref={side === 'original' ? originalFileRef : modifiedFileRef}
@@ -722,12 +746,12 @@ export default function App() {
         >
           {isBeautifyingState ? (
             <>
-              <Sparkles size={12} className="animate-spin" />
+              <IconSparkles size={14} className="animate-spin" />
               Beautifying...
             </>
           ) : (
             <>
-              <Sparkles size={12} />
+              <IconSparkles size={14} />
               Beautify
             </>
           )}
@@ -736,19 +760,19 @@ export default function App() {
       {language === 'json' && (
         <>
           <TipButton tip="Sort JSON keys alphabetically" className={btnBase} onClick={createSortHandler(side)} title="Sort JSON">
-            <SortAsc size={12} /> Sort
+            <IconSortAscending size={14} /> Sort
           </TipButton>
           <TipButton tip="Minify JSON (remove whitespace)" className={btnBase} onClick={createCompactHandler(side)} title="Minify JSON">
-            <Minimize size={12} /> Minify
+            <IconMinimize size={14} /> Minify
           </TipButton>
           <TipButton tip="Convert JSON to YAML" className={btnBase} onClick={createConvertToYamlHandler(side)} title="Convert JSON to YAML">
-            <Wand size={12} /> JSON to YAML
+            <IconWand size={14} /> JSON to YAML
           </TipButton>
         </>
       )}
       {language === 'yaml' && (
         <TipButton tip="Convert YAML to JSON" className={btnBase} onClick={createConvertToJsonHandler(side)} title="Convert YAML to JSON">
-          <Wand size={12} /> YAML to JSON
+          <IconWand size={14} /> YAML to JSON
         </TipButton>
       )}
     </>
@@ -769,7 +793,7 @@ export default function App() {
             <path d="M14 19L6 12L14 5" stroke="#da3633" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M22 5L30 12L22 19" stroke="#2ea043" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <div><h1 className="m-0 text-2xl font-extrabold font-mono tracking-tighter text-dark-text">Diff Please</h1></div>
+          <div><h1 className="m-0 text-2xl font-medium tracking-tighter font-['Fira_Code'] text-dark-text">diff please</h1></div>
         </div>
         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
           <Tooltip>
@@ -784,7 +808,7 @@ export default function App() {
                 title={isSideBySide ? "Switch to Unified View" : "Switch to Side-by-Side View"}
                 aria-label={isSideBySide ? "Switch to Unified View" : "Switch to Side-by-Side View"}
               >
-                {isSideBySide ? <AlignLeft size={16} /> : <Columns size={16} />}
+                {isSideBySide ? <IconAlignLeft size={16} /> : <IconColumns size={16} />}
               </button>
             </TooltipTrigger>
             <TooltipContent>{isSideBySide ? 'Unified View' : 'Side-by-Side View'}</TooltipContent>
@@ -799,7 +823,7 @@ export default function App() {
                   title="History"
                   aria-label="View history"
                 >
-                  <Clock size={16} />
+                  <IconClock size={16} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>View history</TooltipContent>
@@ -810,12 +834,12 @@ export default function App() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  className="flex items-center justify-center h-8 w-auto rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.7rem] font-semibold tracking-wide hover:bg-btn-hover hover:-translate-y-px"
+                  className="flex items-center justify-center h-8 w-auto rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.8rem] font-semibold tracking-wide hover:bg-btn-hover hover:-translate-y-px"
                   onClick={() => { setShareOpen(true); analytics.shareOpened(); }}
                   title="Share"
                   aria-label="Share diff"
                 >
-                  <Share2 size={14} />
+                  <IconShare size={14} />
                   <span>Share Diff</span>
                 </button>
               </TooltipTrigger>
@@ -870,45 +894,65 @@ export default function App() {
       <div
         className="flex-1 overflow-hidden relative"
         ref={containerRef}
+        onDragOver={handleContainerDragOver}
+        onDragLeave={handleContainerDragLeave}
+        onDrop={handleContainerDrop}
       >
-        {/* Drop zone overlays */}
-        <div
-          className={`absolute top-0 bottom-0 w-1/2 left-0 z-[5] pointer-events-none ${dragOver.original ? 'pointer-events-auto bg-[rgba(46,160,67,0.08)] border-2 border-dashed border-[rgba(46,160,67,0.5)] rounded' : ''}`}
-          onDragOver={handleDragOver('original')}
-          onDragLeave={handleDragLeave('original')}
-          onDrop={handleDrop('original')}
-        >
-          {dragOver.original && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 py-3 px-6 bg-[rgba(46,160,67,0.15)] border border-[rgba(46,160,67,0.4)] rounded-lg text-page-text text-[0.9rem] font-semibold pointer-events-none">
-              Drop file here (Original)
+        {/* Empty state placeholders */}
+        {originalStats.characters === 0 && modifiedStats.characters === 0 && (
+          <>
+            <div className="absolute top-0 bottom-0 w-1/2 left-0 z-[3] pointer-events-none flex items-center justify-center">
+              <div className="text-center opacity-30 select-none">
+                <p className="text-[0.85rem] font-medium text-dark-text-secondary m-0">Paste, type, or drop a file</p>
+                <p className="text-[0.75rem] text-dark-text-secondary m-0 mt-1">Original</p>
+              </div>
             </div>
-          )}
-        </div>
-        <div
-          className={`absolute top-0 bottom-0 w-1/2 right-0 z-[5] pointer-events-none ${dragOver.modified ? 'pointer-events-auto bg-[rgba(46,160,67,0.08)] border-2 border-dashed border-[rgba(46,160,67,0.5)] rounded' : ''}`}
-          onDragOver={handleDragOver('modified')}
-          onDragLeave={handleDragLeave('modified')}
-          onDrop={handleDrop('modified')}
-        >
-          {dragOver.modified && (
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 py-3 px-6 bg-[rgba(46,160,67,0.15)] border border-[rgba(46,160,67,0.4)] rounded-lg text-page-text text-[0.9rem] font-semibold pointer-events-none">
-              Drop file here (Modified)
+            <div className="absolute top-0 bottom-0 w-1/2 right-0 z-[3] pointer-events-none flex items-center justify-center">
+              <div className="text-center opacity-30 select-none">
+                <p className="text-[0.85rem] font-medium text-dark-text-secondary m-0">Paste, type, or drop a file</p>
+                <p className="text-[0.75rem] text-dark-text-secondary m-0 mt-1">Modified</p>
+              </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
+
+        {/* Drop zone visual overlays */}
+        {(dragOver.original || dragOver.modified) && (
+          <>
+            <div className={`absolute top-0 bottom-0 w-1/2 left-0 z-[5] pointer-events-none ${dragOver.original ? 'bg-[rgba(46,160,67,0.08)] border-2 border-dashed border-[rgba(46,160,67,0.5)] rounded' : ''}`}>
+              {dragOver.original && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 py-3 px-6 bg-[rgba(46,160,67,0.15)] border border-[rgba(46,160,67,0.4)] rounded-lg text-page-text text-[0.9rem] font-semibold">
+                  Drop file here (Original)
+                </div>
+              )}
+            </div>
+            <div className={`absolute top-0 bottom-0 w-1/2 right-0 z-[5] pointer-events-none ${dragOver.modified ? 'bg-[rgba(46,160,67,0.08)] border-2 border-dashed border-[rgba(46,160,67,0.5)] rounded' : ''}`}>
+              {dragOver.modified && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 py-3 px-6 bg-[rgba(46,160,67,0.15)] border border-[rgba(46,160,67,0.4)] rounded-lg text-page-text text-[0.9rem] font-semibold">
+                  Drop file here (Modified)
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
-      <div className="py-1 px-4 bg-footer-bg relative z-10 border-t border-footer-border">
-        <div className="grid grid-cols-[1fr_auto_1fr] w-full items-center">
-          <div className="text-dark-text-secondary text-[0.85rem] font-medium text-center opacity-90 flex items-center gap-2 flex-wrap justify-self-start">
-            <div className="flex gap-1.5 flex-wrap font-semibold text-[0.78rem] text-dark-text" aria-live="polite" role="status">
-              <span className="tabular-nums">{originalStats.lines} lines</span>
-              <span className="tabular-nums">{originalStats.words} words</span>
-              <span className="tabular-nums">{originalStats.characters} chars</span>
+      <div className="py-1.5 px-4 bg-footer-bg relative z-10 border-t border-footer-border">
+        <div className="grid grid-cols-[1fr_auto_1fr] w-full items-center gap-3">
+          {/* Left side — original stats + buttons */}
+          <div className="flex items-center gap-2.5 justify-self-start overflow-x-auto min-w-0 scrollbar-none">
+            <div className="flex items-center gap-1.5 text-[0.75rem] text-dark-text-secondary tabular-nums" aria-live="polite" role="status">
+              <span>{originalStats.lines} <span className="opacity-60">lines</span></span>
+              <span className="opacity-30">·</span>
+              <span>{originalStats.words} <span className="opacity-60">words</span></span>
+              <span className="opacity-30">·</span>
+              <span>{originalStats.characters} <span className="opacity-60">chars</span></span>
             </div>
             {renderSideButtons('original', originalLanguage, isBeautifying.original)}
           </div>
-          <div className="flex justify-center items-center -ml-8">
+
+          {/* Center — diff stats badge */}
+          <div className="flex justify-center items-center shrink-0 -ml-8">
             {(diffStats.additions > 0 || diffStats.deletions > 0) && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -925,14 +969,18 @@ export default function App() {
               </Tooltip>
             )}
           </div>
-          <div className="text-dark-text-secondary text-[0.85rem] font-medium text-center opacity-90 flex items-center gap-2 flex-wrap justify-self-end justify-between">
+
+          {/* Right side — modified buttons + stats */}
+          <div className="flex items-center gap-2.5 justify-self-end overflow-x-auto min-w-0 scrollbar-none">
             <div className="flex flex-wrap items-center gap-1.5">
               {renderSideButtons('modified', modifiedLanguage, isBeautifying.modified)}
             </div>
-            <div className="flex gap-1.5 flex-wrap font-semibold text-[0.78rem] text-dark-text justify-end text-right" aria-live="polite" role="status">
-              <span className="tabular-nums">{modifiedStats.lines} lines</span>
-              <span className="tabular-nums">{modifiedStats.words} words</span>
-              <span className="tabular-nums">{modifiedStats.characters} chars</span>
+            <div className="flex items-center gap-1.5 text-[0.75rem] text-dark-text-secondary tabular-nums" aria-live="polite" role="status">
+              <span>{modifiedStats.lines} <span className="opacity-60">lines</span></span>
+              <span className="opacity-30">·</span>
+              <span>{modifiedStats.words} <span className="opacity-60">words</span></span>
+              <span className="opacity-30">·</span>
+              <span>{modifiedStats.characters} <span className="opacity-60">chars</span></span>
             </div>
           </div>
         </div>
