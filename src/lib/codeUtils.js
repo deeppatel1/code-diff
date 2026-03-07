@@ -156,13 +156,17 @@ export class CodeBeautifier {
         continue;
       }
 
-      for (let char of trimmed) {
-        if ((char === '"' || char === "'") && !inString) {
-          inString = true;
-          stringChar = char;
-        } else if (char === stringChar && inString) {
-          inString = false;
-          stringChar = '';
+      for (let i = 0; i < trimmed.length; i++) {
+        const char = trimmed[i];
+        const prev = i > 0 ? trimmed[i - 1] : '';
+        if ((char === '"' || char === "'") && prev !== '\\') {
+          if (!inString) {
+            inString = true;
+            stringChar = char;
+          } else if (char === stringChar) {
+            inString = false;
+            stringChar = '';
+          }
         }
       }
 

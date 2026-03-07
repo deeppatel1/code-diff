@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.vercel
 .vite
 .pnp.cjs
 .pnp.loader.mjs
@@ -30,3 +32,4 @@ dist-ssr
 .yarn/unplugged/
 .yarn/build-state.yml
 .yarn/install-state.gz
+.vercel

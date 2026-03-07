@@ -1,12 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Sun, Moon, Palette, Heart, ChevronDown } from 'lucide-react';
+import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Sun, Moon, Palette, Heart, ChevronDown, Upload, Clock, Share2 } from 'lucide-react';
 import * as monaco from 'monaco-editor';
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
 import './App.css';
 import { CodeBeautifier, calculateStats, detectLanguage } from './lib/codeUtils';
+import { analytics } from './services/analytics';
+import { saveSnapshot } from './lib/historyStore';
+import { db } from './lib/firebase';
+import HistoryPanel from './components/HistoryPanel';
+import ShareModal from './components/ShareModal';
 
 
 // Configure Monaco Environment
@@ -55,10 +60,8 @@ monaco.editor.defineTheme('airbnb-dark-diff', {
     'editor.selectionHighlightBackground': '#3a4555',
     'editor.inactiveSelectionBackground': '#3a4555',
     'editor.selectionForeground': '#ffffff',
-    // 'diffEditor.removedLineBackground': '#2d1618',
     'diffEditorGutter.removedLineBackground': '#3a1e22',
     'diffEditor.removedTextBackground': '#ca181580',
-    // 'diffEditor.insertedLineBackground': '#102820',
     'diffEditorGutter.insertedLineBackground': '#15372a',
     'diffEditor.insertedTextBackground': '#2ea04380',
     'diffEditor.border': '#30363d',
@@ -84,10 +87,8 @@ monaco.editor.defineTheme('airbnb-light-diff', {
     'editor.selectionHighlightBackground': '#d4e5ff',
     'editor.inactiveSelectionBackground': '#d4e5ff',
     'editor.selectionForeground': '#000000',
-    // 'diffEditor.removedLineBackground': '#ffebe9',
     'diffEditorGutter.removedLineBackground': '#ffdce0',
     'diffEditor.removedTextBackground': '#fb383840',
-    // 'diffEditor.insertedLineBackground': '#dafbe1',
     'diffEditorGutter.insertedLineBackground': '#aceebb',
     'diffEditor.insertedTextBackground': '#0c8d2650',
     'diffEditor.border': '#d0d7de',
@@ -112,10 +113,8 @@ monaco.editor.defineTheme('airbnb-synthwave-diff', {
     'editor.selectionBackground': '#FF7EDB55',
     'editor.selectionHighlightBackground': '#FF7EDB30',
     'editor.inactiveSelectionBackground': '#FF7EDB20',
-    // 'diffEditor.removedLineBackground': '#3B264F80',
     'diffEditorGutter.removedLineBackground': '#4B2F6B80',
     'diffEditor.removedTextBackground': '#FF6B8B77',
-    // 'diffEditor.insertedLineBackground': '#142F4B80',
     'diffEditorGutter.insertedLineBackground': '#1C3D6180',
     'diffEditor.insertedTextBackground': '#2ea04380',
     'diffEditor.border': '#ad7eff80',
@@ -174,29 +173,29 @@ monaco.editor.defineTheme('airbnb-midnight-diff', {
   }
 });
 
-monaco.editor.defineTheme('airbnb-arctic-diff', {
+monaco.editor.defineTheme('airbnb-sand-diff', {
   base: 'vs',
   inherit: true,
   rules: [
-    { token: 'string.key.json', foreground: '2f6fb3' },
-    { token: 'string.value.json', foreground: '2f7a5d' },
-    { token: 'string.json', foreground: '2f7a5d' },
-    { token: 'number.json', foreground: '7a57c2' },
-    { token: 'keyword.json', foreground: 'c13f4d' },
-    { token: 'operator.json', foreground: '5f6b77' },
-    { token: 'delimiter.bracket.json', foreground: '5f6b77' }
+    { token: 'string.key.json', foreground: '8a5e2c' },
+    { token: 'string.value.json', foreground: '5b7a3a' },
+    { token: 'string.json', foreground: '5b7a3a' },
+    { token: 'number.json', foreground: '9c5fb5' },
+    { token: 'keyword.json', foreground: 'b8433a' },
+    { token: 'operator.json', foreground: '7a6e60' },
+    { token: 'delimiter.bracket.json', foreground: '7a6e60' }
   ],
   colors: {
-    'editor.background': '#f5fbff',
-    'editor.foreground': '#1b2b3a',
-    'editor.selectionBackground': '#cfe3f8',
-    'editor.selectionHighlightBackground': '#e1eefc',
-    'editor.inactiveSelectionBackground': '#e1eefc',
+    'editor.background': '#faf6f0',
+    'editor.foreground': '#3b2f20',
+    'editor.selectionBackground': '#e8d9c5',
+    'editor.selectionHighlightBackground': '#f0e4d4',
+    'editor.inactiveSelectionBackground': '#f0e4d4',
     'diffEditorGutter.removedLineBackground': '#ffdce0',
     'diffEditor.removedTextBackground': '#fb383840',
     'diffEditorGutter.insertedLineBackground': '#aceebb',
     'diffEditor.insertedTextBackground': '#0c8d2650',
-    'diffEditor.border': '#c3d9ee',
+    'diffEditor.border': '#d9cbb8',
   }
 });
 
@@ -252,6 +251,115 @@ monaco.editor.defineTheme('airbnb-sky-diff', {
   }
 });
 
+// --- New Themes ---
+
+monaco.editor.defineTheme('monokai-diff', {
+  base: 'vs-dark',
+  inherit: true,
+  rules: [
+    { token: 'string.key.json', foreground: '66d9ef' },
+    { token: 'string.value.json', foreground: 'e6db74' },
+    { token: 'string.json', foreground: 'e6db74' },
+    { token: 'number.json', foreground: 'ae81ff' },
+    { token: 'keyword.json', foreground: 'f92672' },
+    { token: 'operator.json', foreground: 'f8f8f2' },
+    { token: 'delimiter.bracket.json', foreground: 'f8f8f2' }
+  ],
+  colors: {
+    'editor.background': '#272822',
+    'editor.foreground': '#f8f8f2',
+    'editor.selectionBackground': '#49483e',
+    'editor.selectionHighlightBackground': '#3e3d32',
+    'editor.inactiveSelectionBackground': '#3e3d32',
+    'diffEditorGutter.removedLineBackground': '#4b2029',
+    'diffEditor.removedTextBackground': '#f9267280',
+    'diffEditorGutter.insertedLineBackground': '#1e3a1e',
+    'diffEditor.insertedTextBackground': '#a6e22e50',
+    'diffEditor.border': '#3e3d32',
+  }
+});
+
+monaco.editor.defineTheme('dracula-diff', {
+  base: 'vs-dark',
+  inherit: true,
+  rules: [
+    { token: 'string.key.json', foreground: '8be9fd' },
+    { token: 'string.value.json', foreground: 'f1fa8c' },
+    { token: 'string.json', foreground: 'f1fa8c' },
+    { token: 'number.json', foreground: 'bd93f9' },
+    { token: 'keyword.json', foreground: 'ff79c6' },
+    { token: 'operator.json', foreground: 'f8f8f2' },
+    { token: 'delimiter.bracket.json', foreground: 'f8f8f2' }
+  ],
+  colors: {
+    'editor.background': '#282a36',
+    'editor.foreground': '#f8f8f2',
+    'editor.selectionBackground': '#44475a',
+    'editor.selectionHighlightBackground': '#3a3c4e',
+    'editor.inactiveSelectionBackground': '#3a3c4e',
+    'diffEditorGutter.removedLineBackground': '#4b2030',
+    'diffEditor.removedTextBackground': '#ff555580',
+    'diffEditorGutter.insertedLineBackground': '#1e3a28',
+    'diffEditor.insertedTextBackground': '#50fa7b50',
+    'diffEditor.border': '#44475a',
+  }
+});
+
+monaco.editor.defineTheme('nord-diff', {
+  base: 'vs-dark',
+  inherit: true,
+  rules: [
+    { token: 'string.key.json', foreground: '88c0d0' },
+    { token: 'string.value.json', foreground: 'a3be8c' },
+    { token: 'string.json', foreground: 'a3be8c' },
+    { token: 'number.json', foreground: 'b48ead' },
+    { token: 'keyword.json', foreground: 'bf616a' },
+    { token: 'operator.json', foreground: 'd8dee9' },
+    { token: 'delimiter.bracket.json', foreground: 'd8dee9' }
+  ],
+  colors: {
+    'editor.background': '#2e3440',
+    'editor.foreground': '#d8dee9',
+    'editor.selectionBackground': '#434c5e',
+    'editor.selectionHighlightBackground': '#3b4252',
+    'editor.inactiveSelectionBackground': '#3b4252',
+    'diffEditorGutter.removedLineBackground': '#3b2230',
+    'diffEditor.removedTextBackground': '#bf616a60',
+    'diffEditorGutter.insertedLineBackground': '#1e3428',
+    'diffEditor.insertedTextBackground': '#a3be8c50',
+    'diffEditor.border': '#3b4252',
+  }
+});
+
+monaco.editor.defineTheme('solarized-light-diff', {
+  base: 'vs',
+  inherit: true,
+  rules: [
+    { token: 'string.key.json', foreground: '268bd2' },
+    { token: 'string.value.json', foreground: '2aa198' },
+    { token: 'string.json', foreground: '2aa198' },
+    { token: 'number.json', foreground: 'd33682' },
+    { token: 'keyword.json', foreground: 'cb4b16' },
+    { token: 'operator.json', foreground: '657b83' },
+    { token: 'delimiter.bracket.json', foreground: '657b83' }
+  ],
+  colors: {
+    'editor.background': '#fdf6e3',
+    'editor.foreground': '#657b83',
+    'editor.selectionBackground': '#eee8d5',
+    'editor.selectionHighlightBackground': '#eee8d5',
+    'editor.inactiveSelectionBackground': '#eee8d5',
+    'diffEditorGutter.removedLineBackground': '#ffdce0',
+    'diffEditor.removedTextBackground': '#dc322f40',
+    'diffEditorGutter.insertedLineBackground': '#d5f0d5',
+    'diffEditor.insertedTextBackground': '#85990050',
+    'diffEditor.border': '#eee8d5',
+  }
+});
+
+const indentationSize = 4;
+const useTabs = false;
+
 const THEME_STORAGE_KEY = 'diffright-theme-mode';
 const ORIGINAL_STORAGE_KEY = 'diffright-session-original';
 const MODIFIED_STORAGE_KEY = 'diffright-session-modified';
@@ -263,9 +371,13 @@ const MONACO_THEME_BY_MODE = {
   synthwave: 'airbnb-synthwave-diff',
   pink: 'airbnb-cute-diff',
   midnight: 'airbnb-midnight-diff',
-  arctic: 'airbnb-arctic-diff',
+  sand: 'airbnb-sand-diff',
   slate: 'airbnb-slate-diff',
-  sky: 'airbnb-sky-diff'
+  sky: 'airbnb-sky-diff',
+  monokai: 'monokai-diff',
+  dracula: 'dracula-diff',
+  nord: 'nord-diff',
+  solarized: 'solarized-light-diff',
 };
 monaco.editor.setTheme(MONACO_THEME_BY_MODE.dark);
 
@@ -273,7 +385,9 @@ export default function App() {
   const containerRef = useRef(null);
   const diffEditorRef = useRef(null);
   const beautifierRef = useRef(new CodeBeautifier());
-
+  const originalFileRef = useRef(null);
+  const modifiedFileRef = useRef(null);
+  const lastDetectedLangRef = useRef({ original: 'plaintext', modified: 'plaintext' });
 
   const [originalLanguage, setOriginalLanguage] = useState('plaintext');
   const [modifiedLanguage, setModifiedLanguage] = useState('plaintext');
@@ -291,18 +405,24 @@ export default function App() {
     if (typeof window === 'undefined') return 'light';
     return localStorage.getItem(THEME_STORAGE_KEY) ?? 'light';
   });
-  const [indentationSize] = useState(4);
-  const [useTabs] = useState(false);
-  const themeSequence = ['dark', 'light', 'synthwave', 'pink', 'midnight', 'arctic', 'slate', 'sky'];
+  const [dragOver, setDragOver] = useState({ original: false, modified: false });
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+
+  const themeSequence = ['dark', 'light', 'synthwave', 'pink', 'midnight', 'sand', 'slate', 'sky', 'monokai', 'dracula', 'nord', 'solarized'];
   const themeLabels = {
     dark: 'Night',
     light: 'Dawn',
     synthwave: 'Neon',
     pink: 'Rose',
     midnight: 'Midnight',
-    arctic: 'Arctic',
+    sand: 'Sand',
     slate: 'Slate',
-    sky: 'Sky'
+    sky: 'Sky',
+    monokai: 'Monokai',
+    dracula: 'Dracula',
+    nord: 'Nord',
+    solarized: 'Solarized',
   };
   const themeIcons = {
     dark: <Moon size={16} />,
@@ -310,13 +430,17 @@ export default function App() {
     synthwave: <Palette size={16} />,
     pink: <Heart size={16} />,
     midnight: <Moon size={16} />,
-    arctic: <Sun size={16} />,
+    sand: <Sun size={16} />,
     slate: <Palette size={16} />,
-    sky: <Sun size={16} />
+    sky: <Sun size={16} />,
+    monokai: <Palette size={16} />,
+    dracula: <Moon size={16} />,
+    nord: <Moon size={16} />,
+    solarized: <Sun size={16} />,
   };
   const themeGroups = [
-    { label: 'Light', items: ['light', 'arctic', 'sky', 'pink'] },
-    { label: 'Dark', items: ['dark', 'midnight', 'synthwave', 'slate'] }
+    { label: 'Light', items: ['light', 'sand', 'sky', 'pink', 'solarized'] },
+    { label: 'Dark', items: ['dark', 'midnight', 'synthwave', 'slate', 'monokai', 'dracula', 'nord'] }
   ];
   const getNextTheme = current => {
     const idx = themeSequence.indexOf(current);
@@ -327,166 +451,142 @@ export default function App() {
   const themeIcon = themeIcons[themeMode] ?? themeIcons.dark;
   const themeLabel = themeLabels[themeMode] ?? themeLabels.dark;
   const nextThemeLabel = themeLabels[nextTheme] ?? nextTheme;
-  // Enhanced beautification handlers
-  const handleBeautifyOriginal = async () => {
+  const getEditor = (side) => side === 'original'
+    ? diffEditorRef.current.getOriginalEditor()
+    : diffEditorRef.current.getModifiedEditor();
+
+  const getLanguage = (side) => side === 'original' ? originalLanguage : modifiedLanguage;
+
+  const createBeautifyHandler = (side) => async () => {
     if (!diffEditorRef.current) return;
-
-    setIsBeautifying(prev => ({ ...prev, original: true }));
-
+    setIsBeautifying(prev => ({ ...prev, [side]: true }));
     try {
-      const model = diffEditorRef.current.getOriginalEditor().getModel();
-      // if Monaco ever reports 'jsx', force it back to 'javascript'
-      const language = model.getLanguageId() === 'jsx'
-        ? 'javascript'
-        : model.getLanguageId();
-
-      const code = model.getValue();
-
-      if (beautifierRef.current.isBeautifiable(language)) {
-        const beautified = await beautifierRef.current.beautify(code, language, { indentationSize, useTabs });
-        model.setValue(beautified);
-      } else {
-        console.warn(`Beautification not supported for ${language}`);
-      }
-    } catch (error) {
-      console.error('Beautification failed:', error);
-      // You could show a toast notification here
-    } finally {
-      setIsBeautifying(prev => ({ ...prev, original: false }));
-    }
-  };
-
-  const handleBeautifyModified = async () => {
-    if (!diffEditorRef.current) return;
-
-    setIsBeautifying(prev => ({ ...prev, modified: true }));
-
-    try {
-      const model = diffEditorRef.current.getModifiedEditor().getModel();
+      const model = getEditor(side).getModel();
       const language = model.getLanguageId() === 'jsx' ? 'javascript' : model.getLanguageId();
-
       const code = model.getValue();
-
       if (beautifierRef.current.isBeautifiable(language)) {
         const beautified = await beautifierRef.current.beautify(code, language, { indentationSize, useTabs });
         model.setValue(beautified);
+        analytics.beautify(language, side);
       } else {
         console.warn(`Beautification not supported for ${language}`);
       }
     } catch (error) {
       console.error('Beautification failed:', error);
     } finally {
-      setIsBeautifying(prev => ({ ...prev, modified: false }));
+      setIsBeautifying(prev => ({ ...prev, [side]: false }));
     }
   };
 
-  // JSON utility handlers
-  const handleSortOriginal = async () => {
-    if (diffEditorRef.current && originalLanguage === 'json') {
+  const createSortHandler = (side) => async () => {
+    if (diffEditorRef.current && getLanguage(side) === 'json') {
       try {
-        const model = diffEditorRef.current.getOriginalEditor().getModel();
-        const sorted = beautifierRef.current.sortJson(model.getValue(), { indentationSize });
-        model.setValue(sorted);
+        const model = getEditor(side).getModel();
+        model.setValue(beautifierRef.current.sortJson(model.getValue(), { indentationSize }));
+        analytics.sortJson(side);
       } catch (error) {
         console.error('JSON sorting failed:', error);
       }
     }
   };
 
-  const handleCompactOriginal = async () => {
-    if (diffEditorRef.current && originalLanguage === 'json') {
+  const createCompactHandler = (side) => async () => {
+    if (diffEditorRef.current && getLanguage(side) === 'json') {
       try {
-        const model = diffEditorRef.current.getOriginalEditor().getModel();
-        const compacted = beautifierRef.current.compactJson(model.getValue());
-        model.setValue(compacted);
+        const model = getEditor(side).getModel();
+        model.setValue(beautifierRef.current.compactJson(model.getValue()));
+        analytics.compactJson(side);
       } catch (error) {
         console.error('JSON compacting failed:', error);
       }
     }
   };
 
-  // Conversion handlers
-  const handleConvertOriginalToYaml = async () => {
-    if (diffEditorRef.current && originalLanguage === 'json') {
+  const createConvertToYamlHandler = (side) => async () => {
+    if (diffEditorRef.current && getLanguage(side) === 'json') {
       try {
-        const model = diffEditorRef.current.getOriginalEditor().getModel();
-        const yamlContent = beautifierRef.current.convertJsonToYaml(model.getValue());
-        model.setValue(yamlContent);
-        monaco.editor.setModelLanguage(model, 'yaml'); // Change language to YAML
+        const model = getEditor(side).getModel();
+        model.setValue(beautifierRef.current.convertJsonToYaml(model.getValue()));
+        monaco.editor.setModelLanguage(model, 'yaml');
+        analytics.convertJsonToYaml(side);
       } catch (error) {
         console.error('JSON to YAML conversion failed:', error);
       }
     }
   };
 
-  const handleConvertOriginalToJson = async () => {
-    if (diffEditorRef.current && originalLanguage === 'yaml') {
+  const createConvertToJsonHandler = (side) => async () => {
+    if (diffEditorRef.current && getLanguage(side) === 'yaml') {
       try {
-        const model = diffEditorRef.current.getOriginalEditor().getModel();
-        const jsonContent = beautifierRef.current.convertYamlToJson(model.getValue());
-        model.setValue(jsonContent);
-        monaco.editor.setModelLanguage(model, 'json'); // Change language to JSON
+        const model = getEditor(side).getModel();
+        model.setValue(beautifierRef.current.convertYamlToJson(model.getValue()));
+        monaco.editor.setModelLanguage(model, 'json');
+        analytics.convertYamlToJson(side);
       } catch (error) {
         console.error('YAML to JSON conversion failed:', error);
       }
     }
   };
 
-
-  const handleSortModified = async () => {
-    if (diffEditorRef.current && modifiedLanguage === 'json') {
-      try {
-        const model = diffEditorRef.current.getModifiedEditor().getModel();
-        const sorted = beautifierRef.current.sortJson(model.getValue(), { indentationSize });
-        model.setValue(sorted);
-      } catch (error) {
-        console.error('JSON sorting failed:', error);
-      }
-    }
-  };
-
-  const handleCompactModified = async () => {
-    if (diffEditorRef.current && modifiedLanguage === 'json') {
-      try {
-        const model = diffEditorRef.current.getModifiedEditor().getModel();
-        const compacted = beautifierRef.current.compactJson(model.getValue());
-        model.setValue(compacted);
-      } catch (error) {
-        console.error('JSON compacting failed:', error);
-      }
-    }
-  };
-
-  const handleConvertModifiedToYaml = async () => {
-    if (diffEditorRef.current && modifiedLanguage === 'json') {
-      try {
-        const model = diffEditorRef.current.getModifiedEditor().getModel();
-        const yamlContent = beautifierRef.current.convertJsonToYaml(model.getValue());
-        model.setValue(yamlContent);
-        monaco.editor.setModelLanguage(model, 'yaml'); // Change language to YAML
-      } catch (error) {
-        console.error('JSON to YAML conversion failed:', error);
-      }
-    }
-  };
-
-  const handleConvertModifiedToJson = async () => {
-    if (diffEditorRef.current && modifiedLanguage === 'yaml') {
-      try {
-        const model = diffEditorRef.current.getModifiedEditor().getModel();
-        const jsonContent = beautifierRef.current.convertYamlToJson(model.getValue());
-        model.setValue(jsonContent);
-        monaco.editor.setModelLanguage(model, 'json'); // Change language to JSON
-      } catch (error) {
-        console.error('YAML to JSON conversion failed:', error);
-      }
-    }
-  };
-
-  // Check if a language is beautifiable
   const isLanguageBeautifiable = (language) => {
     return beautifierRef.current.isBeautifiable(language);
   };
+
+  // --- File import handlers ---
+
+  const handleFileImport = useCallback((side, file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (!diffEditorRef.current) return;
+      const model = getEditor(side).getModel();
+      model.setValue(e.target.result);
+      const ext = file.name.split('.').pop() || '';
+      analytics.fileImported(side, ext);
+    };
+    reader.readAsText(file);
+  }, []);
+
+  const handleDrop = useCallback((side) => (e) => {
+    e.preventDefault();
+    setDragOver(prev => ({ ...prev, [side]: false }));
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFileImport(side, file);
+  }, [handleFileImport]);
+
+  const handleDragOver = useCallback((side) => (e) => {
+    e.preventDefault();
+    setDragOver(prev => ({ ...prev, [side]: true }));
+  }, []);
+
+  const handleDragLeave = useCallback((side) => () => {
+    setDragOver(prev => ({ ...prev, [side]: false }));
+  }, []);
+
+  const handleFileInputChange = useCallback((side) => (e) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileImport(side, file);
+    e.target.value = '';
+  }, [handleFileImport]);
+
+  // --- History restore ---
+
+  const handleHistoryRestore = useCallback((original, modified) => {
+    if (!diffEditorRef.current) return;
+    diffEditorRef.current.getOriginalEditor().getModel().setValue(original);
+    diffEditorRef.current.getModifiedEditor().getModel().setValue(modified);
+  }, []);
+
+  // --- Share content getter ---
+
+  const getShareContent = useCallback(() => {
+    if (!diffEditorRef.current) return { original: '', modified: '', originalLang: null, modifiedLang: null };
+    return {
+      original: diffEditorRef.current.getOriginalEditor().getModel().getValue(),
+      modified: diffEditorRef.current.getModifiedEditor().getModel().getValue(),
+      originalLang: originalLanguage,
+      modifiedLang: modifiedLanguage,
+    };
+  }, [originalLanguage, modifiedLanguage]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -507,9 +607,13 @@ export default function App() {
       'theme-synthwave',
       'theme-pink',
       'theme-midnight',
-      'theme-arctic',
+      'theme-sand',
       'theme-slate',
-      'theme-sky'
+      'theme-sky',
+      'theme-monokai',
+      'theme-dracula',
+      'theme-nord',
+      'theme-solarized'
     );
     rootElement.classList.add(themeClass);
 
@@ -566,7 +670,6 @@ export default function App() {
         modifiedModel.setValue(savedModified);
       }
     }
-    // Add breathing room above/below the first and last lines in both panes
     diffEditorRef.current.getOriginalEditor().updateOptions({
       padding: { top: 16, bottom: 16 },
       lineNumbersMinChars: 1,
@@ -595,6 +698,16 @@ export default function App() {
       if (originalModel.getLanguageId() !== lang) {
         monaco.editor.setModelLanguage(originalModel, lang);
       }
+
+      // Track language detection (only on change)
+      if (lang !== lastDetectedLangRef.current.original) {
+        lastDetectedLangRef.current.original = lang;
+        if (lang !== 'plaintext') analytics.languageDetected(lang, 'original');
+      }
+
+      // Auto-save to history
+      const modifiedVal = modifiedModel.getValue();
+      if (val || modifiedVal) saveSnapshot(val, modifiedVal);
     };
 
     const updateModified = () => {
@@ -612,12 +725,38 @@ export default function App() {
       if (modifiedModel.getLanguageId() !== lang) {
         monaco.editor.setModelLanguage(modifiedModel, lang);
       }
+
+      // Track language detection (only on change)
+      if (lang !== lastDetectedLangRef.current.modified) {
+        lastDetectedLangRef.current.modified = lang;
+        if (lang !== 'plaintext') analytics.languageDetected(lang, 'modified');
+      }
+
+      // Auto-save to history
+      const originalVal = originalModel.getValue();
+      if (val || originalVal) saveSnapshot(originalVal, val);
     };
 
     originalModel.onDidChangeContent(updateOriginal);
     modifiedModel.onDidChangeContent(updateModified);
     updateOriginal();
     updateModified();
+
+    // Paste event tracking
+    const origEditor = diffEditorRef.current.getOriginalEditor();
+    const modEditor = diffEditorRef.current.getModifiedEditor();
+
+    const handleOrigPaste = (e) => {
+      const text = e.clipboardData?.getData('text') || '';
+      if (text.length > 0) analytics.contentPasted('original', text.length);
+    };
+    const handleModPaste = (e) => {
+      const text = e.clipboardData?.getData('text') || '';
+      if (text.length > 0) analytics.contentPasted('modified', text.length);
+    };
+
+    origEditor.getDomNode?.()?.addEventListener('paste', handleOrigPaste);
+    modEditor.getDomNode?.()?.addEventListener('paste', handleModPaste);
 
   }, [isSideBySide, themeMode]);
 
@@ -649,13 +788,39 @@ export default function App() {
           <div className="header-text"><h1>Diff Please</h1></div>
         </div>
         <div className="header-actions">
+          {db && (
+            <button
+              className="header-action-btn"
+              onClick={() => setHistoryOpen(true)}
+              title="History"
+              aria-label="View history"
+            >
+              <Clock size={16} />
+            </button>
+          )}
+
+          {db && (
+            <button
+              className="header-action-btn share-btn"
+              onClick={() => setShareOpen(true)}
+              title="Share"
+              aria-label="Share diff"
+            >
+              <Share2 size={14} />
+              <span>Share Code</span>
+            </button>
+          )}
 
           <div className="theme-dropdown">
             <select
               className="theme-dropdown-select"
               value={themeMode}
-              onChange={(e) => setThemeMode(e.target.value)}
+              onChange={(e) => {
+                setThemeMode(e.target.value);
+                analytics.changeTheme(e.target.value);
+              }}
               title="Select Theme"
+              aria-label="Select theme"
             >
               {themeGroups.map(group => (
                 <optgroup key={group.label} label={`${group.label} themes`}>
@@ -671,18 +836,39 @@ export default function App() {
             <span className="theme-dropdown-label">{themeLabel}</span>
             <ChevronDown size={14} className="theme-dropdown-arrow" />
           </div>
-          <Link to="/faq" className="faq-button" title="FAQ">
+          <Link to="/faq" className="faq-button" title="FAQ" aria-label="Frequently Asked Questions" onClick={() => analytics.faqVisited()}>
             ?
           </Link>
         </div>
       </div>
 
-      <div className="editor-container" ref={containerRef} />
+      <div
+        className="editor-container"
+        ref={containerRef}
+      >
+        {/* Drop zone overlays */}
+        <div
+          className={`drop-zone drop-zone-left ${dragOver.original ? 'active' : ''}`}
+          onDragOver={handleDragOver('original')}
+          onDragLeave={handleDragLeave('original')}
+          onDrop={handleDrop('original')}
+        >
+          {dragOver.original && <div className="drop-zone-label">Drop file here (Original)</div>}
+        </div>
+        <div
+          className={`drop-zone drop-zone-right ${dragOver.modified ? 'active' : ''}`}
+          onDragOver={handleDragOver('modified')}
+          onDragLeave={handleDragLeave('modified')}
+          onDrop={handleDrop('modified')}
+        >
+          {dragOver.modified && <div className="drop-zone-label">Drop file here (Modified)</div>}
+        </div>
+      </div>
 
       <div className="app-footer">
         <div className="footer-stats">
           <div className="stats-display">
-            <div className="metric-group">
+            <div className="metric-group" aria-live="polite" role="status">
               <span className="metric">{originalStats.lines} lines</span>
               <span className="metric">{originalStats.words} words</span>
               <span className="metric">{originalStats.characters} chars</span>
@@ -690,35 +876,60 @@ export default function App() {
             {originalLanguage !== 'plaintext' && (
               <span className="language-indicator">{originalLanguage}</span>
             )}
+            <button
+              className="beautify-btn file-import-btn"
+              onClick={() => originalFileRef.current?.click()}
+              title="Open file"
+            >
+              <Upload size={12} /> Open
+            </button>
+            <input
+              ref={originalFileRef}
+              type="file"
+              className="hidden-file-input"
+              onChange={handleFileInputChange('original')}
+              accept=".js,.jsx,.ts,.tsx,.json,.html,.css,.scss,.less,.md,.yaml,.yml,.xml,.py,.java,.c,.cpp,.go,.rs,.rb,.sql,.txt,.sh,.php,.swift,.kt"
+            />
             {isLanguageBeautifiable(originalLanguage) && (
               <button
-                className="beautify-btn"
-                onClick={handleBeautifyOriginal}
+                className={`beautify-btn ${isBeautifying.original ? 'beautifying' : ''}`}
+                onClick={createBeautifyHandler('original')}
+                disabled={isBeautifying.original}
                 title={`Beautify ${originalLanguage}`}
+                aria-busy={isBeautifying.original}
               >
-                <Sparkles size={12} />
-                Beautify
+                {isBeautifying.original ? (
+                  <>
+                    <Sparkles size={12} className="spinning" />
+                    Beautifying...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={12} />
+                    Beautify
+                  </>
+                )}
               </button>
             )}
             {originalLanguage === 'json' && (
               <>
                 <button
                   className="beautify-btn"
-                  onClick={handleSortOriginal}
+                  onClick={createSortHandler('original')}
                   title="Sort JSON"
                 >
                   <SortAsc size={12} /> Sort
                 </button>
                 <button
                   className="beautify-btn"
-                  onClick={handleCompactOriginal}
+                  onClick={createCompactHandler('original')}
                   title="Minify JSON"
                 >
                   <Minimize size={12} /> Minify
                 </button>
                 <button
                   className="beautify-btn convert-btn"
-                  onClick={handleConvertOriginalToYaml}
+                  onClick={createConvertToYamlHandler('original')}
                   title="Convert JSON to YAML"
                 >
                   <Wand size={12} /> JSON to YAML
@@ -729,7 +940,7 @@ export default function App() {
               <>
                 <button
                   className="beautify-btn convert-btn"
-                  onClick={handleConvertOriginalToJson}
+                  onClick={createConvertToJsonHandler('original')}
                   title="Convert YAML to JSON"
                 >
                   <Wand size={12} /> YAML to JSON
@@ -740,7 +951,11 @@ export default function App() {
           <div className="view-toggle-container">
             <button
               className="view-toggle-btn"
-              onClick={() => setIsSideBySide(!isSideBySide)}
+              onClick={() => {
+                const newMode = !isSideBySide;
+                setIsSideBySide(newMode);
+                analytics.toggleView(newMode ? 'side-by-side' : 'inline');
+              }}
               title={isSideBySide ? "Switch to Unified View" : "Switch to Side-by-Side View"}
             >
               {isSideBySide ? <AlignLeft size={20} /> : <Columns size={16} />}
@@ -751,12 +966,27 @@ export default function App() {
               {modifiedLanguage !== 'plaintext' && (
                 <span className="language-indicator">{modifiedLanguage}</span>
               )}
+              <button
+                className="beautify-btn file-import-btn"
+                onClick={() => modifiedFileRef.current?.click()}
+                title="Open file"
+              >
+                <Upload size={12} /> Open
+              </button>
+              <input
+                ref={modifiedFileRef}
+                type="file"
+                className="hidden-file-input"
+                onChange={handleFileInputChange('modified')}
+                accept=".js,.jsx,.ts,.tsx,.json,.html,.css,.scss,.less,.md,.yaml,.yml,.xml,.py,.java,.c,.cpp,.go,.rs,.rb,.sql,.txt,.sh,.php,.swift,.kt"
+              />
               {isLanguageBeautifiable(modifiedLanguage) && (
                 <button
                   className={`beautify-btn ${isBeautifying.modified ? 'beautifying' : ''}`}
-                  onClick={handleBeautifyModified}
+                  onClick={createBeautifyHandler('modified')}
                   disabled={isBeautifying.modified}
                   title={`Beautify ${modifiedLanguage}`}
+                  aria-busy={isBeautifying.modified}
                 >
                   {isBeautifying.modified ? (
                     <>
@@ -775,21 +1005,21 @@ export default function App() {
                 <>
                   <button
                     className="beautify-btn"
-                    onClick={handleSortModified}
+                    onClick={createSortHandler('modified')}
                     title="Sort JSON"
                   >
                     <SortAsc size={12} /> Sort
                   </button>
                   <button
                     className="beautify-btn"
-                    onClick={handleCompactModified}
+                    onClick={createCompactHandler('modified')}
                     title="Minify JSON"
                   >
                     <Minimize size={12} /> Minify
                   </button>
                   <button
                     className="beautify-btn convert-btn"
-                    onClick={handleConvertModifiedToYaml}
+                    onClick={createConvertToYamlHandler('modified')}
                     title="Convert JSON to YAML"
                   >
                     <Wand size={12} /> JSON to YAML
@@ -800,7 +1030,7 @@ export default function App() {
                 <>
                   <button
                     className="beautify-btn convert-btn"
-                    onClick={handleConvertModifiedToJson}
+                    onClick={createConvertToJsonHandler('modified')}
                     title="Convert YAML to JSON"
                   >
                     <Wand size={12} /> YAML to JSON
@@ -808,7 +1038,7 @@ export default function App() {
                 </>
               )}
             </div>
-            <div className="metric-group align-right">
+            <div className="metric-group align-right" aria-live="polite" role="status">
               <span className="metric">{modifiedStats.lines} lines</span>
               <span className="metric">{modifiedStats.words} words</span>
               <span className="metric">{modifiedStats.characters} chars</span>
@@ -817,6 +1047,18 @@ export default function App() {
         </div>
       </div>
     </div>
+
+    <HistoryPanel
+      isOpen={historyOpen}
+      onClose={() => setHistoryOpen(false)}
+      onRestore={handleHistoryRestore}
+    />
+
+    <ShareModal
+      isOpen={shareOpen}
+      onClose={() => setShareOpen(false)}
+      getContent={getShareContent}
+    />
     </>
   );
 }

@@ -13,6 +13,9 @@ export default defineConfig(({ command }) => {
         if (req.url === '/faq' || req.url === '/faq/') {
           req.url = '/faq/index.html';
         }
+        if (req.url?.startsWith('/s/')) {
+          req.url = '/index.html';
+        }
         next();
       });
     },
@@ -20,6 +23,9 @@ export default defineConfig(({ command }) => {
       server.middlewares.use((req, _res, next) => {
         if (req.url === '/faq' || req.url === '/faq/') {
           req.url = '/faq/index.html';
+        }
+        if (req.url?.startsWith('/s/')) {
+          req.url = '/index.html';
         }
         next();
       });
@@ -38,11 +44,6 @@ export default defineConfig(({ command }) => {
         ]
       },
       port: 3000
-    },
-    test: {
-      environment: 'jsdom',
-      globals: true,
-      include: ['src/**/*.test.{js,jsx}']
     }
   };
 });
