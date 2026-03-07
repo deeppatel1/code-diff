@@ -12,6 +12,8 @@ import { saveSnapshot } from './lib/historyStore';
 import { db } from './lib/firebase';
 import HistoryPanel from './components/HistoryPanel';
 import ShareModal from './components/ShareModal';
+import { Toaster, toast } from 'sonner';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './components/ui/tooltip';
 import {
   Select,
   SelectTrigger,
@@ -313,6 +315,7 @@ export default function App() {
   const [dragOver, setDragOver] = useState({ original: false, modified: false });
   const [historyOpen, setHistoryOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [diffStats, setDiffStats] = useState({ additions: 0, deletions: 0 });
 
   const themeLabels = {
     dark: 'Night',
@@ -356,12 +359,14 @@ export default function App() {
       if (beautifierRef.current.isBeautifiable(language)) {
         const beautified = await beautifierRef.current.beautify(code, language, { indentationSize, useTabs });
         model.setValue(beautified);
+        toast.success(`Beautified ${language}`);
         analytics.beautify(language, side);
       } else {
         console.warn(`Beautification not supported for ${language}`);
       }
     } catch (error) {
       console.error('Beautification failed:', error);
+      toast.error('Beautification failed');
     } finally {
       setIsBeautifying(prev => ({ ...prev, [side]: false }));
     }
@@ -372,6 +377,7 @@ export default function App() {
       try {
         const model = getEditor(side).getModel();
         model.setValue(beautifierRef.current.sortJson(model.getValue(), { indentationSize }));
+        toast.success('JSON sorted');
         analytics.sortJson(side);
       } catch (error) {
         console.error('JSON sorting failed:', error);
@@ -384,6 +390,7 @@ export default function App() {
       try {
         const model = getEditor(side).getModel();
         model.setValue(beautifierRef.current.compactJson(model.getValue()));
+        toast.success('JSON minified');
         analytics.compactJson(side);
       } catch (error) {
         console.error('JSON compacting failed:', error);
@@ -397,6 +404,7 @@ export default function App() {
         const model = getEditor(side).getModel();
         model.setValue(beautifierRef.current.convertJsonToYaml(model.getValue()));
         monaco.editor.setModelLanguage(model, 'yaml');
+        toast.success('Converted to YAML');
         analytics.convertJsonToYaml(side);
       } catch (error) {
         console.error('JSON to YAML conversion failed:', error);
@@ -410,6 +418,7 @@ export default function App() {
         const model = getEditor(side).getModel();
         model.setValue(beautifierRef.current.convertYamlToJson(model.getValue()));
         monaco.editor.setModelLanguage(model, 'json');
+        toast.success('Converted to JSON');
         analytics.convertYamlToJson(side);
       } catch (error) {
         console.error('YAML to JSON conversion failed:', error);
@@ -639,6 +648,26 @@ export default function App() {
     origEditor.getDomNode?.()?.addEventListener('paste', handleOrigPaste);
     modEditor.getDomNode?.()?.addEventListener('paste', handleModPaste);
 
+    // Track diff stats (additions/deletions)
+    diffEditorRef.current.onDidUpdateDiff(() => {
+      const changes = diffEditorRef.current.getLineChanges() || [];
+      let additions = 0;
+      let deletions = 0;
+      for (const change of changes) {
+        if (change.originalEndLineNumber >= change.originalStartLineNumber) {
+          deletions += change.originalEndLineNumber - change.originalStartLineNumber + 1;
+        }
+        if (change.modifiedEndLineNumber >= change.modifiedStartLineNumber) {
+          additions += change.modifiedEndLineNumber - change.modifiedStartLineNumber + 1;
+        }
+        // Pure addition (no original lines removed)
+        if (change.originalEndLineNumber === 0) deletions -= 1;
+        // Pure deletion (no modified lines added)
+        if (change.modifiedEndLineNumber === 0) additions -= 1;
+      }
+      setDiffStats({ additions: Math.max(0, additions), deletions: Math.max(0, deletions) });
+    });
+
   }, [isSideBySide, themeMode]);
 
   useEffect(() => {
@@ -651,6 +680,15 @@ export default function App() {
     }
   }, [isSideBySide, themeMode]);
 
+  const TipButton = ({ tip, children, ...props }) => (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button {...props}>{children}</button>
+      </TooltipTrigger>
+      <TooltipContent>{tip}</TooltipContent>
+    </Tooltip>
+  );
+
   const renderSideButtons = (side, language, isBeautifyingState) => (
     <>
       {language !== 'plaintext' && (
@@ -658,13 +696,14 @@ export default function App() {
           {language}
         </span>
       )}
-      <button
+      <TipButton
+        tip="Open file"
         className={`${btnBase} text-[0.6rem]`}
-        onClick={() => (side === 'original' ? originalFileRef : modifiedFileRef).current?.click()}
+        onClick={() => { (side === 'original' ? originalFileRef : modifiedFileRef).current?.click(); analytics.fileOpened(side); }}
         title="Open file"
       >
         <Upload size={12} /> Open
-      </button>
+      </TipButton>
       <input
         ref={side === 'original' ? originalFileRef : modifiedFileRef}
         type="file"
@@ -673,7 +712,8 @@ export default function App() {
         accept=".js,.jsx,.ts,.tsx,.json,.html,.css,.scss,.less,.md,.yaml,.yml,.xml,.py,.java,.c,.cpp,.go,.rs,.rb,.sql,.txt,.sh,.php,.swift,.kt"
       />
       {isLanguageBeautifiable(language) && (
-        <button
+        <TipButton
+          tip={`Beautify ${language}`}
           className={`${btnBase} ${isBeautifyingState ? 'bg-btn-hover' : ''}`}
           onClick={createBeautifyHandler(side)}
           disabled={isBeautifyingState}
@@ -691,31 +731,31 @@ export default function App() {
               Beautify
             </>
           )}
-        </button>
+        </TipButton>
       )}
       {language === 'json' && (
         <>
-          <button className={btnBase} onClick={createSortHandler(side)} title="Sort JSON">
+          <TipButton tip="Sort JSON keys alphabetically" className={btnBase} onClick={createSortHandler(side)} title="Sort JSON">
             <SortAsc size={12} /> Sort
-          </button>
-          <button className={btnBase} onClick={createCompactHandler(side)} title="Minify JSON">
+          </TipButton>
+          <TipButton tip="Minify JSON (remove whitespace)" className={btnBase} onClick={createCompactHandler(side)} title="Minify JSON">
             <Minimize size={12} /> Minify
-          </button>
-          <button className={btnBase} onClick={createConvertToYamlHandler(side)} title="Convert JSON to YAML">
+          </TipButton>
+          <TipButton tip="Convert JSON to YAML" className={btnBase} onClick={createConvertToYamlHandler(side)} title="Convert JSON to YAML">
             <Wand size={12} /> JSON to YAML
-          </button>
+          </TipButton>
         </>
       )}
       {language === 'yaml' && (
-        <button className={btnBase} onClick={createConvertToJsonHandler(side)} title="Convert YAML to JSON">
+        <TipButton tip="Convert YAML to JSON" className={btnBase} onClick={createConvertToJsonHandler(side)} title="Convert YAML to JSON">
           <Wand size={12} /> YAML to JSON
-        </button>
+        </TipButton>
       )}
     </>
   );
 
   return (
-    <>
+    <TooltipProvider delayDuration={300}>
       <Helmet>
         <title>Diff Please - Fast, Privacy-First Code Comparison Tool</title>
         <meta name="description" content="Compare code side-by-side or inline with syntax highlighting. Privacy-first diff tool with beautify, JSON utilities, and theme support. No sign-up required." />
@@ -732,27 +772,55 @@ export default function App() {
           <div><h1 className="m-0 text-2xl font-extrabold font-mono tracking-tighter text-dark-text">Diff Please</h1></div>
         </div>
         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className="flex items-center justify-center w-8 h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 hover:bg-btn-hover hover:-translate-y-px"
+                onClick={() => {
+                  const newMode = !isSideBySide;
+                  setIsSideBySide(newMode);
+                  analytics.toggleView(newMode ? 'side-by-side' : 'inline');
+                }}
+                title={isSideBySide ? "Switch to Unified View" : "Switch to Side-by-Side View"}
+                aria-label={isSideBySide ? "Switch to Unified View" : "Switch to Side-by-Side View"}
+              >
+                {isSideBySide ? <AlignLeft size={16} /> : <Columns size={16} />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{isSideBySide ? 'Unified View' : 'Side-by-Side View'}</TooltipContent>
+          </Tooltip>
+
           {db && (
-            <button
-              className="flex items-center justify-center w-8 h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 hover:bg-btn-hover hover:-translate-y-px"
-              onClick={() => setHistoryOpen(true)}
-              title="History"
-              aria-label="View history"
-            >
-              <Clock size={16} />
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className="flex items-center justify-center w-8 h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 hover:bg-btn-hover hover:-translate-y-px"
+                  onClick={() => { setHistoryOpen(true); analytics.historyOpened(); }}
+                  title="History"
+                  aria-label="View history"
+                >
+                  <Clock size={16} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>View history</TooltipContent>
+            </Tooltip>
           )}
 
           {db && (
-            <button
-              className="flex items-center justify-center h-8 w-auto rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wide hover:bg-btn-hover hover:-translate-y-px"
-              onClick={() => setShareOpen(true)}
-              title="Share"
-              aria-label="Share diff"
-            >
-              <Share2 size={14} />
-              <span>Share Diff</span>
-            </button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className="flex items-center justify-center h-8 w-auto rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.7rem] font-semibold tracking-wide hover:bg-btn-hover hover:-translate-y-px"
+                  onClick={() => { setShareOpen(true); analytics.shareOpened(); }}
+                  title="Share"
+                  aria-label="Share diff"
+                >
+                  <Share2 size={14} />
+                  <span>Share Diff</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Share this diff with a link</TooltipContent>
+            </Tooltip>
           )}
 
           <Select
@@ -782,15 +850,20 @@ export default function App() {
               ))}
             </SelectContent>
           </Select>
-          <Link
-            to="/faq"
-            className="flex items-center justify-center w-8 h-8 rounded-full border border-dropdown-border bg-dropdown-bg text-dropdown-text text-base font-bold no-underline transition-all duration-200 cursor-pointer ml-2 hover:bg-dropdown-hover hover:-translate-y-px"
-            title="FAQ"
-            aria-label="Frequently Asked Questions"
-            onClick={() => analytics.faqVisited()}
-          >
-            ?
-          </Link>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                to="/faq"
+                className="flex items-center justify-center w-8 h-8 rounded-full border border-dropdown-border bg-dropdown-bg text-dropdown-text text-base font-bold no-underline transition-all duration-200 cursor-pointer ml-2 hover:bg-dropdown-hover hover:-translate-y-px"
+                title="FAQ"
+                aria-label="Frequently Asked Questions"
+                onClick={() => analytics.faqVisited()}
+              >
+                ?
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>Frequently Asked Questions</TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
@@ -835,18 +908,22 @@ export default function App() {
             </div>
             {renderSideButtons('original', originalLanguage, isBeautifying.original)}
           </div>
-          <div className="flex justify-center items-center -ml-7">
-            <button
-              className="p-1 border border-btn-border rounded-md bg-btn-bg cursor-pointer transition-all duration-200 flex items-center justify-center text-dark-text h-fit hover:bg-btn-hover hover:scale-105"
-              onClick={() => {
-                const newMode = !isSideBySide;
-                setIsSideBySide(newMode);
-                analytics.toggleView(newMode ? 'side-by-side' : 'inline');
-              }}
-              title={isSideBySide ? "Switch to Unified View" : "Switch to Side-by-Side View"}
-            >
-              {isSideBySide ? <AlignLeft size={20} /> : <Columns size={16} />}
-            </button>
+          <div className="flex justify-center items-center -ml-8">
+            {(diffStats.additions > 0 || diffStats.deletions > 0) && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-grid grid-cols-2 rounded-md overflow-hidden border border-dark-border text-[0.7rem] font-bold tabular-nums leading-none cursor-default">
+                    <span className="flex items-center justify-center py-1 px-2.5 bg-[rgba(46,160,67,0.15)] text-green-500 min-w-[2.5rem]">
+                      +{diffStats.additions}
+                    </span>
+                    <span className="flex items-center justify-center py-1 px-2.5 bg-[rgba(248,81,73,0.15)] text-red-500 min-w-[2.5rem] border-l border-dark-border">
+                      -{diffStats.deletions}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>{diffStats.additions} additions, {diffStats.deletions} deletions</TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <div className="text-dark-text-secondary text-[0.85rem] font-medium text-center opacity-90 flex items-center gap-2 flex-wrap justify-self-end justify-between">
             <div className="flex flex-wrap items-center gap-1.5">
@@ -873,6 +950,18 @@ export default function App() {
       onClose={() => setShareOpen(false)}
       getContent={getShareContent}
     />
-    </>
+
+    <Toaster
+      position="bottom-center"
+      toastOptions={{
+        style: {
+          background: 'var(--dark-bg-secondary)',
+          color: 'var(--page-text-color)',
+          border: '1px solid var(--dark-border)',
+          fontSize: '0.8rem',
+        },
+      }}
+    />
+    </TooltipProvider>
   );
 }

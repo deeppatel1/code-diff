@@ -3,6 +3,7 @@ import { X, Copy, Check } from 'lucide-react';
 import { db, doc, setDoc, getOrCreateAnonUser } from '../lib/firebase';
 import { nanoid } from 'nanoid';
 import { analytics } from '../services/analytics';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -54,6 +55,8 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
   const handleCopy = async () => {
     await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
+    toast.success('Link copied to clipboard');
+    analytics.linkCopied();
     setTimeout(() => setCopied(false), 2000);
   };
 

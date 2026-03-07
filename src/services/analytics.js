@@ -114,6 +114,12 @@ export const analytics = {
   // Navigation
   faqVisited: () => track('faq_visited'),
 
+  // Button clicks
+  fileOpened: (side) => track('file_opened', { side }),
+  historyOpened: () => track('history_opened'),
+  shareOpened: () => track('share_opened'),
+  linkCopied: () => track('link_copied'),
+
   // Future features (Phase 1-3)
   fileImported: (side, fileExt) => track('file_imported', { side, file_extension: fileExt }),
   diffExported: (format) => track('diff_exported', { format }),

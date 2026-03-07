@@ -30,6 +30,8 @@ const mockDiffEditor = {
   setModel: () => {},
   updateOptions: () => {},
   layout: () => {},
+  onDidUpdateDiff: () => {},
+  getLineChanges: () => [],
 };
 
 export const editor = {
