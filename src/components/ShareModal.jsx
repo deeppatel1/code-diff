@@ -3,6 +3,13 @@ import { X, Copy, Check } from 'lucide-react';
 import { db, doc, setDoc, getOrCreateAnonUser } from '../lib/firebase';
 import { nanoid } from 'nanoid';
 import { analytics } from '../services/analytics';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from './ui/dialog';
 
 export default function ShareModal({ isOpen, onClose, getContent }) {
   const [shareUrl, setShareUrl] = useState('');
@@ -57,47 +64,48 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="share-modal-overlay" onClick={handleClose}>
-      <div className="share-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="share-modal-header">
-          <h3>Share Diff</h3>
-          <button className="share-modal-close" onClick={handleClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Share Diff</DialogTitle>
+          <DialogClose className="bg-transparent border-none text-page-text cursor-pointer p-1 rounded hover:bg-btn-hover">
             <X size={16} />
-          </button>
-        </div>
-        <div className="share-modal-body">
+          </DialogClose>
+        </DialogHeader>
+        <div className="p-5">
           {!shareUrl && !error && (
             <button
-              className="share-modal-generate-btn"
+              className="w-full py-2.5 px-4 bg-btn-bg text-btn-text border border-btn-border rounded-lg text-[0.85rem] font-semibold cursor-pointer transition-colors duration-150 hover:enabled:bg-btn-hover disabled:opacity-70 disabled:cursor-not-allowed"
               onClick={handleShare}
               disabled={loading}
             >
               {loading ? 'Creating link...' : 'Generate Share Link'}
             </button>
           )}
-          {error && <div className="share-modal-error">{error}</div>}
+          {error && <div className="text-red-500 text-[0.85rem] mb-3">{error}</div>}
           {shareUrl && (
-            <div className="share-modal-link-container">
+            <div className="flex gap-2">
               <input
-                className="share-modal-link-input"
+                className="flex-1 py-2 px-3 bg-dark-bg-secondary text-page-text border border-dark-border rounded-md text-[0.8rem] font-mono"
                 value={shareUrl}
                 readOnly
                 onClick={(e) => e.target.select()}
               />
-              <button className="share-modal-copy-btn" onClick={handleCopy}>
+              <button
+                className="flex items-center gap-1 py-2 px-3.5 bg-btn-bg text-btn-text border border-btn-border rounded-md text-[0.8rem] font-semibold cursor-pointer transition-colors duration-150 whitespace-nowrap hover:bg-btn-hover"
+                onClick={handleCopy}
+              >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
                 {copied ? 'Copied!' : 'Copy'}
               </button>
             </div>
           )}
-          <p className="share-modal-note">
+          <p className="mt-3 mb-0 text-[0.75rem] text-dark-text-secondary">
             Anyone with the link can view this diff (read-only).
           </p>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

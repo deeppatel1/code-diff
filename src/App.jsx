@@ -1,17 +1,26 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Sun, Moon, Palette, Heart, ChevronDown, Upload, Clock, Share2 } from 'lucide-react';
+import { Code, Columns, AlignLeft, Sparkles, Wand, SortAsc, Minimize, Sun, Moon, Palette, Heart, Upload, Clock, Share2 } from 'lucide-react';
 import * as monaco from 'monaco-editor';
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
-import './App.css';
+import './globals.css';
 import { CodeBeautifier, calculateStats, detectLanguage } from './lib/codeUtils';
 import { analytics } from './services/analytics';
 import { saveSnapshot } from './lib/historyStore';
 import { db } from './lib/firebase';
 import HistoryPanel from './components/HistoryPanel';
 import ShareModal from './components/ShareModal';
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectGroup,
+  SelectLabel,
+  SelectItem,
+  SelectValue,
+} from './components/ui/select';
 
 
 // Configure Monaco Environment
@@ -92,32 +101,6 @@ monaco.editor.defineTheme('airbnb-light-diff', {
     'diffEditorGutter.insertedLineBackground': '#aceebb',
     'diffEditor.insertedTextBackground': '#0c8d2650',
     'diffEditor.border': '#d0d7de',
-  }
-});
-
-monaco.editor.defineTheme('airbnb-synthwave-diff', {
-  base: 'vs-dark',
-  inherit: true,
-  rules: [
-    { token: 'string.key.json', foreground: 'FF7EDB' },
-    { token: 'string.value.json', foreground: 'FFF780' },
-    { token: 'string.json', foreground: 'FFF780' },
-    { token: 'number.json', foreground: '7DF9FF' },
-    { token: 'keyword.json', foreground: 'FFA6FF' },
-    { token: 'operator.json', foreground: 'C084F5' },
-    { token: 'delimiter.bracket.json', foreground: 'C084F5' }
-  ],
-  colors: {
-    'editor.background': '#2B213A',
-    'editor.foreground': '#F8F7FF',
-    'editor.selectionBackground': '#FF7EDB55',
-    'editor.selectionHighlightBackground': '#FF7EDB30',
-    'editor.inactiveSelectionBackground': '#FF7EDB20',
-    'diffEditorGutter.removedLineBackground': '#4B2F6B80',
-    'diffEditor.removedTextBackground': '#FF6B8B77',
-    'diffEditorGutter.insertedLineBackground': '#1C3D6180',
-    'diffEditor.insertedTextBackground': '#2ea04380',
-    'diffEditor.border': '#ad7eff80',
   }
 });
 
@@ -279,83 +262,7 @@ monaco.editor.defineTheme('monokai-diff', {
   }
 });
 
-monaco.editor.defineTheme('dracula-diff', {
-  base: 'vs-dark',
-  inherit: true,
-  rules: [
-    { token: 'string.key.json', foreground: '8be9fd' },
-    { token: 'string.value.json', foreground: 'f1fa8c' },
-    { token: 'string.json', foreground: 'f1fa8c' },
-    { token: 'number.json', foreground: 'bd93f9' },
-    { token: 'keyword.json', foreground: 'ff79c6' },
-    { token: 'operator.json', foreground: 'f8f8f2' },
-    { token: 'delimiter.bracket.json', foreground: 'f8f8f2' }
-  ],
-  colors: {
-    'editor.background': '#282a36',
-    'editor.foreground': '#f8f8f2',
-    'editor.selectionBackground': '#44475a',
-    'editor.selectionHighlightBackground': '#3a3c4e',
-    'editor.inactiveSelectionBackground': '#3a3c4e',
-    'diffEditorGutter.removedLineBackground': '#4b2030',
-    'diffEditor.removedTextBackground': '#ff555580',
-    'diffEditorGutter.insertedLineBackground': '#1e3a28',
-    'diffEditor.insertedTextBackground': '#50fa7b50',
-    'diffEditor.border': '#44475a',
-  }
-});
 
-monaco.editor.defineTheme('nord-diff', {
-  base: 'vs-dark',
-  inherit: true,
-  rules: [
-    { token: 'string.key.json', foreground: '88c0d0' },
-    { token: 'string.value.json', foreground: 'a3be8c' },
-    { token: 'string.json', foreground: 'a3be8c' },
-    { token: 'number.json', foreground: 'b48ead' },
-    { token: 'keyword.json', foreground: 'bf616a' },
-    { token: 'operator.json', foreground: 'd8dee9' },
-    { token: 'delimiter.bracket.json', foreground: 'd8dee9' }
-  ],
-  colors: {
-    'editor.background': '#2e3440',
-    'editor.foreground': '#d8dee9',
-    'editor.selectionBackground': '#434c5e',
-    'editor.selectionHighlightBackground': '#3b4252',
-    'editor.inactiveSelectionBackground': '#3b4252',
-    'diffEditorGutter.removedLineBackground': '#3b2230',
-    'diffEditor.removedTextBackground': '#bf616a60',
-    'diffEditorGutter.insertedLineBackground': '#1e3428',
-    'diffEditor.insertedTextBackground': '#a3be8c50',
-    'diffEditor.border': '#3b4252',
-  }
-});
-
-monaco.editor.defineTheme('solarized-light-diff', {
-  base: 'vs',
-  inherit: true,
-  rules: [
-    { token: 'string.key.json', foreground: '268bd2' },
-    { token: 'string.value.json', foreground: '2aa198' },
-    { token: 'string.json', foreground: '2aa198' },
-    { token: 'number.json', foreground: 'd33682' },
-    { token: 'keyword.json', foreground: 'cb4b16' },
-    { token: 'operator.json', foreground: '657b83' },
-    { token: 'delimiter.bracket.json', foreground: '657b83' }
-  ],
-  colors: {
-    'editor.background': '#fdf6e3',
-    'editor.foreground': '#657b83',
-    'editor.selectionBackground': '#eee8d5',
-    'editor.selectionHighlightBackground': '#eee8d5',
-    'editor.inactiveSelectionBackground': '#eee8d5',
-    'diffEditorGutter.removedLineBackground': '#ffdce0',
-    'diffEditor.removedTextBackground': '#dc322f40',
-    'diffEditorGutter.insertedLineBackground': '#d5f0d5',
-    'diffEditor.insertedTextBackground': '#85990050',
-    'diffEditor.border': '#eee8d5',
-  }
-});
 
 const indentationSize = 4;
 const useTabs = false;
@@ -368,18 +275,16 @@ const VIEW_STORAGE_KEY = 'diffright-session-view';
 const MONACO_THEME_BY_MODE = {
   dark: 'airbnb-dark-diff',
   light: 'airbnb-light-diff',
-  synthwave: 'airbnb-synthwave-diff',
   pink: 'airbnb-cute-diff',
   midnight: 'airbnb-midnight-diff',
   sand: 'airbnb-sand-diff',
   slate: 'airbnb-slate-diff',
   sky: 'airbnb-sky-diff',
   monokai: 'monokai-diff',
-  dracula: 'dracula-diff',
-  nord: 'nord-diff',
-  solarized: 'solarized-light-diff',
 };
 monaco.editor.setTheme(MONACO_THEME_BY_MODE.dark);
+
+const btnBase = 'flex items-center gap-1 px-2.5 py-1 bg-btn-bg text-btn-text border border-btn-border rounded-md text-[0.65rem] font-semibold cursor-pointer transition-all duration-200 uppercase tracking-wide whitespace-nowrap hover:enabled:bg-btn-hover hover:enabled:-translate-y-px disabled:opacity-70 disabled:cursor-not-allowed';
 
 export default function App() {
   const containerRef = useRef(null);
@@ -409,48 +314,32 @@ export default function App() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const themeSequence = ['dark', 'light', 'synthwave', 'pink', 'midnight', 'sand', 'slate', 'sky', 'monokai', 'dracula', 'nord', 'solarized'];
   const themeLabels = {
     dark: 'Night',
     light: 'Dawn',
-    synthwave: 'Neon',
     pink: 'Rose',
     midnight: 'Midnight',
     sand: 'Sand',
     slate: 'Slate',
     sky: 'Sky',
     monokai: 'Monokai',
-    dracula: 'Dracula',
-    nord: 'Nord',
-    solarized: 'Solarized',
   };
   const themeIcons = {
     dark: <Moon size={16} />,
     light: <Sun size={16} />,
-    synthwave: <Palette size={16} />,
     pink: <Heart size={16} />,
     midnight: <Moon size={16} />,
     sand: <Sun size={16} />,
     slate: <Palette size={16} />,
     sky: <Sun size={16} />,
     monokai: <Palette size={16} />,
-    dracula: <Moon size={16} />,
-    nord: <Moon size={16} />,
-    solarized: <Sun size={16} />,
   };
   const themeGroups = [
-    { label: 'Light', items: ['light', 'sand', 'sky', 'pink', 'solarized'] },
-    { label: 'Dark', items: ['dark', 'midnight', 'synthwave', 'slate', 'monokai', 'dracula', 'nord'] }
+    { label: 'Light', items: ['light', 'sand', 'sky', 'pink'] },
+    { label: 'Dark', items: ['dark', 'midnight', 'slate', 'monokai'] }
   ];
-  const getNextTheme = current => {
-    const idx = themeSequence.indexOf(current);
-    const nextIndex = idx >= 0 ? (idx + 1) % themeSequence.length : 0;
-    return themeSequence[nextIndex];
-  };
-  const nextTheme = getNextTheme(themeMode);
   const themeIcon = themeIcons[themeMode] ?? themeIcons.dark;
   const themeLabel = themeLabels[themeMode] ?? themeLabels.dark;
-  const nextThemeLabel = themeLabels[nextTheme] ?? nextTheme;
   const getEditor = (side) => side === 'original'
     ? diffEditorRef.current.getOriginalEditor()
     : diffEditorRef.current.getModifiedEditor();
@@ -604,16 +493,12 @@ export default function App() {
     rootElement.classList.remove(
       'theme-dark',
       'theme-light',
-      'theme-synthwave',
       'theme-pink',
       'theme-midnight',
       'theme-sand',
       'theme-slate',
       'theme-sky',
       'theme-monokai',
-      'theme-dracula',
-      'theme-nord',
-      'theme-solarized'
     );
     rootElement.classList.add(themeClass);
 
@@ -699,13 +584,11 @@ export default function App() {
         monaco.editor.setModelLanguage(originalModel, lang);
       }
 
-      // Track language detection (only on change)
       if (lang !== lastDetectedLangRef.current.original) {
         lastDetectedLangRef.current.original = lang;
         if (lang !== 'plaintext') analytics.languageDetected(lang, 'original');
       }
 
-      // Auto-save to history
       const modifiedVal = modifiedModel.getValue();
       if (val || modifiedVal) saveSnapshot(val, modifiedVal);
     };
@@ -726,13 +609,11 @@ export default function App() {
         monaco.editor.setModelLanguage(modifiedModel, lang);
       }
 
-      // Track language detection (only on change)
       if (lang !== lastDetectedLangRef.current.modified) {
         lastDetectedLangRef.current.modified = lang;
         if (lang !== 'plaintext') analytics.languageDetected(lang, 'modified');
       }
 
-      // Auto-save to history
       const originalVal = originalModel.getValue();
       if (val || originalVal) saveSnapshot(originalVal, val);
     };
@@ -770,6 +651,69 @@ export default function App() {
     }
   }, [isSideBySide, themeMode]);
 
+  const renderSideButtons = (side, language, isBeautifyingState) => (
+    <>
+      {language !== 'plaintext' && (
+        <span className="text-lang-indicator font-semibold uppercase py-0.5 px-1.5 bg-[rgba(88,166,255,0.12)] rounded text-[0.7rem]">
+          {language}
+        </span>
+      )}
+      <button
+        className={`${btnBase} text-[0.6rem]`}
+        onClick={() => (side === 'original' ? originalFileRef : modifiedFileRef).current?.click()}
+        title="Open file"
+      >
+        <Upload size={12} /> Open
+      </button>
+      <input
+        ref={side === 'original' ? originalFileRef : modifiedFileRef}
+        type="file"
+        className="hidden"
+        onChange={handleFileInputChange(side)}
+        accept=".js,.jsx,.ts,.tsx,.json,.html,.css,.scss,.less,.md,.yaml,.yml,.xml,.py,.java,.c,.cpp,.go,.rs,.rb,.sql,.txt,.sh,.php,.swift,.kt"
+      />
+      {isLanguageBeautifiable(language) && (
+        <button
+          className={`${btnBase} ${isBeautifyingState ? 'bg-btn-hover' : ''}`}
+          onClick={createBeautifyHandler(side)}
+          disabled={isBeautifyingState}
+          title={`Beautify ${language}`}
+          aria-busy={isBeautifyingState}
+        >
+          {isBeautifyingState ? (
+            <>
+              <Sparkles size={12} className="animate-spin" />
+              Beautifying...
+            </>
+          ) : (
+            <>
+              <Sparkles size={12} />
+              Beautify
+            </>
+          )}
+        </button>
+      )}
+      {language === 'json' && (
+        <>
+          <button className={btnBase} onClick={createSortHandler(side)} title="Sort JSON">
+            <SortAsc size={12} /> Sort
+          </button>
+          <button className={btnBase} onClick={createCompactHandler(side)} title="Minify JSON">
+            <Minimize size={12} /> Minify
+          </button>
+          <button className={btnBase} onClick={createConvertToYamlHandler(side)} title="Convert JSON to YAML">
+            <Wand size={12} /> JSON to YAML
+          </button>
+        </>
+      )}
+      {language === 'yaml' && (
+        <button className={btnBase} onClick={createConvertToJsonHandler(side)} title="Convert YAML to JSON">
+          <Wand size={12} /> YAML to JSON
+        </button>
+      )}
+    </>
+  );
+
   return (
     <>
       <Helmet>
@@ -778,19 +722,19 @@ export default function App() {
         <meta name="keywords" content="code diff, compare code, diff tool, code comparison, syntax highlighting, developer tools, privacy-first" />
         <link rel="canonical" href="https://diffplease.com/" />
       </Helmet>
-      <div className="app">
-      <div className="app-header">
-        <div className="header-left">
-          <svg width="40" height="32" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="header-icon">
+      <div className="flex flex-col h-screen font-[-apple-system,BlinkMacSystemFont,'Segoe_UI','Noto_Sans',Helvetica,Arial,sans-serif]">
+      <div className="flex justify-center items-center p-2.5 text-dark-text shrink-0 relative z-10 bg-header-bg border-b border-header-border">
+        <div className="flex items-center gap-3 -ml-14">
+          <svg width="40" height="32" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="header-icon w-10 h-8 transition-all duration-300 shrink-0 cursor-pointer hover:scale-[1.08] hover:-rotate-2 hover:drop-shadow-[0_6px_12px_rgba(0,0,0,0.15)]">
             <path d="M14 19L6 12L14 5" stroke="#da3633" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M22 5L30 12L22 19" stroke="#2ea043" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <div className="header-text"><h1>Diff Please</h1></div>
+          <div><h1 className="m-0 text-2xl font-extrabold font-mono tracking-tighter text-dark-text">Diff Please</h1></div>
         </div>
-        <div className="header-actions">
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
           {db && (
             <button
-              className="header-action-btn"
+              className="flex items-center justify-center w-8 h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 hover:bg-btn-hover hover:-translate-y-px"
               onClick={() => setHistoryOpen(true)}
               title="History"
               aria-label="View history"
@@ -801,156 +745,99 @@ export default function App() {
 
           {db && (
             <button
-              className="header-action-btn share-btn"
+              className="flex items-center justify-center h-8 w-auto rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wide hover:bg-btn-hover hover:-translate-y-px"
               onClick={() => setShareOpen(true)}
               title="Share"
               aria-label="Share diff"
             >
               <Share2 size={14} />
-              <span>Share Code</span>
+              <span>Share Diff</span>
             </button>
           )}
 
-          <div className="theme-dropdown">
-            <select
-              className="theme-dropdown-select"
-              value={themeMode}
-              onChange={(e) => {
-                setThemeMode(e.target.value);
-                analytics.changeTheme(e.target.value);
-              }}
-              title="Select Theme"
-              aria-label="Select theme"
-            >
+          <Select
+            value={themeMode}
+            onValueChange={(value) => {
+              setThemeMode(value);
+              analytics.changeTheme(value);
+            }}
+          >
+            <SelectTrigger aria-label="Select theme">
+              <span className="flex items-center">{themeIcon}</span>
+              <span className="leading-none">{themeLabel}</span>
+            </SelectTrigger>
+            <SelectContent>
               {themeGroups.map(group => (
-                <optgroup key={group.label} label={`${group.label} themes`}>
+                <SelectGroup key={group.label}>
+                  <SelectLabel>{group.label} themes</SelectLabel>
                   {group.items.map(theme => (
-                    <option key={theme} value={theme}>
-                      {themeLabels[theme]}
-                    </option>
+                    <SelectItem key={theme} value={theme}>
+                      <span className="flex items-center gap-2">
+                        {themeIcons[theme]}
+                        {themeLabels[theme]}
+                      </span>
+                    </SelectItem>
                   ))}
-                </optgroup>
+                </SelectGroup>
               ))}
-            </select>
-            <span className="theme-dropdown-icon">{themeIcon}</span>
-            <span className="theme-dropdown-label">{themeLabel}</span>
-            <ChevronDown size={14} className="theme-dropdown-arrow" />
-          </div>
-          <Link to="/faq" className="faq-button" title="FAQ" aria-label="Frequently Asked Questions" onClick={() => analytics.faqVisited()}>
+            </SelectContent>
+          </Select>
+          <Link
+            to="/faq"
+            className="flex items-center justify-center w-8 h-8 rounded-full border border-dropdown-border bg-dropdown-bg text-dropdown-text text-base font-bold no-underline transition-all duration-200 cursor-pointer ml-2 hover:bg-dropdown-hover hover:-translate-y-px"
+            title="FAQ"
+            aria-label="Frequently Asked Questions"
+            onClick={() => analytics.faqVisited()}
+          >
             ?
           </Link>
         </div>
       </div>
 
       <div
-        className="editor-container"
+        className="flex-1 overflow-hidden relative"
         ref={containerRef}
       >
         {/* Drop zone overlays */}
         <div
-          className={`drop-zone drop-zone-left ${dragOver.original ? 'active' : ''}`}
+          className={`absolute top-0 bottom-0 w-1/2 left-0 z-[5] pointer-events-none ${dragOver.original ? 'pointer-events-auto bg-[rgba(46,160,67,0.08)] border-2 border-dashed border-[rgba(46,160,67,0.5)] rounded' : ''}`}
           onDragOver={handleDragOver('original')}
           onDragLeave={handleDragLeave('original')}
           onDrop={handleDrop('original')}
         >
-          {dragOver.original && <div className="drop-zone-label">Drop file here (Original)</div>}
+          {dragOver.original && (
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 py-3 px-6 bg-[rgba(46,160,67,0.15)] border border-[rgba(46,160,67,0.4)] rounded-lg text-page-text text-[0.9rem] font-semibold pointer-events-none">
+              Drop file here (Original)
+            </div>
+          )}
         </div>
         <div
-          className={`drop-zone drop-zone-right ${dragOver.modified ? 'active' : ''}`}
+          className={`absolute top-0 bottom-0 w-1/2 right-0 z-[5] pointer-events-none ${dragOver.modified ? 'pointer-events-auto bg-[rgba(46,160,67,0.08)] border-2 border-dashed border-[rgba(46,160,67,0.5)] rounded' : ''}`}
           onDragOver={handleDragOver('modified')}
           onDragLeave={handleDragLeave('modified')}
           onDrop={handleDrop('modified')}
         >
-          {dragOver.modified && <div className="drop-zone-label">Drop file here (Modified)</div>}
+          {dragOver.modified && (
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 py-3 px-6 bg-[rgba(46,160,67,0.15)] border border-[rgba(46,160,67,0.4)] rounded-lg text-page-text text-[0.9rem] font-semibold pointer-events-none">
+              Drop file here (Modified)
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="app-footer">
-        <div className="footer-stats">
-          <div className="stats-display">
-            <div className="metric-group" aria-live="polite" role="status">
-              <span className="metric">{originalStats.lines} lines</span>
-              <span className="metric">{originalStats.words} words</span>
-              <span className="metric">{originalStats.characters} chars</span>
+      <div className="py-1 px-4 bg-footer-bg relative z-10 border-t border-footer-border">
+        <div className="grid grid-cols-[1fr_auto_1fr] w-full items-center">
+          <div className="text-dark-text-secondary text-[0.85rem] font-medium text-center opacity-90 flex items-center gap-2 flex-wrap justify-self-start">
+            <div className="flex gap-1.5 flex-wrap font-semibold text-[0.78rem] text-dark-text" aria-live="polite" role="status">
+              <span className="tabular-nums">{originalStats.lines} lines</span>
+              <span className="tabular-nums">{originalStats.words} words</span>
+              <span className="tabular-nums">{originalStats.characters} chars</span>
             </div>
-            {originalLanguage !== 'plaintext' && (
-              <span className="language-indicator">{originalLanguage}</span>
-            )}
-            <button
-              className="beautify-btn file-import-btn"
-              onClick={() => originalFileRef.current?.click()}
-              title="Open file"
-            >
-              <Upload size={12} /> Open
-            </button>
-            <input
-              ref={originalFileRef}
-              type="file"
-              className="hidden-file-input"
-              onChange={handleFileInputChange('original')}
-              accept=".js,.jsx,.ts,.tsx,.json,.html,.css,.scss,.less,.md,.yaml,.yml,.xml,.py,.java,.c,.cpp,.go,.rs,.rb,.sql,.txt,.sh,.php,.swift,.kt"
-            />
-            {isLanguageBeautifiable(originalLanguage) && (
-              <button
-                className={`beautify-btn ${isBeautifying.original ? 'beautifying' : ''}`}
-                onClick={createBeautifyHandler('original')}
-                disabled={isBeautifying.original}
-                title={`Beautify ${originalLanguage}`}
-                aria-busy={isBeautifying.original}
-              >
-                {isBeautifying.original ? (
-                  <>
-                    <Sparkles size={12} className="spinning" />
-                    Beautifying...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={12} />
-                    Beautify
-                  </>
-                )}
-              </button>
-            )}
-            {originalLanguage === 'json' && (
-              <>
-                <button
-                  className="beautify-btn"
-                  onClick={createSortHandler('original')}
-                  title="Sort JSON"
-                >
-                  <SortAsc size={12} /> Sort
-                </button>
-                <button
-                  className="beautify-btn"
-                  onClick={createCompactHandler('original')}
-                  title="Minify JSON"
-                >
-                  <Minimize size={12} /> Minify
-                </button>
-                <button
-                  className="beautify-btn convert-btn"
-                  onClick={createConvertToYamlHandler('original')}
-                  title="Convert JSON to YAML"
-                >
-                  <Wand size={12} /> JSON to YAML
-                </button>
-              </>
-            )}
-            {originalLanguage === 'yaml' && (
-              <>
-                <button
-                  className="beautify-btn convert-btn"
-                  onClick={createConvertToJsonHandler('original')}
-                  title="Convert YAML to JSON"
-                >
-                  <Wand size={12} /> YAML to JSON
-                </button>
-              </>
-            )}
+            {renderSideButtons('original', originalLanguage, isBeautifying.original)}
           </div>
-          <div className="view-toggle-container">
+          <div className="flex justify-center items-center -ml-7">
             <button
-              className="view-toggle-btn"
+              className="p-1 border border-btn-border rounded-md bg-btn-bg cursor-pointer transition-all duration-200 flex items-center justify-center text-dark-text h-fit hover:bg-btn-hover hover:scale-105"
               onClick={() => {
                 const newMode = !isSideBySide;
                 setIsSideBySide(newMode);
@@ -961,87 +848,14 @@ export default function App() {
               {isSideBySide ? <AlignLeft size={20} /> : <Columns size={16} />}
             </button>
           </div>
-          <div className="stats-display modified-panel">
-            <div className="modified-actions">
-              {modifiedLanguage !== 'plaintext' && (
-                <span className="language-indicator">{modifiedLanguage}</span>
-              )}
-              <button
-                className="beautify-btn file-import-btn"
-                onClick={() => modifiedFileRef.current?.click()}
-                title="Open file"
-              >
-                <Upload size={12} /> Open
-              </button>
-              <input
-                ref={modifiedFileRef}
-                type="file"
-                className="hidden-file-input"
-                onChange={handleFileInputChange('modified')}
-                accept=".js,.jsx,.ts,.tsx,.json,.html,.css,.scss,.less,.md,.yaml,.yml,.xml,.py,.java,.c,.cpp,.go,.rs,.rb,.sql,.txt,.sh,.php,.swift,.kt"
-              />
-              {isLanguageBeautifiable(modifiedLanguage) && (
-                <button
-                  className={`beautify-btn ${isBeautifying.modified ? 'beautifying' : ''}`}
-                  onClick={createBeautifyHandler('modified')}
-                  disabled={isBeautifying.modified}
-                  title={`Beautify ${modifiedLanguage}`}
-                  aria-busy={isBeautifying.modified}
-                >
-                  {isBeautifying.modified ? (
-                    <>
-                      <Sparkles size={12} className="spinning" />
-                      Beautifying...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={12} />
-                      Beautify
-                    </>
-                  )}
-                </button>
-              )}
-              {modifiedLanguage === 'json' && (
-                <>
-                  <button
-                    className="beautify-btn"
-                    onClick={createSortHandler('modified')}
-                    title="Sort JSON"
-                  >
-                    <SortAsc size={12} /> Sort
-                  </button>
-                  <button
-                    className="beautify-btn"
-                    onClick={createCompactHandler('modified')}
-                    title="Minify JSON"
-                  >
-                    <Minimize size={12} /> Minify
-                  </button>
-                  <button
-                    className="beautify-btn convert-btn"
-                    onClick={createConvertToYamlHandler('modified')}
-                    title="Convert JSON to YAML"
-                  >
-                    <Wand size={12} /> JSON to YAML
-                  </button>
-                </>
-              )}
-              {modifiedLanguage === 'yaml' && (
-                <>
-                  <button
-                    className="beautify-btn convert-btn"
-                    onClick={createConvertToJsonHandler('modified')}
-                    title="Convert YAML to JSON"
-                  >
-                    <Wand size={12} /> YAML to JSON
-                  </button>
-                </>
-              )}
+          <div className="text-dark-text-secondary text-[0.85rem] font-medium text-center opacity-90 flex items-center gap-2 flex-wrap justify-self-end justify-between">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {renderSideButtons('modified', modifiedLanguage, isBeautifying.modified)}
             </div>
-            <div className="metric-group align-right" aria-live="polite" role="status">
-              <span className="metric">{modifiedStats.lines} lines</span>
-              <span className="metric">{modifiedStats.words} words</span>
-              <span className="metric">{modifiedStats.characters} chars</span>
+            <div className="flex gap-1.5 flex-wrap font-semibold text-[0.78rem] text-dark-text justify-end text-right" aria-live="polite" role="status">
+              <span className="tabular-nums">{modifiedStats.lines} lines</span>
+              <span className="tabular-nums">{modifiedStats.words} words</span>
+              <span className="tabular-nums">{modifiedStats.characters} chars</span>
             </div>
           </div>
         </div>

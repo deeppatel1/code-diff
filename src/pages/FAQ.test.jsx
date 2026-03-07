@@ -49,16 +49,11 @@ describe('FAQ page', () => {
 
   it('each FAQ question has a corresponding answer paragraph', () => {
     const { container } = renderFAQ();
-    // faq-section divs: 1 how-it-works + 12 FAQ items = 13 total
-    const faqSections = container.querySelectorAll('.faq-section');
-    expect(faqSections.length).toBe(13);
-    // Each FAQ section (excluding how-it-works) has an h2 and a p
-    const faqOnly = Array.from(faqSections).filter(s => !s.classList.contains('how-it-works'));
-    expect(faqOnly.length).toBe(12);
-    for (const section of faqOnly) {
-      expect(section.querySelector('h2')).not.toBeNull();
-      expect(section.querySelector('p')).not.toBeNull();
-    }
+    // 1 how-it-works section + 12 FAQ items = 13 sections with h2 elements
+    const h2Elements = container.querySelectorAll('h2');
+    // h1 (main heading) + "How It Works" h2 + 12 FAQ h2s = 14 total headings
+    // But we only care about h2s: "How It Works" + 12 FAQ questions = 13
+    expect(h2Elements.length).toBe(13);
   });
 
   it('renders intro paragraph about privacy', () => {

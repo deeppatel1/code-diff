@@ -1,0 +1,347 @@
+@import "tailwindcss";
+
+@theme {
+  --color-page-bg: var(--page-background);
+  --color-page-text: var(--page-text-color);
+  --color-header-bg: var(--header-bg);
+  --color-header-border: var(--header-border);
+  --color-footer-bg: var(--footer-bg);
+  --color-footer-border: var(--footer-border);
+  --color-btn-bg: var(--button-bg);
+  --color-btn-hover: var(--button-hover-bg);
+  --color-btn-text: var(--button-text);
+  --color-btn-border: var(--button-border);
+  --color-dropdown-bg: var(--dropdown-bg);
+  --color-dropdown-text: var(--dropdown-text);
+  --color-dropdown-border: var(--dropdown-border);
+  --color-dropdown-hover: var(--dropdown-hover-bg);
+  --color-lang-indicator: var(--language-indicator-color);
+  --color-dark-bg: var(--dark-bg);
+  --color-dark-bg-secondary: var(--dark-bg-secondary);
+  --color-dark-text: var(--dark-text);
+  --color-dark-text-secondary: var(--dark-text-secondary);
+  --color-dark-border: var(--dark-border);
+  --color-dark-hover: var(--dark-hover);
+  --color-blue-500: var(--blue-500);
+  --color-red-500: var(--red-500);
+  --color-green-500: var(--green-500);
+
+  --animate-spin: spin 1s linear infinite;
+  --animate-slide-in-right: slideInRight 0.2s ease;
+  --animate-fade-in: fadeIn 0.15s ease;
+}
+
+/* ============================================================
+   Theme variable definitions
+   ============================================================ */
+
+:root {
+  --light-bg: #f6f8fa;
+  --light-bg-secondary: #ffffff;
+  --light-text: #24292f;
+  --light-text-secondary: #57606a;
+  --light-border: #d0d7de;
+  --light-hover: #eaeef2;
+  --dark-bg: #0d1117;
+  --dark-bg-secondary: #161b22;
+  --dark-text: #c9d1d9;
+  --dark-text-secondary: #8b949e;
+  --dark-border: #30363d;
+  --dark-hover: #21262d;
+
+  --blue-500: #58a6ff;
+  --blue-600: #1f6feb;
+  --purple-500: #bc8cff;
+  --purple-600: #a371f7;
+  --red-50: #ffebe9;
+  --red-800: #922323;
+  --red-200: #ffcec6;
+  --red-900-30: rgba(248, 81, 73, 0.3);
+  --red-900-20: rgba(248, 81, 73, 0.2);
+  --green-50: #dafbe1;
+  --green-800: #196c2e;
+  --green-200: #aceebb;
+  --green-900-30: rgba(46, 160, 67, 0.3);
+  --green-900-20: rgba(46, 160, 67, 0.2);
+  --red-500: #f85149;
+  --green-500: #2ea043;
+  --gray-500: #8b949e;
+  --page-background: var(--dark-bg);
+  --page-text-color: var(--dark-text);
+  --header-bg: var(--dark-bg-secondary);
+  --header-border: var(--dark-border);
+  --footer-bg: var(--dark-bg-secondary);
+  --footer-border: var(--dark-border);
+  --button-bg: #21262d;
+  --button-hover-bg: #30363d;
+  --button-text: var(--dark-text);
+  --button-border: var(--header-border);
+  --dropdown-bg: #21262d;
+  --dropdown-text: var(--dark-text);
+  --dropdown-border: var(--header-border);
+  --dropdown-hover-bg: #30363d;
+  --language-indicator-color: var(--blue-500);
+}
+
+html.theme-dark {
+  --page-background: var(--dark-bg);
+  --page-text-color: var(--dark-text);
+  --header-bg: var(--dark-bg-secondary);
+  --header-border: var(--dark-border);
+  --footer-bg: var(--dark-bg-secondary);
+  --footer-border: var(--dark-border);
+  --button-bg: #21262d;
+  --button-hover-bg: #30363d;
+  --button-text: var(--dark-text);
+  --button-border: var(--header-border);
+  --dropdown-bg: #21262d;
+  --dropdown-text: var(--dark-text);
+  --dropdown-border: var(--header-border);
+  --dropdown-hover-bg: #30363d;
+  --language-indicator-color: var(--blue-500);
+}
+
+html.theme-light {
+  --page-background: var(--light-bg);
+  --page-text-color: var(--light-text);
+  --dark-bg: var(--light-bg);
+  --dark-bg-secondary: var(--light-bg-secondary);
+  --dark-text: var(--light-text);
+  --dark-text-secondary: var(--light-text-secondary);
+  --dark-border: var(--light-border);
+  --dark-hover: var(--light-hover);
+  --header-bg: #f6f8fa;
+  --header-border: #d0d7de;
+  --footer-bg: #f6f8fa;
+  --footer-border: #d0d7de;
+  --button-bg: #e7edf3;
+  --button-hover-bg: #d0d7de;
+  --button-text: #24292f;
+  --button-border: #d0d7de;
+  --dropdown-bg: #e7edf3;
+  --dropdown-text: #24292f;
+  --dropdown-border: #d0d7de;
+  --dropdown-hover-bg: #d0d7de;
+  --language-indicator-color: #0969da;
+}
+
+html.theme-pink {
+  --page-background: #ffeaf5;
+  --page-text-color: #391930;
+  --dark-bg: #ffeaf5;
+  --dark-bg-secondary: #ffd4eb;
+  --dark-text: #391930;
+  --dark-text-secondary: #8f4f7d;
+  --dark-border: rgba(190, 83, 147, 0.35);
+  --dark-hover: rgba(190, 83, 147, 0.18);
+  --header-bg: #ffd4eb;
+  --header-border: rgba(190, 83, 147, 0.35);
+  --footer-bg: #ffd4eb;
+  --footer-border: rgba(190, 83, 147, 0.35);
+  --button-bg: rgba(190, 83, 147, 0.15);
+  --button-hover-bg: rgba(190, 83, 147, 0.3);
+  --button-text: #3f1735;
+  --button-border: rgba(190, 83, 147, 0.35);
+  --dropdown-bg: rgba(190, 83, 147, 0.15);
+  --dropdown-text: #3f1735;
+  --dropdown-border: rgba(190, 83, 147, 0.35);
+  --dropdown-hover-bg: rgba(190, 83, 147, 0.3);
+  --language-indicator-color: #d03592;
+}
+
+html.theme-midnight {
+  --page-background: #0b1020;
+  --page-text-color: #e6edf6;
+  --dark-bg: #0b1020;
+  --dark-bg-secondary: #121a33;
+  --dark-text: #e6edf6;
+  --dark-text-secondary: #9aa7bb;
+  --dark-border: #2a355a;
+  --dark-hover: #23305a;
+  --header-bg: #121a33;
+  --header-border: #2a355a;
+  --footer-bg: #121a33;
+  --footer-border: #2a355a;
+  --button-bg: #1b2444;
+  --button-hover-bg: #23305a;
+  --button-text: #e6edf6;
+  --button-border: #2a355a;
+  --dropdown-bg: #1b2444;
+  --dropdown-text: #e6edf6;
+  --dropdown-border: #2a355a;
+  --dropdown-hover-bg: #23305a;
+  --language-indicator-color: #6aa9ff;
+}
+
+html.theme-sand {
+  --page-background: #faf6f0;
+  --page-text-color: #3b2f20;
+  --dark-bg: #faf6f0;
+  --dark-bg-secondary: #f0e7d8;
+  --dark-text: #3b2f20;
+  --dark-text-secondary: #7a6e60;
+  --dark-border: #d9cbb8;
+  --dark-hover: #eddfc9;
+  --header-bg: #f0e7d8;
+  --header-border: #d9cbb8;
+  --footer-bg: #f0e7d8;
+  --footer-border: #d9cbb8;
+  --button-bg: #e8dbc8;
+  --button-hover-bg: #d9cbb8;
+  --button-text: #3b2f20;
+  --button-border: #d9cbb8;
+  --dropdown-bg: #e8dbc8;
+  --dropdown-text: #3b2f20;
+  --dropdown-border: #d9cbb8;
+  --dropdown-hover-bg: #d9cbb8;
+  --language-indicator-color: #8a5e2c;
+}
+
+html.theme-slate {
+  --page-background: #1b1f24;
+  --page-text-color: #e5e9ef;
+  --dark-bg: #1b1f24;
+  --dark-bg-secondary: #232a31;
+  --dark-text: #e5e9ef;
+  --dark-text-secondary: #a5b1c2;
+  --dark-border: #3a424c;
+  --dark-hover: #343d48;
+  --header-bg: #232a31;
+  --header-border: #3a424c;
+  --footer-bg: #232a31;
+  --footer-border: #3a424c;
+  --button-bg: #2a323b;
+  --button-hover-bg: #343d48;
+  --button-text: #e5e9ef;
+  --button-border: #3a424c;
+  --dropdown-bg: #2a323b;
+  --dropdown-text: #e5e9ef;
+  --dropdown-border: #3a424c;
+  --dropdown-hover-bg: #343d48;
+  --language-indicator-color: #7aa2c2;
+}
+
+html.theme-sky {
+  --page-background: #eef6ff;
+  --page-text-color: #1b2b3a;
+  --dark-bg: #eef6ff;
+  --dark-bg-secondary: #d9e8ff;
+  --dark-text: #1b2b3a;
+  --dark-text-secondary: #5a738a;
+  --dark-border: #c7d9f2;
+  --dark-hover: #cfe2ff;
+  --header-bg: #d9e8ff;
+  --header-border: #c7d9f2;
+  --footer-bg: #d9e8ff;
+  --footer-border: #c7d9f2;
+  --button-bg: #cfe2ff;
+  --button-hover-bg: #bfd6f4;
+  --button-text: #1b2b3a;
+  --button-border: #c7d9f2;
+  --dropdown-bg: #cfe2ff;
+  --dropdown-text: #1b2b3a;
+  --dropdown-border: #c7d9f2;
+  --dropdown-hover-bg: #bfd6f4;
+  --language-indicator-color: #2d6cdf;
+}
+
+html.theme-monokai {
+  --page-background: #272822;
+  --page-text-color: #f8f8f2;
+  --dark-bg: #272822;
+  --dark-bg-secondary: #1e1f1a;
+  --dark-text: #f8f8f2;
+  --dark-text-secondary: #a6a68a;
+  --dark-border: #3e3d32;
+  --dark-hover: #49483e;
+  --header-bg: #1e1f1a;
+  --header-border: #3e3d32;
+  --footer-bg: #1e1f1a;
+  --footer-border: #3e3d32;
+  --button-bg: #3e3d32;
+  --button-hover-bg: #49483e;
+  --button-text: #f8f8f2;
+  --button-border: #3e3d32;
+  --dropdown-bg: #3e3d32;
+  --dropdown-text: #f8f8f2;
+  --dropdown-border: #3e3d32;
+  --dropdown-hover-bg: #49483e;
+  --language-indicator-color: #66d9ef;
+}
+
+
+/* ============================================================
+   Global resets
+   ============================================================ */
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  border: none !important;
+  box-shadow: none !important;
+  height: 100%;
+  width: 100%;
+  background: var(--page-background);
+  color: var(--page-text-color);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ============================================================
+   Keyframe animations
+   ============================================================ */
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ============================================================
+   Monaco Editor overrides (can't be done with Tailwind)
+   ============================================================ */
+
+.monaco-editor,
+.monaco-editor * {
+  --vscode-focusBorder: transparent !important;
+}
+
+/* ============================================================
+   Header icon SVG hover animations (complex selectors)
+   ============================================================ */
+
+.header-icon path {
+  transition: transform 0.3s ease, stroke 0.3s ease, opacity 0.3s ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.header-icon:hover path:first-child {
+  transform: translateX(-3px);
+  stroke: #ff5c5c;
+  opacity: 0.85;
+}
+
+.header-icon:hover path:last-child {
+  transform: translateX(3px);
+  stroke: #50d27e;
+  opacity: 0.95;
+}
+
+/* ============================================================
+   Radix UI / shadcn overrides
+   ============================================================ */
+
+[data-radix-select-viewport] {
+  max-height: 300px;
+}

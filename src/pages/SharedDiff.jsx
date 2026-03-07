@@ -92,21 +92,24 @@ export default function SharedDiff() {
 
   if (loading) {
     return (
-      <div className="shared-diff-page">
-        <div className="shared-diff-message">Loading...</div>
+      <div className="flex flex-col h-screen bg-[#0d1117] text-[#c9d1d9] font-[-apple-system,BlinkMacSystemFont,'Segoe_UI','Noto_Sans',Helvetica,Arial,sans-serif]">
+        <div className="flex flex-col items-center justify-center h-full gap-4 text-[#8b949e]">Loading...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="shared-diff-page">
+      <div className="flex flex-col h-screen bg-[#0d1117] text-[#c9d1d9] font-[-apple-system,BlinkMacSystemFont,'Segoe_UI','Noto_Sans',Helvetica,Arial,sans-serif]">
         <Helmet>
           <title>Diff Not Found - Diff Please</title>
         </Helmet>
-        <div className="shared-diff-message">
-          <h2>{error}</h2>
-          <button className="shared-diff-btn" onClick={() => navigate('/')}>
+        <div className="flex flex-col items-center justify-center h-full gap-4 text-[#8b949e]">
+          <h2 className="text-[1.1rem] font-semibold text-[#c9d1d9]">{error}</h2>
+          <button
+            className="py-1.5 px-3.5 bg-[#21262d] text-[#c9d1d9] border border-[#30363d] rounded-md text-[0.8rem] font-semibold cursor-pointer transition-colors duration-150 hover:bg-[#30363d]"
+            onClick={() => navigate('/')}
+          >
             Go to Editor
           </button>
         </div>
@@ -115,17 +118,20 @@ export default function SharedDiff() {
   }
 
   return (
-    <div className="shared-diff-page">
+    <div className="flex flex-col h-screen bg-[#0d1117] text-[#c9d1d9] font-[-apple-system,BlinkMacSystemFont,'Segoe_UI','Noto_Sans',Helvetica,Arial,sans-serif]">
       <Helmet>
         <title>Shared Diff - Diff Please</title>
       </Helmet>
-      <div className="shared-diff-header">
-        <span className="shared-diff-title">Shared Diff (read-only)</span>
-        <button className="shared-diff-btn" onClick={handleOpenInEditor}>
+      <div className="flex justify-between items-center py-3 px-5 bg-[#161b22] border-b border-[#30363d]">
+        <span className="font-semibold text-[0.9rem] text-[#8b949e]">Shared Diff (read-only)</span>
+        <button
+          className="py-1.5 px-3.5 bg-[#21262d] text-[#c9d1d9] border border-[#30363d] rounded-md text-[0.8rem] font-semibold cursor-pointer transition-colors duration-150 hover:bg-[#30363d]"
+          onClick={handleOpenInEditor}
+        >
           Open in Editor
         </button>
       </div>
-      <div className="shared-diff-editor" ref={containerRef} />
+      <div className="flex-1 overflow-hidden" ref={containerRef} />
     </div>
   );
 }

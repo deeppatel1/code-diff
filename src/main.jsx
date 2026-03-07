@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import 'monaco-editor/min/vs/editor/editor.main.css';
-import './index.css';
+import './globals.css';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import { createRoot } from 'react-dom/client';

@@ -2,7 +2,6 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import './FAQ.css';
 
 const faqData = [
   {
@@ -80,48 +79,48 @@ export default function FAQ() {
           {JSON.stringify(faqSchema)}
         </script>
       </Helmet>
-      
-      <div className="faq-page">
-        <div className="faq-header">
-          <Link to="/" className="back-link">
+
+      <div className="min-h-screen bg-page-bg text-page-text font-[-apple-system,BlinkMacSystemFont,'Segoe_UI','Noto_Sans',Helvetica,Arial,sans-serif]">
+        <div className="bg-header-bg border-b border-header-border py-4 px-8 flex items-center gap-4 max-md:px-4">
+          <Link to="/" className="inline-flex items-center gap-2 text-blue-500 no-underline text-[0.95rem] py-2 px-4 rounded-md transition-colors duration-200 hover:bg-btn-hover">
             <ArrowLeft size={20} />
             Back to Diff Tool
           </Link>
         </div>
-        
-        <div className="faq-container">
-          <h1>Frequently Asked Questions</h1>
-          
-          <div className="faq-intro">
-            <p>Diff Please is a browser-based code comparison tool that helps developers quickly identify differences between two pieces of code. Everything runs locally in your browser for complete privacy.</p>
+
+        <div className="max-w-[900px] mx-auto py-12 px-8 max-md:py-8 max-md:px-4">
+          <h1 className="text-[2.5rem] mb-8 text-page-text font-semibold tracking-tight max-md:text-[2rem]">Frequently Asked Questions</h1>
+
+          <div className="mb-12 p-6 bg-header-bg border-l-4 border-l-blue-500 rounded-md max-md:p-4">
+            <p className="text-[1.1rem] leading-relaxed text-dark-text-secondary m-0 max-md:text-base">Diff Please is a browser-based code comparison tool that helps developers quickly identify differences between two pieces of code. Everything runs locally in your browser for complete privacy.</p>
           </div>
 
-          <div className="faq-section how-it-works">
-            <h2>How It Works</h2>
-            <div className="steps">
-              <div className="step">
-                <strong>1. Paste Your Code</strong>
-                <p>Copy and paste your original code into the left editor panel and your modified code into the right panel.</p>
+          <div className="mb-12 p-8 bg-gradient-to-br from-[var(--header-bg)] to-[var(--dark-bg-secondary)] border-2 border-blue-500 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] max-md:p-6 max-md:mb-8">
+            <h2 className="text-[1.35rem] mb-6 text-blue-500 font-semibold max-md:text-[1.2rem]">How It Works</h2>
+            <div className="grid gap-6">
+              <div className="pl-4 border-l-[3px] border-l-dark-border">
+                <strong className="block text-[1.1rem] text-page-text mb-2 max-md:text-base">1. Paste Your Code</strong>
+                <p className="m-0 text-dark-text-secondary leading-relaxed">Copy and paste your original code into the left editor panel and your modified code into the right panel.</p>
               </div>
-              <div className="step">
-                <strong>2. Automatic Detection</strong>
-                <p>The tool automatically detects your programming language and applies syntax highlighting for better readability.</p>
+              <div className="pl-4 border-l-[3px] border-l-dark-border">
+                <strong className="block text-[1.1rem] text-page-text mb-2 max-md:text-base">2. Automatic Detection</strong>
+                <p className="m-0 text-dark-text-secondary leading-relaxed">The tool automatically detects your programming language and applies syntax highlighting for better readability.</p>
               </div>
-              <div className="step">
-                <strong>3. View Differences</strong>
-                <p>Differences are instantly highlighted. Red shows deletions, green shows additions. Toggle between side-by-side or inline view.</p>
+              <div className="pl-4 border-l-[3px] border-l-dark-border">
+                <strong className="block text-[1.1rem] text-page-text mb-2 max-md:text-base">3. View Differences</strong>
+                <p className="m-0 text-dark-text-secondary leading-relaxed">Differences are instantly highlighted. Red shows deletions, green shows additions. Toggle between side-by-side or inline view.</p>
               </div>
-              <div className="step">
-                <strong>4. Use Tools</strong>
-                <p>Beautify code, sort JSON keys, convert formats, or switch themes - all without your code leaving your browser.</p>
+              <div className="pl-4 border-l-[3px] border-l-dark-border">
+                <strong className="block text-[1.1rem] text-page-text mb-2 max-md:text-base">4. Use Tools</strong>
+                <p className="m-0 text-dark-text-secondary leading-relaxed">Beautify code, sort JSON keys, convert formats, or switch themes - all without your code leaving your browser.</p>
               </div>
             </div>
           </div>
-          
+
           {faqData.map((faq, index) => (
-            <div key={index} className="faq-section">
-              <h2>{faq.question}</h2>
-              <p>{faq.answer}</p>
+            <div key={index} className="mb-12 p-8 bg-header-bg border border-header-border rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] max-md:p-6 max-md:mb-8">
+              <h2 className="text-[1.35rem] mb-4 text-page-text font-semibold max-md:text-[1.2rem]">{faq.question}</h2>
+              <p className="text-[1.05rem] leading-relaxed text-dark-text-secondary max-md:text-base">{faq.answer}</p>
             </div>
           ))}
         </div>

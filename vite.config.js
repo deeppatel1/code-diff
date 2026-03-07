@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 export default defineConfig(({ command }) => {
   const isBuild = command === 'build';
@@ -33,11 +37,10 @@ export default defineConfig(({ command }) => {
   };
 
   return {
-    plugins: [react(), faqRewritePlugin],
+    plugins: [react(), tailwindcss(), faqRewritePlugin],
     base,
     server: {
       fs: {
-        // allow serving from project root (default) + monaco-editor package dir
         allow: [
           process.cwd(),
           path.dirname(require.resolve('monaco-editor/package.json'))
