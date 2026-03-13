@@ -144,50 +144,92 @@ export class CodeBeautifier {
   formatPython(code, options = {}) {
     const { indentSize = 4 } = options;
     const lines = code.split('\n');
-    let indentLevel = 0;
-    let formatted = [];
-    let inString = false;
-    let stringChar = '';
 
-    for (let line of lines) {
+    // Detect if code already has indentation structure
+    const hasExistingIndent = lines.some(l => /^\s+\S/.test(l));
+
+    if (hasExistingIndent) {
+      // Normalize existing indentation using a stack to track indent levels.
+      // This handles mixed tabs/spaces and inconsistent indent widths.
+      const levelStack = [0]; // stack of indent widths seen so far
+      return lines.map(line => {
+        if (!line.trim()) return '';
+        const rawWidth = (line.match(/^(\s*)/)[1]).replace(/\t/g, '    ').length;
+        const top = levelStack[levelStack.length - 1];
+        if (rawWidth > top) {
+          // Indent increased — push new level
+          levelStack.push(rawWidth);
+        } else if (rawWidth < top) {
+          // Indent decreased — pop back to matching or nearest level
+          while (levelStack.length > 1 && levelStack[levelStack.length - 1] > rawWidth) {
+            levelStack.pop();
+          }
+        }
+        const level = levelStack.length - 1;
+        return ' '.repeat(level * indentSize) + line.trim();
+      }).join('\n');
+    }
+
+    // Flat code (no indentation at all): use keyword heuristics with an indent stack.
+    // Track block openers (lines ending with ':') and their indent levels so that
+    // sibling defs/classes inside a parent block are indented correctly.
+    const formatted = [];
+    const blockStack = []; // stack of { level, keyword } for open blocks
+
+    for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed) {
         formatted.push('');
         continue;
       }
 
-      for (let i = 0; i < trimmed.length; i++) {
-        const char = trimmed[i];
-        const prev = i > 0 ? trimmed[i - 1] : '';
-        if ((char === '"' || char === "'") && prev !== '\\') {
-          if (!inString) {
-            inString = true;
-            stringChar = char;
-          } else if (char === stringChar) {
-            inString = false;
-            stringChar = '';
+      const currentLevel = blockStack.length > 0 ? blockStack[blockStack.length - 1].level + 1 : 0;
+
+      // Dedent for block continuations (else/elif/except/finally at same level as their if/try/for)
+      if (/^(elif\b|else:|else\b|except\b|except:|finally:)/.test(trimmed)) {
+        if (blockStack.length > 0) {
+          const level = blockStack[blockStack.length - 1].level;
+          formatted.push(' '.repeat(level * indentSize) + trimmed);
+          // If this continuation itself opens a block, update the stack entry
+          if (trimmed.endsWith(':')) {
+            blockStack[blockStack.length - 1] = { level, keyword: trimmed.split(/\s/)[0] };
+          }
+          continue;
+        }
+      }
+
+      // For def/class: pop back to the parent block level if this is a sibling
+      // (i.e., another def inside the same class, or another class at top level)
+      if (/^(def |class )/.test(trimmed) && blockStack.length > 0) {
+        const kw = trimmed.startsWith('def') ? 'def' : 'class';
+        // Pop child blocks to find the parent that would contain this def/class as a sibling
+        while (blockStack.length > 0) {
+          const top = blockStack[blockStack.length - 1];
+          // If the top of stack is a def/class at a sibling level, pop it (this replaces it)
+          // If the top is a class and we're a def, we're its child — don't pop
+          if (top.keyword === kw) {
+            blockStack.pop(); // sibling — pop so we're at the same level
+            break;
+          } else if (top.keyword === 'class' && kw === 'def') {
+            break; // def inside class — don't pop
+          } else if (top.keyword === 'def' && kw === 'def') {
+            blockStack.pop();
+            break;
+          } else {
+            // Pop intermediate blocks (if, for, while, etc.)
+            blockStack.pop();
           }
         }
       }
 
-      if (inString) {
-        formatted.push(line);
-        continue;
-      }
+      const level = blockStack.length > 0 ? blockStack[blockStack.length - 1].level + 1 : 0;
+      formatted.push(' '.repeat(level * indentSize) + trimmed);
 
-      if (/^(except|elif|else|finally|case)/.test(trimmed) ||
-        trimmed === 'else:' || trimmed === 'finally:') {
-        indentLevel = Math.max(0, indentLevel - 1);
-      }
-
-      const indentedLine = ' '.repeat(indentLevel * indentSize) + trimmed;
-      formatted.push(indentedLine);
-
-      if (trimmed.endsWith(':') &&
-        !/^#/.test(trimmed) &&
-        !trimmed.includes('"""') &&
-        !trimmed.includes("'''")) {
-        indentLevel++;
+      // Push block opener
+      if (trimmed.endsWith(':') && !/^#/.test(trimmed) &&
+        !trimmed.includes('"""') && !trimmed.includes("'''")) {
+        const kw = trimmed.split(/[\s(]/)[0];
+        blockStack.push({ level, keyword: kw });
       }
     }
     return formatted.join('\n');
