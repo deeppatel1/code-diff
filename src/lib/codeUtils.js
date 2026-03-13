@@ -397,10 +397,37 @@ export const detectLanguage = code => {
   } catch {
     // not JSON
   }
-  if (/^\s*import\s+React\s+/.test(t) || (/<\w+/.test(t) && t.includes(';'))) return 'javascript';
+  // Markdown (strong signals): code fences/images alone, or 2+ signals together,
+  // are reliable enough to check before JS/HTML/TS — prevents markdown with
+  // embedded code samples from being misdetected as JavaScript.
+  {
+    const md = [
+      /^#{1,6}\s+/m.test(t),                         // headings
+      /\[.+\]\(.+\)/.test(t),                        // inline link
+      /^(\*\*|__).+\1/m.test(t),                     // bold at line start
+      /(^|\n)>\s+/.test(t) && /\n/.test(t),           // blockquote (multi-line)
+      /(^|\n)```/.test(t),                            // code fence
+      /!\[.*\]\(.*\)/.test(t)                         // image
+    ];
+    const count = md.filter(Boolean).length;
+    if (md[4] || md[5] || count >= 2) return 'markdown';
+  }
+  if (/^\s*import\s+React\s+/.test(t) || (/^\s*<\w+[\s>]/m.test(t) && /^\s*(import|export|const|let|var|function)\s/m.test(t))) return 'javascript';
   if (t.startsWith('<') && t.endsWith('>')) return 'html';
   if (/^\s*(interface|type|enum)\s+\w+/.test(t) || (t.includes('import ') && t.includes(' from ') && t.includes(';'))) return 'typescript';
-  if (/^\s*import\s.+from/.test(t) || t.includes('function(') || t.includes('const ') || t.includes('let ')) return 'javascript';
+  if (/^\s*import\s.+from/.test(t) || /^\s*(const|let|var)\s/.test(t) || /^\s*(function\s|function\()/.test(t)) return 'javascript';
+  // Markdown (weak signals): single heading/bold/blockquote is enough after ruling out code languages
+  if (
+    /^#{1,6}\s+/m.test(t) ||                       // headings anywhere (multiline)
+    /^(\*\*|__).+\1/m.test(t) ||                   // bold at line start
+    (/(^|\n)>\s+/.test(t) && /\n/.test(t))          // blockquote (multi-line)
+  ) return 'markdown';
+  // CSV: 2+ lines, consistent comma-delimited columns (>= 2)
+  const csvLines = t.split('\n').filter(l => l.trim().length > 0);
+  if (csvLines.length >= 2) {
+    const counts = csvLines.slice(0, 10).map(l => l.split(',').length);
+    if (counts[0] >= 2 && counts.every(c => c === counts[0])) return 'csv';
+  }
   if (t.includes('{') && t.includes(';') && t.includes(':') && !t.includes('<') && !t.includes('>')) return 'css';
   if (/^def\s+\w+\(/.test(t) || (t.includes('import ') && t.includes(':'))) return 'python';
   if (/^\s*package\s+main/.test(t) || /^\s*func\s+main\s*\(\)\s*{/.test(t)) return 'go';
@@ -413,7 +440,6 @@ export const detectLanguage = code => {
   if (/^\s*package\s+\w+/.test(t) || /public\s+class/.test(t)) return 'java';
   if (/^\s*using\s+System/.test(t) || /namespace\s+\w+/.test(t)) return 'csharp';
   if (/^\s*SELECT\s+/.test(t.toUpperCase()) || /^\s*CREATE\s+/.test(t.toUpperCase())) return 'sql';
-  if (/^\s*#\s+/.test(t) || /^\[.*\]\(.*\)/.test(t)) return 'markdown';
   try {
     const parsedYaml = yaml.load(code);
     if (

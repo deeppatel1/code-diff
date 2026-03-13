@@ -1,17 +1,20 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { IconCode, IconColumns, IconAlignLeft, IconSparkles, IconWand, IconSortAscending, IconMinimize, IconSun, IconMoon, IconPalette, IconHeart, IconUpload, IconClock, IconShare } from '@tabler/icons-react';
+import { IconCode, IconColumns, IconAlignLeft, IconSparkles, IconWand, IconSortAscending, IconMinimize, IconSun, IconMoon, IconPalette, IconHeart, IconUpload, IconClock, IconShare, IconChevronUp, IconChevronDown, IconFold, IconEye, IconTable, IconX } from '@tabler/icons-react';
 import * as monaco from 'monaco-editor';
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
 import './globals.css';
 import { CodeBeautifier, calculateStats, detectLanguage } from './lib/codeUtils';
+import { MONACO_THEME_BY_MODE } from './lib/themes';
 import { analytics } from './services/analytics';
 import { saveSnapshot } from './lib/historyStore';
 import { db } from './lib/firebase';
 import HistoryPanel from './components/HistoryPanel';
 import ShareModal from './components/ShareModal';
+import MarkdownDiffPreview from './components/MarkdownDiffPreview';
+import PreviewOverlay from './components/PreviewOverlay';
 import { Toaster, toast } from 'sonner';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './components/ui/tooltip';
 import {
@@ -51,220 +54,6 @@ if (typeof window !== 'undefined') {
   };
 }
 
-// Define custom diff themes
-monaco.editor.defineTheme('airbnb-dark-diff', {
-  base: 'vs-dark',
-  inherit: true,
-  rules: [
-    { token: 'string.key.json', foreground: '79c0ff' },
-    { token: 'string.value.json', foreground: '56d364' },
-    { token: 'string.json', foreground: '56d364' },
-    { token: 'number.json', foreground: 'ffa657' },
-    { token: 'keyword.json', foreground: 'f85149' },
-    { token: 'operator.json', foreground: '8b949e' },
-    { token: 'delimiter.bracket.json', foreground: '8b949e' }
-  ],
-  colors: {
-    'editor.background': '#0d1117',
-    'editor.foreground': '#c9d1d9',
-    'editor.selectionBackground': '#4a5568',
-    'editor.selectionHighlightBackground': '#3a4555',
-    'editor.inactiveSelectionBackground': '#3a4555',
-    'editor.selectionForeground': '#ffffff',
-    'diffEditorGutter.removedLineBackground': '#3a1e22',
-    'diffEditor.removedTextBackground': '#ca181580',
-    'diffEditorGutter.insertedLineBackground': '#15372a',
-    'diffEditor.insertedTextBackground': '#2ea04380',
-    'diffEditor.border': '#30363d',
-  }
-});
-
-monaco.editor.defineTheme('airbnb-light-diff', {
-  base: 'vs',
-  inherit: true,
-  rules: [
-    { token: 'string.key.json', foreground: '005cc5' },
-    { token: 'string.value.json', foreground: '116329' },
-    { token: 'string.json', foreground: '116329' },
-    { token: 'number.json', foreground: '6f42c1' },
-    { token: 'keyword.json', foreground: 'd73a49' },
-    { token: 'operator.json', foreground: '6e7781' },
-    { token: 'delimiter.bracket.json', foreground: '6e7781' }
-  ],
-  colors: {
-    'editor.background': '#ffffff',
-    'editor.foreground': '#24292f',
-    'editor.selectionBackground': '#add6ff',
-    'editor.selectionHighlightBackground': '#d4e5ff',
-    'editor.inactiveSelectionBackground': '#d4e5ff',
-    'editor.selectionForeground': '#000000',
-    'diffEditorGutter.removedLineBackground': '#ffdce0',
-    'diffEditor.removedTextBackground': '#fb383840',
-    'diffEditorGutter.insertedLineBackground': '#aceebb',
-    'diffEditor.insertedTextBackground': '#0c8d2650',
-    'diffEditor.border': '#d0d7de',
-  }
-});
-
-monaco.editor.defineTheme('airbnb-cute-diff', {
-  base: 'vs',
-  inherit: true,
-  rules: [
-    { token: 'string.key.json', foreground: 'd43b8d' },
-    { token: 'string.value.json', foreground: '8c2b64' },
-    { token: 'string.json', foreground: '8c2b64' },
-    { token: 'number.json', foreground: 'c2317a' },
-    { token: 'keyword.json', foreground: 'b4246c' },
-    { token: 'operator.json', foreground: 'a13c74' },
-    { token: 'delimiter.bracket.json', foreground: 'a13c74' }
-  ],
-  colors: {
-    'editor.background': '#ffe7f4',
-    'editor.foreground': '#3f1735',
-    'editor.selectionBackground': '#f7c9e855',
-    'editor.selectionHighlightBackground': '#f7c9e830',
-    'editor.inactiveSelectionBackground': '#f7c9e820',
-    'diffEditorGutter.removedLineBackground': '#ffd6e480',
-    'diffEditor.removedTextBackground': '#f9508b80',
-    'diffEditorGutter.insertedLineBackground': '#e8ffe880',
-    'diffEditor.insertedTextBackground': '#64f56480',
-    'diffEditor.border': '#f3aacd'
-  }
-});
-
-monaco.editor.defineTheme('airbnb-midnight-diff', {
-  base: 'vs-dark',
-  inherit: true,
-  rules: [
-    { token: 'string.key.json', foreground: '6aa9ff' },
-    { token: 'string.value.json', foreground: '7be3a1' },
-    { token: 'string.json', foreground: '7be3a1' },
-    { token: 'number.json', foreground: 'ffb86c' },
-    { token: 'keyword.json', foreground: 'ff6b6b' },
-    { token: 'operator.json', foreground: '97a3b6' },
-    { token: 'delimiter.bracket.json', foreground: '97a3b6' }
-  ],
-  colors: {
-    'editor.background': '#0b1020',
-    'editor.foreground': '#e6edf6',
-    'editor.selectionBackground': '#23305a',
-    'editor.selectionHighlightBackground': '#1a2444',
-    'editor.inactiveSelectionBackground': '#1a2444',
-    'diffEditorGutter.removedLineBackground': '#3a1e22',
-    'diffEditor.removedTextBackground': '#ca181580',
-    'diffEditorGutter.insertedLineBackground': '#15372a',
-    'diffEditor.insertedTextBackground': '#2ea04380',
-    'diffEditor.border': '#2a355a',
-  }
-});
-
-monaco.editor.defineTheme('airbnb-sand-diff', {
-  base: 'vs',
-  inherit: true,
-  rules: [
-    { token: 'string.key.json', foreground: '8a5e2c' },
-    { token: 'string.value.json', foreground: '5b7a3a' },
-    { token: 'string.json', foreground: '5b7a3a' },
-    { token: 'number.json', foreground: '9c5fb5' },
-    { token: 'keyword.json', foreground: 'b8433a' },
-    { token: 'operator.json', foreground: '7a6e60' },
-    { token: 'delimiter.bracket.json', foreground: '7a6e60' }
-  ],
-  colors: {
-    'editor.background': '#faf6f0',
-    'editor.foreground': '#3b2f20',
-    'editor.selectionBackground': '#e8d9c5',
-    'editor.selectionHighlightBackground': '#f0e4d4',
-    'editor.inactiveSelectionBackground': '#f0e4d4',
-    'diffEditorGutter.removedLineBackground': '#ffdce0',
-    'diffEditor.removedTextBackground': '#fb383840',
-    'diffEditorGutter.insertedLineBackground': '#aceebb',
-    'diffEditor.insertedTextBackground': '#0c8d2650',
-    'diffEditor.border': '#d9cbb8',
-  }
-});
-
-monaco.editor.defineTheme('airbnb-slate-diff', {
-  base: 'vs-dark',
-  inherit: true,
-  rules: [
-    { token: 'string.key.json', foreground: '7aa2c2' },
-    { token: 'string.value.json', foreground: '9bdba5' },
-    { token: 'string.json', foreground: '9bdba5' },
-    { token: 'number.json', foreground: 'ffb86c' },
-    { token: 'keyword.json', foreground: 'ff7b7b' },
-    { token: 'operator.json', foreground: 'a5b1c2' },
-    { token: 'delimiter.bracket.json', foreground: 'a5b1c2' }
-  ],
-  colors: {
-    'editor.background': '#1b1f24',
-    'editor.foreground': '#e5e9ef',
-    'editor.selectionBackground': '#343d48',
-    'editor.selectionHighlightBackground': '#2a323b',
-    'editor.inactiveSelectionBackground': '#2a323b',
-    'diffEditorGutter.removedLineBackground': '#3a1e22',
-    'diffEditor.removedTextBackground': '#ca181580',
-    'diffEditorGutter.insertedLineBackground': '#15372a',
-    'diffEditor.insertedTextBackground': '#2ea04380',
-    'diffEditor.border': '#3a424c',
-  }
-});
-
-monaco.editor.defineTheme('airbnb-sky-diff', {
-  base: 'vs',
-  inherit: true,
-  rules: [
-    { token: 'string.key.json', foreground: '2d6cdf' },
-    { token: 'string.value.json', foreground: '2f7a5d' },
-    { token: 'string.json', foreground: '2f7a5d' },
-    { token: 'number.json', foreground: '6f42c1' },
-    { token: 'keyword.json', foreground: 'c13f4d' },
-    { token: 'operator.json', foreground: '5f6b77' },
-    { token: 'delimiter.bracket.json', foreground: '5f6b77' }
-  ],
-  colors: {
-    'editor.background': '#eef6ff',
-    'editor.foreground': '#1b2b3a',
-    'editor.selectionBackground': '#cfe2ff',
-    'editor.selectionHighlightBackground': '#e3efff',
-    'editor.inactiveSelectionBackground': '#e3efff',
-    'diffEditorGutter.removedLineBackground': '#ffdce0',
-    'diffEditor.removedTextBackground': '#fb383840',
-    'diffEditorGutter.insertedLineBackground': '#aceebb',
-    'diffEditor.insertedTextBackground': '#0c8d2650',
-    'diffEditor.border': '#c7d9f2',
-  }
-});
-
-// --- New Themes ---
-
-monaco.editor.defineTheme('monokai-diff', {
-  base: 'vs-dark',
-  inherit: true,
-  rules: [
-    { token: 'string.key.json', foreground: '66d9ef' },
-    { token: 'string.value.json', foreground: 'e6db74' },
-    { token: 'string.json', foreground: 'e6db74' },
-    { token: 'number.json', foreground: 'ae81ff' },
-    { token: 'keyword.json', foreground: 'f92672' },
-    { token: 'operator.json', foreground: 'f8f8f2' },
-    { token: 'delimiter.bracket.json', foreground: 'f8f8f2' }
-  ],
-  colors: {
-    'editor.background': '#272822',
-    'editor.foreground': '#f8f8f2',
-    'editor.selectionBackground': '#49483e',
-    'editor.selectionHighlightBackground': '#3e3d32',
-    'editor.inactiveSelectionBackground': '#3e3d32',
-    'diffEditorGutter.removedLineBackground': '#4b2029',
-    'diffEditor.removedTextBackground': '#f9267280',
-    'diffEditorGutter.insertedLineBackground': '#1e3a1e',
-    'diffEditor.insertedTextBackground': '#a6e22e50',
-    'diffEditor.border': '#3e3d32',
-  }
-});
-
-
 
 const indentationSize = 4;
 const useTabs = false;
@@ -273,20 +62,12 @@ const THEME_STORAGE_KEY = 'diffright-theme-mode';
 const ORIGINAL_STORAGE_KEY = 'diffright-session-original';
 const MODIFIED_STORAGE_KEY = 'diffright-session-modified';
 const VIEW_STORAGE_KEY = 'diffright-session-view';
+const COLLAPSE_STORAGE_KEY = 'diffright-collapse-unchanged';
 
-const MONACO_THEME_BY_MODE = {
-  dark: 'airbnb-dark-diff',
-  light: 'airbnb-light-diff',
-  pink: 'airbnb-cute-diff',
-  midnight: 'airbnb-midnight-diff',
-  sand: 'airbnb-sand-diff',
-  slate: 'airbnb-slate-diff',
-  sky: 'airbnb-sky-diff',
-  monokai: 'monokai-diff',
-};
 monaco.editor.setTheme(MONACO_THEME_BY_MODE.dark);
 
 const btnBase = 'flex items-center gap-1 px-2.5 py-1 bg-btn-bg text-btn-text border border-btn-border rounded-md text-[0.65rem] font-semibold cursor-pointer transition-all duration-200 uppercase tracking-wide whitespace-nowrap hover:enabled:bg-btn-hover hover:enabled:-translate-y-px disabled:opacity-70 disabled:cursor-not-allowed';
+const btnAccent = `${btnBase} border-lang-indicator/40 text-lang-indicator`;
 
 export default function App() {
   const containerRef = useRef(null);
@@ -316,6 +97,13 @@ export default function App() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [diffStats, setDiffStats] = useState({ additions: 0, deletions: 0 });
+  const [collapseUnchanged, setCollapseUnchanged] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return sessionStorage.getItem(COLLAPSE_STORAGE_KEY) !== 'false';
+  });
+  const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
+  const [previewOverlay, setPreviewOverlay] = useState(null);
+  const formatHintShownRef = useRef(false);
 
   const themeLabels = {
     dark: 'Night',
@@ -506,14 +294,16 @@ export default function App() {
   // --- Share content getter ---
 
   const getShareContent = useCallback(() => {
-    if (!diffEditorRef.current) return { original: '', modified: '', originalLang: null, modifiedLang: null };
+    if (!diffEditorRef.current) return { original: '', modified: '', originalLang: null, modifiedLang: null, lineChanges: [], preview: null };
     return {
       original: diffEditorRef.current.getOriginalEditor().getModel().getValue(),
       modified: diffEditorRef.current.getModifiedEditor().getModel().getValue(),
       originalLang: originalLanguage,
       modifiedLang: modifiedLanguage,
+      lineChanges: diffEditorRef.current.getLineChanges() || [],
+      preview: previewOverlay || null,
     };
-  }, [originalLanguage, modifiedLanguage]);
+  }, [originalLanguage, modifiedLanguage, previewOverlay]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -564,7 +354,8 @@ export default function App() {
       enableSplitViewResizing: false,
       useInlineViewWhenSpaceIsLimited: false,
       minimap: { enabled: false },
-      fontFamily: 'ui-monospace, SFMono-Regular, SFMono, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+      fontFamily: "'Fira Code', ui-monospace, SFMono-Regular, SFMono, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+      fontLigatures: true,
       fontSize: 13,
       lineHeight: 20,
       wordWrap: 'on',
@@ -577,7 +368,18 @@ export default function App() {
       originalEditable: true,
       readOnly: false,
       scrollBeyondLastLine: false,
-      scrollBeyondLastColumn: 3
+      scrollBeyondLastColumn: 3,
+      find: {
+        seedSearchStringFromSelection: 'always',
+        autoFindInSelection: 'multiline',
+        loop: true,
+      },
+      hideUnchangedRegions: {
+        enabled: collapseUnchanged,
+        revealLineCount: 20,
+        minimumLineCount: 3,
+        contextLineCount: 3,
+      },
     });
 
     const originalModel = monaco.editor.createModel('', originalLanguage);
@@ -592,6 +394,12 @@ export default function App() {
       if (savedModified !== null) {
         modifiedModel.setValue(savedModified);
       }
+      // Restore preview mode from shared link
+      const sharedPreview = sessionStorage.getItem('diffright-shared-preview');
+      if (sharedPreview) {
+        sessionStorage.removeItem('diffright-shared-preview');
+        setPreviewOverlay(sharedPreview === 'markdown-full' ? 'markdown' : sharedPreview);
+      }
     }
     diffEditorRef.current.getOriginalEditor().updateOptions({
       padding: { top: 16, bottom: 16 },
@@ -604,6 +412,52 @@ export default function App() {
       splitViewDefaultRatio: 0.512
     });
     diffEditorRef.current.layout();
+
+    // Register command palette and custom actions
+    const registerActions = (editor, side) => {
+      editor.addAction({
+        id: `diffplease.commandPalette`,
+        label: 'Command Palette',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyP],
+        run: (ed) => ed.trigger('keyboard', 'editor.action.quickCommand', null),
+      });
+      editor.addAction({
+        id: `diffplease.format.${side}`,
+        label: `Format Code (${side})`,
+        contextMenuGroupId: '1_modification',
+        contextMenuOrder: 1,
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyB],
+        run: () => createBeautifyHandler(side)(),
+      });
+      editor.addAction({
+        id: `diffplease.sortJson.${side}`,
+        label: `Sort JSON Keys (${side})`,
+        contextMenuGroupId: '1_modification',
+        contextMenuOrder: 2,
+        run: () => createSortHandler(side)(),
+      });
+      editor.addAction({
+        id: `diffplease.compactJson.${side}`,
+        label: `Minify JSON (${side})`,
+        contextMenuGroupId: '1_modification',
+        contextMenuOrder: 3,
+        run: () => createCompactHandler(side)(),
+      });
+      editor.addAction({
+        id: `diffplease.goToNextDiff.${side}`,
+        label: 'Go to Next Change',
+        keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.DownArrow],
+        run: () => diffEditorRef.current?.goToDiff('next'),
+      });
+      editor.addAction({
+        id: `diffplease.goToPrevDiff.${side}`,
+        label: 'Go to Previous Change',
+        keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.UpArrow],
+        run: () => diffEditorRef.current?.goToDiff('previous'),
+      });
+    };
+    registerActions(diffEditorRef.current.getOriginalEditor(), 'original');
+    registerActions(diffEditorRef.current.getModifiedEditor(), 'modified');
 
     // Update handlers
     const updateOriginal = () => {
@@ -625,6 +479,12 @@ export default function App() {
       if (lang !== lastDetectedLangRef.current.original) {
         lastDetectedLangRef.current.original = lang;
         if (lang !== 'plaintext') analytics.languageDetected(lang, 'original');
+      }
+
+      if (!formatHintShownRef.current && val.length > 20 && beautifierRef.current.isBeautifiable(lang) && !localStorage.getItem('diffright-format-hint-shown')) {
+        formatHintShownRef.current = true;
+        localStorage.setItem('diffright-format-hint-shown', '1');
+        toast('Tip: Right-click or press Ctrl+Shift+B to format code', { duration: 5000 });
       }
 
       const modifiedVal = modifiedModel.getValue();
@@ -703,11 +563,56 @@ export default function App() {
     if (diffEditorRef.current) {
       diffEditorRef.current.updateOptions({
         renderSideBySide: isSideBySide,
-        splitViewDefaultRatio: 0.512
+        splitViewDefaultRatio: 0.512,
+        hideUnchangedRegions: {
+          enabled: collapseUnchanged,
+          revealLineCount: 20,
+          minimumLineCount: 3,
+          contextLineCount: 3,
+        },
       });
       diffEditorRef.current.layout();
     }
-  }, [isSideBySide, themeMode]);
+  }, [isSideBySide, themeMode, collapseUnchanged]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    sessionStorage.setItem(COLLAPSE_STORAGE_KEY, collapseUnchanged ? 'true' : 'false');
+  }, [collapseUnchanged]);
+
+  // --- Keyboard shortcuts (global, not handled by Monaco) ---
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+
+      if (e.shiftKey && (e.key === 'v' || e.key === 'V')) {
+        e.preventDefault();
+        setIsSideBySide(prev => {
+          const next = !prev;
+          analytics.toggleView(next ? 'side-by-side' : 'inline');
+          return next;
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handlePreviewOverlay = (type) => {
+    setPreviewOverlay(prev => prev === type ? null : type);
+    setShowMarkdownPreview(false);
+  };
+
+  // Dismiss overlay when language changes away from preview type
+  useEffect(() => {
+    if (previewOverlay && originalLanguage !== previewOverlay) setPreviewOverlay(null);
+  }, [originalLanguage, previewOverlay]);
+
+  // Dismiss overlay when switching to unified mode
+  useEffect(() => {
+    if (!isSideBySide && previewOverlay) setPreviewOverlay(null);
+  }, [isSideBySide]);
 
   const TipButton = ({ tip, children, ...props }) => (
     <Tooltip>
@@ -718,61 +623,59 @@ export default function App() {
     </Tooltip>
   );
 
-  const renderSideButtons = (side, language, isBeautifyingState) => (
+  const btnPill = 'flex items-center justify-center h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 px-2.5 gap-1.5 text-[0.8rem] font-semibold tracking-wide hover:enabled:bg-btn-hover hover:enabled:-translate-y-px disabled:opacity-70 disabled:cursor-not-allowed backdrop-blur-sm';
+  const btnPillAccent = `${btnPill} border-lang-indicator/40 text-lang-indicator`;
+
+  const renderEditorActions = (side, language, isBeautifyingState) => (
     <>
-      <TipButton
-        tip="Open file"
-        className={`${btnBase} text-[0.6rem]`}
-        onClick={() => { (side === 'original' ? originalFileRef : modifiedFileRef).current?.click(); analytics.fileOpened(side); }}
-        title="Open file"
-      >
-        <IconUpload size={14} /> Open
-      </TipButton>
-      <input
-        ref={side === 'original' ? originalFileRef : modifiedFileRef}
-        type="file"
-        className="hidden"
-        onChange={handleFileInputChange(side)}
-        accept=".js,.jsx,.ts,.tsx,.json,.html,.css,.scss,.less,.md,.yaml,.yml,.xml,.py,.java,.c,.cpp,.go,.rs,.rb,.sql,.txt,.sh,.php,.swift,.kt"
-      />
       {isLanguageBeautifiable(language) && (
         <TipButton
-          tip={`Beautify ${language}`}
-          className={`${btnBase} ${isBeautifyingState ? 'bg-btn-hover' : ''}`}
+          tip={`Auto-format ${language} (Ctrl+Shift+B)`}
+          className={btnPill}
           onClick={createBeautifyHandler(side)}
           disabled={isBeautifyingState}
-          title={`Beautify ${language}`}
+          title={`Format ${language}`}
           aria-busy={isBeautifyingState}
         >
           {isBeautifyingState ? (
             <>
               <IconSparkles size={14} className="animate-spin" />
-              Beautifying...
+              <span className="hidden md:inline">Formatting...</span>
             </>
           ) : (
             <>
               <IconSparkles size={14} />
-              Beautify
+              <span className="hidden md:inline">Format</span>
             </>
           )}
         </TipButton>
       )}
       {language === 'json' && (
         <>
-          <TipButton tip="Sort JSON keys alphabetically" className={btnBase} onClick={createSortHandler(side)} title="Sort JSON">
-            <IconSortAscending size={14} /> Sort
+          <TipButton tip="Sort JSON keys alphabetically" className={btnPill} onClick={createSortHandler(side)} title="Sort JSON">
+            <IconSortAscending size={14} /> <span className="hidden md:inline">Sort</span>
           </TipButton>
-          <TipButton tip="Minify JSON (remove whitespace)" className={btnBase} onClick={createCompactHandler(side)} title="Minify JSON">
-            <IconMinimize size={14} /> Minify
+          <TipButton tip="Minify JSON (remove whitespace)" className={btnPill} onClick={createCompactHandler(side)} title="Minify JSON">
+            <IconMinimize size={14} /> <span className="hidden md:inline">Minify</span>
           </TipButton>
-          <TipButton tip="Convert JSON to YAML" className={btnBase} onClick={createConvertToYamlHandler(side)} title="Convert JSON to YAML">
-            <IconWand size={14} /> JSON to YAML
+          <TipButton tip="Convert JSON to YAML" className={btnPill} onClick={createConvertToYamlHandler(side)} title="Convert JSON to YAML">
+            <IconWand size={14} /> <span className="hidden md:inline">→ YAML</span>
           </TipButton>
         </>
       )}
       {language === 'yaml' && (
-        <TipButton tip="Convert YAML to JSON" className={btnBase} onClick={createConvertToJsonHandler(side)} title="Convert YAML to JSON">
-          <IconWand size={14} /> YAML to JSON
+        <TipButton tip="Convert YAML to JSON" className={btnPill} onClick={createConvertToJsonHandler(side)} title="Convert YAML to JSON">
+          <IconWand size={14} /> <span className="hidden md:inline">→ JSON</span>
+        </TipButton>
+      )}
+      {side === 'original' && (language === 'markdown' || language === 'csv') && (
+        <TipButton
+          tip={language === 'csv' ? 'Preview as table' : 'Preview rendered markdown'}
+          className={previewOverlay === language ? btnPillAccent : btnPill}
+          onClick={() => handlePreviewOverlay(language)}
+        >
+          {language === 'csv' ? <IconTable size={14} /> : <IconEye size={14} />}
+          <span className="hidden md:inline">Preview</span>
         </TipButton>
       )}
     </>
@@ -782,24 +685,25 @@ export default function App() {
     <TooltipProvider delayDuration={300}>
       <Helmet>
         <title>Diff Please - Fast, Privacy-First Code Comparison Tool</title>
-        <meta name="description" content="Compare code side-by-side or inline with syntax highlighting. Privacy-first diff tool with beautify, JSON utilities, and theme support. No sign-up required." />
-        <meta name="keywords" content="code diff, compare code, diff tool, code comparison, syntax highlighting, developer tools, privacy-first" />
+        <meta name="description" content="Compare code side-by-side or inline with syntax highlighting. Privacy-first diff tool with beautify, JSON utilities, CSV viewer, Markdown preview, and theme support. No sign-up required." />
+        <meta name="keywords" content="code diff, compare code, diff tool, code comparison, syntax highlighting, developer tools, privacy-first, csv viewer, markdown preview, json formatter" />
         <link rel="canonical" href="https://diffplease.com/" />
       </Helmet>
       <div className="flex flex-col h-screen font-[-apple-system,BlinkMacSystemFont,'Segoe_UI','Noto_Sans',Helvetica,Arial,sans-serif]">
-      <div className="flex justify-center items-center p-2.5 text-dark-text shrink-0 relative z-10 bg-header-bg border-b border-header-border">
-        <div className="flex items-center gap-3 -ml-14">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center p-2.5 text-dark-text shrink-0 z-10 bg-header-bg border-b border-header-border gap-3">
+        <div />
+        <div className="flex items-center gap-3 shrink-0 -ml-8">
           <svg width="40" height="32" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="header-icon w-10 h-8 transition-all duration-300 shrink-0 cursor-pointer hover:scale-[1.08] hover:-rotate-2 hover:drop-shadow-[0_6px_12px_rgba(0,0,0,0.15)]">
             <path d="M14 19L6 12L14 5" stroke="#da3633" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M22 5L30 12L22 19" stroke="#2ea043" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <div><h1 className="m-0 text-2xl font-medium tracking-tighter font-['Fira_Code'] text-dark-text">diff please</h1></div>
+          <div><h1 className="m-0 text-lg md:text-2xl font-medium tracking-tighter font-['Fira_Code'] text-dark-text whitespace-nowrap">diff please</h1></div>
         </div>
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
+        <div className="flex items-center shrink-0 justify-self-end">
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                className="flex items-center justify-center w-8 h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 hover:bg-btn-hover hover:-translate-y-px"
+                className="flex items-center justify-center h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.8rem] font-semibold tracking-wide hover:bg-btn-hover hover:-translate-y-px"
                 onClick={() => {
                   const newMode = !isSideBySide;
                   setIsSideBySide(newMode);
@@ -808,44 +712,45 @@ export default function App() {
                 title={isSideBySide ? "Switch to Unified View" : "Switch to Side-by-Side View"}
                 aria-label={isSideBySide ? "Switch to Unified View" : "Switch to Side-by-Side View"}
               >
-                {isSideBySide ? <IconAlignLeft size={16} /> : <IconColumns size={16} />}
+                {isSideBySide ? <IconAlignLeft size={14} /> : <IconColumns size={14} />}
+                <span className="hidden md:inline">{isSideBySide ? 'Unified' : 'Split'}</span>
               </button>
             </TooltipTrigger>
-            <TooltipContent>{isSideBySide ? 'Unified View' : 'Side-by-Side View'}</TooltipContent>
+            <TooltipContent>{isSideBySide ? 'Unified View' : 'Side-by-Side View'} (Ctrl+Shift+V)</TooltipContent>
           </Tooltip>
+
 
           {db && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  className="flex items-center justify-center w-8 h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 hover:bg-btn-hover hover:-translate-y-px"
+                  className="flex items-center justify-center h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.8rem] font-semibold tracking-wide hover:bg-btn-hover hover:-translate-y-px"
                   onClick={() => { setHistoryOpen(true); analytics.historyOpened(); }}
                   title="History"
                   aria-label="View history"
                 >
                   <IconClock size={16} />
+                  <span className="hidden md:inline">History</span>
                 </button>
               </TooltipTrigger>
               <TooltipContent>View history</TooltipContent>
             </Tooltip>
           )}
 
-          {db && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  className="flex items-center justify-center h-8 w-auto rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.8rem] font-semibold tracking-wide hover:bg-btn-hover hover:-translate-y-px"
-                  onClick={() => { setShareOpen(true); analytics.shareOpened(); }}
-                  title="Share"
-                  aria-label="Share diff"
-                >
-                  <IconShare size={14} />
-                  <span>Share Diff</span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>Share this diff with a link</TooltipContent>
-            </Tooltip>
-          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className="flex items-center justify-center h-8 w-auto rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.8rem] font-semibold tracking-wide hover:bg-btn-hover hover:-translate-y-px"
+                onClick={() => { setShareOpen(true); analytics.shareOpened(); }}
+                title="Share"
+                aria-label="Share diff"
+              >
+                <IconShare size={14} />
+                <span className="hidden md:inline">Share Markdown</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Share diff as markdown</TooltipContent>
+          </Tooltip>
 
           <Select
             value={themeMode}
@@ -856,7 +761,7 @@ export default function App() {
           >
             <SelectTrigger aria-label="Select theme">
               <span className="flex items-center">{themeIcon}</span>
-              <span className="leading-none">{themeLabel}</span>
+              <span className="hidden md:inline leading-none">{themeLabel}</span>
             </SelectTrigger>
             <SelectContent>
               {themeGroups.map(group => (
@@ -891,97 +796,193 @@ export default function App() {
         </div>
       </div>
 
-      <div
-        className="flex-1 overflow-hidden relative"
-        ref={containerRef}
-        onDragOver={handleContainerDragOver}
-        onDragLeave={handleContainerDragLeave}
-        onDrop={handleContainerDrop}
-      >
-        {/* Empty state placeholders */}
-        {originalStats.characters === 0 && modifiedStats.characters === 0 && (
-          <>
-            <div className="absolute top-0 bottom-0 w-1/2 left-0 z-[3] pointer-events-none flex items-center justify-center">
-              <div className="text-center opacity-30 select-none">
-                <p className="text-[0.85rem] font-medium text-dark-text-secondary m-0">Paste, type, or drop a file</p>
-                <p className="text-[0.75rem] text-dark-text-secondary m-0 mt-1">Original</p>
-              </div>
-            </div>
-            <div className="absolute top-0 bottom-0 w-1/2 right-0 z-[3] pointer-events-none flex items-center justify-center">
-              <div className="text-center opacity-30 select-none">
-                <p className="text-[0.85rem] font-medium text-dark-text-secondary m-0">Paste, type, or drop a file</p>
-                <p className="text-[0.75rem] text-dark-text-secondary m-0 mt-1">Modified</p>
-              </div>
-            </div>
-          </>
-        )}
 
-        {/* Drop zone visual overlays */}
-        {(dragOver.original || dragOver.modified) && (
-          <>
-            <div className={`absolute top-0 bottom-0 w-1/2 left-0 z-[5] pointer-events-none ${dragOver.original ? 'bg-[rgba(46,160,67,0.08)] border-2 border-dashed border-[rgba(46,160,67,0.5)] rounded' : ''}`}>
-              {dragOver.original && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 py-3 px-6 bg-[rgba(46,160,67,0.15)] border border-[rgba(46,160,67,0.4)] rounded-lg text-page-text text-[0.9rem] font-semibold">
-                  Drop file here (Original)
+      <div className="flex-1 overflow-hidden relative">
+        <div
+          className={`absolute inset-0 ${showMarkdownPreview ? 'hidden' : ''} ${previewOverlay ? 'preview-active' : ''}`}
+          ref={containerRef}
+          onDragOver={handleContainerDragOver}
+          onDragLeave={handleContainerDragLeave}
+          onDrop={handleContainerDrop}
+        >
+          {/* Empty state placeholders */}
+          {originalStats.characters === 0 && modifiedStats.characters === 0 && (
+            <>
+              <div className="absolute top-0 bottom-0 w-1/2 left-0 z-[3] pointer-events-none flex items-center justify-center">
+                <div className="text-center select-none flex flex-col items-center gap-2">
+                  <svg width="48" height="48" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-25">
+                    <path d="M14 19L6 12L14 5" stroke="#da3633" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <p className="text-[0.85rem] font-medium text-dark-text-secondary m-0 opacity-55">Paste, type, or drop a file</p>
+                  <p className="text-[0.7rem] text-dark-text-secondary m-0 opacity-40">Ctrl+V to paste · or drag a file</p>
+                  <p className="text-[0.8rem] font-semibold text-dark-text-secondary m-0 mt-1 opacity-50 uppercase tracking-wide">Original</p>
                 </div>
-              )}
-            </div>
-            <div className={`absolute top-0 bottom-0 w-1/2 right-0 z-[5] pointer-events-none ${dragOver.modified ? 'bg-[rgba(46,160,67,0.08)] border-2 border-dashed border-[rgba(46,160,67,0.5)] rounded' : ''}`}>
-              {dragOver.modified && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 py-3 px-6 bg-[rgba(46,160,67,0.15)] border border-[rgba(46,160,67,0.4)] rounded-lg text-page-text text-[0.9rem] font-semibold">
-                  Drop file here (Modified)
+              </div>
+              <div className="absolute top-0 bottom-0 w-1/2 right-0 z-[3] pointer-events-none flex items-center justify-center">
+                <div className="text-center select-none flex flex-col items-center gap-2">
+                  <svg width="48" height="48" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-25">
+                    <path d="M22 5L30 12L22 19" stroke="#2ea043" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <p className="text-[0.85rem] font-medium text-dark-text-secondary m-0 opacity-55">Paste, type, or drop a file</p>
+                  <p className="text-[0.7rem] text-dark-text-secondary m-0 opacity-40">Ctrl+V to paste · or drag a file</p>
+                  <p className="text-[0.8rem] font-semibold text-dark-text-secondary m-0 mt-1 opacity-50 uppercase tracking-wide">Modified</p>
                 </div>
-              )}
+              </div>
+            </>
+          )}
+
+          {/* Drop zone visual overlays */}
+          {(dragOver.original || dragOver.modified) && (
+            <>
+              <div className={`absolute top-0 bottom-0 w-1/2 left-0 z-[5] pointer-events-none ${dragOver.original ? 'bg-[rgba(46,160,67,0.08)] border-2 border-dashed border-[rgba(46,160,67,0.5)] rounded' : ''}`}>
+                {dragOver.original && (
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 py-3 px-6 bg-[rgba(46,160,67,0.15)] border border-[rgba(46,160,67,0.4)] rounded-lg text-page-text text-[0.9rem] font-semibold">
+                    Drop file here (Original)
+                  </div>
+                )}
+              </div>
+              <div className={`absolute top-0 bottom-0 w-1/2 right-0 z-[5] pointer-events-none ${dragOver.modified ? 'bg-[rgba(46,160,67,0.08)] border-2 border-dashed border-[rgba(46,160,67,0.5)] rounded' : ''}`}>
+                {dragOver.modified && (
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 py-3 px-6 bg-[rgba(46,160,67,0.15)] border border-[rgba(46,160,67,0.4)] rounded-lg text-page-text text-[0.9rem] font-semibold">
+                    Drop file here (Modified)
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Floating action buttons at bottom of each pane */}
+          {isSideBySide ? (
+            <>
+              <div className="absolute bottom-3 left-0 w-1/2 z-[4] flex items-center justify-center gap-1.5">
+                {renderEditorActions('original', originalLanguage, isBeautifying.original)}
+              </div>
+              <div className="absolute bottom-3 right-0 w-1/2 z-[4] flex items-center justify-center gap-1.5">
+                {renderEditorActions('modified', modifiedLanguage, isBeautifying.modified)}
+              </div>
+            </>
+          ) : (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[4] flex items-center gap-1.5">
+              {renderEditorActions('modified', modifiedLanguage, isBeautifying.modified)}
             </div>
-          </>
+          )}
+
+          {previewOverlay && (
+            <PreviewOverlay
+              type={previewOverlay}
+              content={diffEditorRef.current?.getOriginalEditor().getModel().getValue() || ''}
+              onClose={() => setPreviewOverlay(null)}
+            />
+          )}
+        </div>
+
+        {showMarkdownPreview && (
+          <MarkdownDiffPreview
+            original={diffEditorRef.current?.getOriginalEditor().getModel().getValue() || ''}
+            modified={diffEditorRef.current?.getModifiedEditor().getModel().getValue() || ''}
+          />
         )}
       </div>
 
       <div className="py-1.5 px-4 bg-footer-bg relative z-10 border-t border-footer-border">
         <div className="grid grid-cols-[1fr_auto_1fr] w-full items-center gap-3">
-          {/* Left side — original stats + buttons */}
+          {/* Left side — original stats + open */}
           <div className="flex items-center gap-2.5 justify-self-start overflow-x-auto min-w-0 scrollbar-none">
+            <TipButton
+              tip="Open file (original)"
+              className={`${btnBase} text-[0.6rem]`}
+              onClick={() => { originalFileRef.current?.click(); analytics.fileOpened('original'); }}
+              title="Open file"
+            >
+              <IconUpload size={14} /> <span className="hidden md:inline">Open</span>
+            </TipButton>
+            <input
+              ref={originalFileRef}
+              type="file"
+              className="hidden"
+              onChange={handleFileInputChange('original')}
+              accept=".js,.jsx,.ts,.tsx,.json,.html,.css,.scss,.less,.md,.yaml,.yml,.xml,.py,.java,.c,.cpp,.go,.rs,.rb,.sql,.txt,.sh,.php,.swift,.kt"
+            />
             <div className="flex items-center gap-1.5 text-[0.75rem] text-dark-text-secondary tabular-nums" aria-live="polite" role="status">
               <span>{originalStats.lines} <span className="opacity-60">lines</span></span>
-              <span className="opacity-30">·</span>
-              <span>{originalStats.words} <span className="opacity-60">words</span></span>
-              <span className="opacity-30">·</span>
-              <span>{originalStats.characters} <span className="opacity-60">chars</span></span>
+              <span className="opacity-30 hidden md:inline">·</span>
+              <span className="hidden md:inline">{originalStats.words} <span className="opacity-60">words</span></span>
+              <span className="opacity-30 hidden md:inline">·</span>
+              <span className="hidden md:inline">{originalStats.characters} <span className="opacity-60">chars</span></span>
             </div>
-            {renderSideButtons('original', originalLanguage, isBeautifying.original)}
-          </div>
-
-          {/* Center — diff stats badge */}
-          <div className="flex justify-center items-center shrink-0 -ml-8">
-            {(diffStats.additions > 0 || diffStats.deletions > 0) && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="inline-grid grid-cols-2 rounded-md overflow-hidden border border-dark-border text-[0.7rem] font-bold tabular-nums leading-none cursor-default">
-                    <span className="flex items-center justify-center py-1 px-2.5 bg-[rgba(46,160,67,0.15)] text-green-500 min-w-[2.5rem]">
-                      +{diffStats.additions}
-                    </span>
-                    <span className="flex items-center justify-center py-1 px-2.5 bg-[rgba(248,81,73,0.15)] text-red-500 min-w-[2.5rem] border-l border-dark-border">
-                      -{diffStats.deletions}
-                    </span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>{diffStats.additions} additions, {diffStats.deletions} deletions</TooltipContent>
-              </Tooltip>
+            {originalLanguage !== 'plaintext' && (
+              <>
+                <span className="opacity-20 text-dark-text-secondary">|</span>
+                <span className="text-[0.6rem] font-semibold uppercase tracking-wider text-lang-indicator/90 bg-lang-indicator/10 px-1.5 py-0.5 rounded">{originalLanguage}</span>
+              </>
             )}
           </div>
 
-          {/* Right side — modified buttons + stats */}
+          {/* Center — diff nav + stats badge */}
+          <div className="flex justify-center items-center shrink-0 -ml-8 gap-1.5">
+            {(diffStats.additions > 0 || diffStats.deletions > 0) && (
+              <>
+                <TipButton
+                  tip="Previous change (Alt+Up)"
+                  className="flex items-center justify-center w-6 h-6 rounded border border-dark-border bg-transparent text-dark-text-secondary cursor-pointer transition-all hover:bg-btn-hover hover:text-dark-text"
+                  onClick={() => diffEditorRef.current?.goToDiff('previous')}
+                >
+                  <IconChevronUp size={14} />
+                </TipButton>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="inline-grid grid-cols-2 rounded-md overflow-hidden border border-dark-border text-[0.7rem] font-bold tabular-nums leading-none cursor-default">
+                      <span className="flex items-center justify-center py-1 px-2.5 bg-[rgba(46,160,67,0.15)] text-green-500 min-w-[2.5rem]">
+                        +{diffStats.additions}
+                      </span>
+                      <span className="flex items-center justify-center py-1 px-2.5 bg-[rgba(248,81,73,0.15)] text-red-500 min-w-[2.5rem] border-l border-dark-border">
+                        -{diffStats.deletions}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>{diffStats.additions} additions, {diffStats.deletions} deletions</TooltipContent>
+                </Tooltip>
+                <TipButton
+                  tip="Next change (Alt+Down)"
+                  className="flex items-center justify-center w-6 h-6 rounded border border-dark-border bg-transparent text-dark-text-secondary cursor-pointer transition-all hover:bg-btn-hover hover:text-dark-text"
+                  onClick={() => diffEditorRef.current?.goToDiff('next')}
+                >
+                  <IconChevronDown size={14} />
+                </TipButton>
+              </>
+            )}
+          </div>
+
+          {/* Right side — modified stats + open */}
           <div className="flex items-center gap-2.5 justify-self-end overflow-x-auto min-w-0 scrollbar-none">
-            <div className="flex flex-wrap items-center gap-1.5">
-              {renderSideButtons('modified', modifiedLanguage, isBeautifying.modified)}
-            </div>
+            {modifiedLanguage !== 'plaintext' && (
+              <>
+                <span className="text-[0.6rem] font-semibold uppercase tracking-wider text-lang-indicator/90 bg-lang-indicator/10 px-1.5 py-0.5 rounded">{modifiedLanguage}</span>
+                <span className="opacity-20 text-dark-text-secondary">|</span>
+              </>
+            )}
             <div className="flex items-center gap-1.5 text-[0.75rem] text-dark-text-secondary tabular-nums" aria-live="polite" role="status">
               <span>{modifiedStats.lines} <span className="opacity-60">lines</span></span>
-              <span className="opacity-30">·</span>
-              <span>{modifiedStats.words} <span className="opacity-60">words</span></span>
-              <span className="opacity-30">·</span>
-              <span>{modifiedStats.characters} <span className="opacity-60">chars</span></span>
+              <span className="opacity-30 hidden md:inline">·</span>
+              <span className="hidden md:inline">{modifiedStats.words} <span className="opacity-60">words</span></span>
+              <span className="opacity-30 hidden md:inline">·</span>
+              <span className="hidden md:inline">{modifiedStats.characters} <span className="opacity-60">chars</span></span>
             </div>
+            <TipButton
+              tip="Open file (modified)"
+              className={`${btnBase} text-[0.6rem]`}
+              onClick={() => { modifiedFileRef.current?.click(); analytics.fileOpened('modified'); }}
+              title="Open file"
+            >
+              <IconUpload size={14} /> <span className="hidden md:inline">Open</span>
+            </TipButton>
+            <input
+              ref={modifiedFileRef}
+              type="file"
+              className="hidden"
+              onChange={handleFileInputChange('modified')}
+              accept=".js,.jsx,.ts,.tsx,.json,.html,.css,.scss,.less,.md,.yaml,.yml,.xml,.py,.java,.c,.cpp,.go,.rs,.rb,.sql,.txt,.sh,.php,.swift,.kt"
+            />
           </div>
         </div>
       </div>

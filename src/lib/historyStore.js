@@ -1,5 +1,4 @@
-import { db, doc, setDoc, getOrCreateAnonUser } from './firebase';
-import { collection, query, where, orderBy, getDocs, deleteDoc } from 'firebase/firestore';
+import { db, getOrCreateAnonUser, doc, setDoc, collection, query, where, orderBy, getDocs, deleteDoc, writeBatch } from './firebase';
 import { nanoid } from 'nanoid';
 
 let lastSavedHash = '';
@@ -12,8 +11,11 @@ function hashContent(original, modified) {
 /**
  * Save a snapshot (debounced, 5s after last edit, only if content changed).
  */
+const MAX_SIZE = 500_000; // 500KB per side
+
 export function saveSnapshot(original, modified) {
   if (!db) return;
+  if (original.length > MAX_SIZE || modified.length > MAX_SIZE) return;
 
   const hash = hashContent(original, modified);
   if (hash === lastSavedHash) return;
@@ -30,6 +32,7 @@ export function saveSnapshot(original, modified) {
     try {
       const id = nanoid();
       await setDoc(doc(db, 'history', id), {
+        id,
         user_id: user.uid,
         original,
         modified,
@@ -62,7 +65,7 @@ export async function getHistory() {
       orderBy('created_at', 'desc')
     );
     const snap = await getDocs(q);
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return snap.docs.map(d => d.data());
   } catch (error) {
     console.error('Failed to fetch history:', error);
     return [];
@@ -96,8 +99,9 @@ export async function clearHistory() {
       where('user_id', '==', user.uid)
     );
     const snap = await getDocs(q);
-    const deletes = snap.docs.map((d) => deleteDoc(d.ref));
-    await Promise.all(deletes);
+    const batch = writeBatch(db);
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
   } catch (error) {
     console.error('Failed to clear history:', error);
   }

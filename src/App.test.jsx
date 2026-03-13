@@ -122,7 +122,7 @@ describe('App', () => {
     });
   });
 
-  it('beautify button appears for beautifiable languages', async () => {
+  it('format button appears for beautifiable languages', async () => {
     renderApp(App);
     act(() => {
       mockOriginalModel._value = '{"key": "value"}';
@@ -130,7 +130,7 @@ describe('App', () => {
       mockOriginalModel.setValue('{"key": "value"}');
     });
     await waitFor(() => {
-      expect(screen.getByTitle('Beautify json')).toBeInTheDocument();
+      expect(screen.getByTitle('Format json')).toBeInTheDocument();
     });
   });
 
@@ -330,10 +330,10 @@ describe('App', () => {
       mockOriginalModel.setValue('{"a":1}');
     });
     await waitFor(() => {
-      expect(screen.getByTitle('Beautify json')).toBeInTheDocument();
+      expect(screen.getByTitle('Format json')).toBeInTheDocument();
     });
     mockOriginalModel.getValue = () => { throw new Error('mock error'); };
-    fireEvent.click(screen.getByTitle('Beautify json'));
+    fireEvent.click(screen.getByTitle('Format json'));
     expect(screen.getByText('diff please')).toBeInTheDocument();
     consoleSpy.mockRestore();
   });

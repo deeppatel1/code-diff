@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, orderBy, getDocs, deleteDoc, writeBatch } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -35,4 +35,4 @@ export async function getOrCreateAnonUser() {
   }
 }
 
-export { doc, setDoc, getDoc };
+export { doc, setDoc, getDoc, collection, query, where, orderBy, getDocs, deleteDoc, writeBatch };

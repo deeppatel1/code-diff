@@ -15,9 +15,15 @@ export default defineConfig(({ command }) => {
     configureServer(server) {
       server.middlewares.use((req, _res, next) => {
         if (req.url === '/faq' || req.url === '/faq/') {
-          req.url = '/faq/index.html';
+          req.url = '/index.html';
         }
         if (req.url?.startsWith('/s/')) {
+          req.url = '/index.html';
+        }
+        if (req.url === '/csv' || req.url === '/csv/') {
+          req.url = '/index.html';
+        }
+        if (req.url === '/markdown' || req.url === '/markdown/') {
           req.url = '/index.html';
         }
         next();
@@ -26,9 +32,15 @@ export default defineConfig(({ command }) => {
     configurePreviewServer(server) {
       server.middlewares.use((req, _res, next) => {
         if (req.url === '/faq' || req.url === '/faq/') {
-          req.url = '/faq/index.html';
+          req.url = '/index.html';
         }
         if (req.url?.startsWith('/s/')) {
+          req.url = '/index.html';
+        }
+        if (req.url === '/csv' || req.url === '/csv/') {
+          req.url = '/index.html';
+        }
+        if (req.url === '/markdown' || req.url === '/markdown/') {
           req.url = '/index.html';
         }
         next();

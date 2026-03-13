@@ -2,6 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { IconArrowLeft } from '@tabler/icons-react';
+import useThemeClass from '../lib/useThemeClass';
 
 const faqData = [
   {
@@ -14,11 +15,11 @@ const faqData = [
   },
   {
     question: "Is my code uploaded anywhere?",
-    answer: "No. All processing happens locally in your browser. Your code never leaves your device, ensuring complete privacy and security. There are no servers, no databases, and no data collection."
+    answer: "All diffing and formatting happens locally in your browser — your code is never sent to a server for processing. The optional sharing and history features use Firebase to store snapshots you explicitly choose to save or share, but the core diff tool works entirely offline."
   },
   {
     question: "What languages are supported?",
-    answer: "Diff Please supports syntax highlighting for JavaScript, TypeScript, Python, Java, C++, HTML, CSS, JSON, YAML, and many more languages through Monaco Editor. The language is automatically detected based on your code syntax."
+    answer: "Diff Please supports syntax highlighting for JavaScript, TypeScript, Python, Java, C++, HTML, CSS, JSON, YAML, Markdown, CSV, and many more languages through Monaco Editor. The language is automatically detected based on your content, with built-in preview support for Markdown and CSV files."
   },
   {
     question: "Do I need to sign up or create an account?",
@@ -35,6 +36,14 @@ const faqData = [
   {
     question: "What JSON tools are available?",
     answer: "Diff Please includes utilities to sort JSON keys alphabetically, minify JSON to remove whitespace, and convert between JSON and YAML formats. These tools appear automatically when you're working with JSON code."
+  },
+  {
+    question: "Can I preview CSV files as a table?",
+    answer: "Yes. When you paste CSV data, Diff Please automatically detects it and shows a Preview button. Click it to see your CSV rendered as a formatted table alongside the raw data. Great for inspecting data files without leaving the browser."
+  },
+  {
+    question: "Does Diff Please support Markdown preview?",
+    answer: "Yes. Paste Markdown content and click the Preview button to see a live rendered preview with headings, bold, links, images, code blocks, and tables — all displayed side-by-side with the raw Markdown source."
   },
   {
     question: "Is Diff Please free?",
@@ -55,6 +64,8 @@ const faqData = [
 ];
 
 export default function FAQ() {
+  useThemeClass();
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -72,7 +83,7 @@ export default function FAQ() {
     <>
       <Helmet>
         <title>FAQ - Diff Please | Code Comparison Tool</title>
-        <meta name="description" content="Frequently asked questions about Diff Please - a fast, privacy-first code diff tool for comparing code inline or side-by-side." />
+        <meta name="description" content="Frequently asked questions about Diff Please - a fast, privacy-first code diff tool with CSV viewer, Markdown preview, and side-by-side comparison." />
         <meta name="keywords" content="code diff, compare code, diff tool, code comparison, developer tools, FAQ" />
         <link rel="canonical" href="https://diffplease.com/faq" />
         <script type="application/ld+json">
@@ -81,10 +92,17 @@ export default function FAQ() {
       </Helmet>
 
       <div className="min-h-screen bg-page-bg text-page-text font-[-apple-system,BlinkMacSystemFont,'Segoe_UI','Noto_Sans',Helvetica,Arial,sans-serif]">
-        <div className="bg-header-bg border-b border-header-border py-4 px-8 flex items-center gap-4 max-md:px-4">
-          <Link to="/" className="inline-flex items-center gap-2 text-blue-500 no-underline text-[0.95rem] py-2 px-4 rounded-md transition-colors duration-200 hover:bg-btn-hover">
-            <IconArrowLeft size={20} />
-            Back to Diff Tool
+        <div className="bg-header-bg border-b border-header-border py-2.5 px-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3 no-underline">
+            <svg width="40" height="32" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-8 shrink-0">
+              <path d="M14 19L6 12L14 5" stroke="#da3633" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M22 5L30 12L22 19" stroke="#2ea043" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span className="text-lg md:text-2xl font-medium tracking-tighter font-['Fira_Code'] text-dark-text whitespace-nowrap">diff please</span>
+          </Link>
+          <Link to="/" className="inline-flex items-center gap-2 text-btn-text no-underline text-[0.8rem] font-semibold py-2 px-3 rounded-full border border-btn-border bg-btn-bg transition-colors duration-200 hover:bg-btn-hover hover:-translate-y-px">
+            <IconArrowLeft size={14} />
+            <span className="hidden md:inline">Back to Editor</span>
           </Link>
         </div>
 
@@ -95,8 +113,8 @@ export default function FAQ() {
             <p className="text-[1.1rem] leading-relaxed text-dark-text-secondary m-0 max-md:text-base">Diff Please is a browser-based code comparison tool that helps developers quickly identify differences between two pieces of code. Everything runs locally in your browser for complete privacy.</p>
           </div>
 
-          <div className="mb-12 p-8 bg-gradient-to-br from-[var(--header-bg)] to-[var(--dark-bg-secondary)] border-2 border-blue-500 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] max-md:p-6 max-md:mb-8">
-            <h2 className="text-[1.35rem] mb-6 text-blue-500 font-semibold max-md:text-[1.2rem]">How It Works</h2>
+          <div className="mb-12 p-8 bg-gradient-to-br from-[var(--header-bg)] to-[var(--dark-bg-secondary)] border-2 border-lang-indicator rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] max-md:p-6 max-md:mb-8">
+            <h2 className="text-[1.35rem] mb-6 text-lang-indicator font-semibold max-md:text-[1.2rem]">How It Works</h2>
             <div className="grid gap-6">
               <div className="pl-4 border-l-[3px] border-l-dark-border">
                 <strong className="block text-[1.1rem] text-page-text mb-2 max-md:text-base">1. Paste Your Code</strong>

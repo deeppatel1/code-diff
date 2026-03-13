@@ -1,7 +1,11 @@
 const GA_ID = import.meta.env.VITE_GA_ID || 'G-EW0QWFHC82';
 
+const isLocalDev = typeof window !== 'undefined' &&
+  import.meta.env.MODE === 'development' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
 const initGoogleAnalytics = () => {
-  if (!GA_ID) return;
+  if (!GA_ID || isLocalDev) return;
 
   if (window.dataLayer) return; // Already initialized
 
@@ -119,13 +123,11 @@ export const analytics = {
   historyOpened: () => track('history_opened'),
   shareOpened: () => track('share_opened'),
   linkCopied: () => track('link_copied'),
-
-  // Future features (Phase 1-3)
   fileImported: (side, fileExt) => track('file_imported', { side, file_extension: fileExt }),
-  diffExported: (format) => track('diff_exported', { format }),
   diffShared: () => track('diff_shared'),
   sharedDiffViewed: (id) => track('shared_diff_viewed', { diff_id: id }),
   historyRestored: () => track('history_restored'),
+  keyboardShortcut: (action) => track('keyboard_shortcut', { action }),
 };
 
 export default initGoogleAnalytics;

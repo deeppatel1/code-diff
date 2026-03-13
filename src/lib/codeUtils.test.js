@@ -109,6 +109,32 @@ describe('detectLanguage', () => {
     expect(detectLanguage('# Heading\n[link](url)')).toBe('markdown');
   });
 
+  it('detects Markdown with embedded code fences', () => {
+    const md = '# Heading\n\nSome text\n\n```javascript\nfunction foo() {}\nexport default foo;\n```\n\n## Another heading';
+    expect(detectLanguage(md)).toBe('markdown');
+  });
+
+  it('detects Markdown with embedded HTML and JS code blocks', () => {
+    const md = '# Title\n\n```html\n<div>hello</div>\n```\n\n```js\nconst x = 1;\nexport default x;\n```';
+    expect(detectLanguage(md)).toBe('markdown');
+  });
+
+  it('detects Markdown from code fence alone', () => {
+    expect(detectLanguage('Some text\n\n```\ncode here\n```\n\nMore text')).toBe('markdown');
+  });
+
+  it('detects Markdown from image syntax alone', () => {
+    expect(detectLanguage('Here is an image:\n![alt text](https://example.com/img.png)')).toBe('markdown');
+  });
+
+  it('does not misdetect JS with array indexing as Markdown', () => {
+    expect(detectLanguage('const result = [1, 2, 3].map(fn)')).toBe('javascript');
+  });
+
+  it('detects simple heading-only Markdown after ruling out code', () => {
+    expect(detectLanguage('# Hello World\n\nThis is a paragraph of text.')).toBe('markdown');
+  });
+
   it('returns plaintext for null', () => {
     expect(detectLanguage(null)).toBe('plaintext');
   });

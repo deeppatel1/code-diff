@@ -20,7 +20,7 @@ describe('FAQ page', () => {
     expect(screen.getByText('Frequently Asked Questions')).toBeInTheDocument();
   });
 
-  it('renders all 12 FAQ questions', () => {
+  it('renders all 14 FAQ questions', () => {
     renderFAQ();
     const questions = [
       'What is Diff Please?',
@@ -31,6 +31,8 @@ describe('FAQ page', () => {
       "What's the difference between inline and side-by-side view?",
       'Can I beautify or format my code?',
       'What JSON tools are available?',
+      'Can I preview CSV files as a table?',
+      'Does Diff Please support Markdown preview?',
       'Is Diff Please free?',
       'Can I use this offline?',
       'How do I report bugs or request features?',
@@ -41,19 +43,19 @@ describe('FAQ page', () => {
     }
   });
 
-  it('renders "Back to Diff Tool" link pointing to /', () => {
+  it('renders "Back to Editor" link pointing to /', () => {
     renderFAQ();
-    const link = screen.getByText('Back to Diff Tool');
+    const link = screen.getByText('Back to Editor');
     expect(link.closest('a')).toHaveAttribute('href', '/');
   });
 
   it('each FAQ question has a corresponding answer paragraph', () => {
     const { container } = renderFAQ();
-    // 1 how-it-works section + 12 FAQ items = 13 sections with h2 elements
+    // 1 how-it-works section + 14 FAQ items = 15 sections with h2 elements
     const h2Elements = container.querySelectorAll('h2');
-    // h1 (main heading) + "How It Works" h2 + 12 FAQ h2s = 14 total headings
-    // But we only care about h2s: "How It Works" + 12 FAQ questions = 13
-    expect(h2Elements.length).toBe(13);
+    // h1 (main heading) + "How It Works" h2 + 14 FAQ h2s = 16 total headings
+    // But we only care about h2s: "How It Works" + 14 FAQ questions = 15
+    expect(h2Elements.length).toBe(15);
   });
 
   it('renders intro paragraph about privacy', () => {
