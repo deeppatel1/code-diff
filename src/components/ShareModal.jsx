@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IconX, IconCopy, IconCheck, IconLink } from '@tabler/icons-react';
 import { db, doc, setDoc, getOrCreateAnonUser } from '../lib/firebase';
 import { nanoid } from 'nanoid';
@@ -13,66 +13,9 @@ import {
   DialogClose,
 } from './ui/dialog';
 
-function generateMarkdownDiff(original, modified, lineChanges, lang) {
-  const origLines = original.split('\n');
-  const modLines = modified.split('\n');
-
-  if (!lineChanges || lineChanges.length === 0) {
-    if (original === modified) return '_No changes._';
-    // No change info available, show both sides
-    const fence = lang && lang !== 'plaintext' ? lang : '';
-    return `**Original**\n\`\`\`${fence}\n${original}\n\`\`\`\n\n**Modified**\n\`\`\`${fence}\n${modified}\n\`\`\``;
-  }
-
-  const CONTEXT = 3;
-  const sections = [];
-  let lastEnd = 0;
-
-  for (const change of lineChanges) {
-    const origStart = change.originalStartLineNumber;
-    const origEnd = change.originalEndLineNumber;
-    const modStart = change.modifiedStartLineNumber;
-    const modEnd = change.modifiedEndLineNumber;
-
-    // Context before
-    const ctxStart = Math.max(lastEnd + 1, origStart - CONTEXT);
-    for (let i = ctxStart; i < origStart; i++) {
-      sections.push(` ${origLines[i - 1]}`);
-    }
-
-    // Deletions
-    if (origEnd >= origStart) {
-      for (let i = origStart; i <= origEnd; i++) {
-        sections.push(`-${origLines[i - 1]}`);
-      }
-    }
-
-    // Additions
-    if (modEnd >= modStart) {
-      for (let i = modStart; i <= modEnd; i++) {
-        sections.push(`+${modLines[i - 1]}`);
-      }
-    }
-
-    lastEnd = origEnd >= origStart ? origEnd : origStart - 1;
-
-    // Context after
-    const ctxEnd = Math.min(origLines.length, lastEnd + CONTEXT);
-    const nextChange = lineChanges[lineChanges.indexOf(change) + 1];
-    const stopAt = nextChange ? Math.min(ctxEnd, nextChange.originalStartLineNumber - 1) : ctxEnd;
-    for (let i = lastEnd + 1; i <= stopAt; i++) {
-      sections.push(` ${origLines[i - 1]}`);
-    }
-    lastEnd = stopAt;
-  }
-
-  return `\`\`\`diff\n${sections.join('\n')}\n\`\`\``;
-}
-
 export default function ShareModal({ isOpen, onClose, getContent }) {
   const [shareUrl, setShareUrl] = useState('');
   const [loading, setLoading] = useState(false);
-  const [copiedMd, setCopiedMd] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [error, setError] = useState('');
   const [content, setContent] = useState(null);
@@ -83,11 +26,6 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
       setContent(data);
     }
   }, [isOpen, getContent]);
-
-  const markdown = useMemo(() => {
-    if (!content) return '';
-    return generateMarkdownDiff(content.original, content.modified, content.lineChanges, content.originalLang);
-  }, [content]);
 
   const handleShareLink = async () => {
     setLoading(true);
@@ -108,7 +46,7 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
       try {
         const user = await getOrCreateAnonUser();
         const id = nanoid(21);
-        await setDoc(doc(db, 'diffs', id), {
+        const savePromise = setDoc(doc(db, 'diffs', id), {
           user_id: user?.uid ?? null,
           original,
           modified,
@@ -117,6 +55,10 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
           preview: preview || null,
           created_at: new Date().toISOString(),
         });
+        const timeout = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('timeout')), 3000)
+        );
+        await Promise.race([savePromise, timeout]);
 
         const url = `${window.location.origin}${base}s/${id}`;
         setShareUrl(url);
@@ -148,14 +90,6 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
     }
   };
 
-  const handleCopyMarkdown = async () => {
-    await navigator.clipboard.writeText(markdown);
-    setCopiedMd(true);
-    toast.success('Markdown copied to clipboard');
-    analytics.linkCopied();
-    setTimeout(() => setCopiedMd(false), 2000);
-  };
-
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(shareUrl);
     setCopiedLink(true);
@@ -168,7 +102,6 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
     setShareUrl('');
     setError('');
     setContent(null);
-    setCopiedMd(false);
     setCopiedLink(false);
     onClose();
   };
@@ -185,19 +118,6 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
           </DialogClose>
         </DialogHeader>
         <div className="p-5 flex flex-col gap-3">
-          {markdown && (
-            <div className="relative">
-              <pre className="max-h-48 overflow-auto p-3 bg-dark-bg-secondary border border-dark-border rounded-md text-[0.75rem] font-mono text-page-text whitespace-pre-wrap break-all m-0">{markdown}</pre>
-              <button
-                className="flex items-center gap-1 absolute top-2 right-2 py-1 px-2.5 bg-btn-bg text-btn-text border border-btn-border rounded-md text-[0.7rem] font-semibold cursor-pointer transition-colors duration-150 hover:bg-btn-hover"
-                onClick={handleCopyMarkdown}
-              >
-                {copiedMd ? <IconCheck size={12} /> : <IconCopy size={12} />}
-                {copiedMd ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-          )}
-
           {error && <div className="text-red-500 text-[0.85rem]">{error}</div>}
 
           {!shareUrl ? (
@@ -228,7 +148,7 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
           )}
 
           <p className="mt-0 mb-0 text-[0.75rem] text-dark-text-secondary">
-            Copy the markdown diff or generate a shareable link.
+            Generate a shareable link to this diff.
           </p>
         </div>
       </DialogContent>
