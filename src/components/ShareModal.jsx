@@ -4,6 +4,7 @@ import { db, doc, setDoc, getOrCreateAnonUser } from '../lib/firebase';
 import { nanoid } from 'nanoid';
 import { compressToEncodedURIComponent } from 'lz-string';
 import { analytics } from '../services/analytics';
+import { saveSnapshotNow } from '../lib/historyStore';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -32,7 +33,7 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
     setError('');
 
     if (!content) return;
-    const { original, modified, originalLang, modifiedLang, preview } = content;
+    const { original, modified, originalLang, modifiedLang, preview, diffHighlight, sideBySide } = content;
     const base = import.meta.env.BASE_URL;
 
     const MAX_SIZE = 500_000;
@@ -53,6 +54,7 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
           original_lang: originalLang,
           modified_lang: modifiedLang,
           preview: preview || null,
+          diff_highlight: diffHighlight !== false,
           created_at: new Date().toISOString(),
         });
         const timeout = new Promise((_, reject) =>
@@ -63,6 +65,7 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
         const url = `${window.location.origin}${base}s/${id}`;
         setShareUrl(url);
         analytics.diffShared();
+        await saveSnapshotNow(original, modified, 'share', { diffHighlight, sideBySide });
         setLoading(false);
         return;
       } catch (err) {
@@ -77,11 +80,13 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
         original_lang: originalLang,
         modified_lang: modifiedLang,
         preview: preview || null,
+        diff_highlight: diffHighlight !== false,
       });
       const compressed = compressToEncodedURIComponent(payload);
       const url = `${window.location.origin}${base}s/lz:${compressed}`;
       setShareUrl(url);
       analytics.diffShared();
+      await saveSnapshotNow(original, modified, 'share', { diffHighlight, sideBySide });
     } catch (err) {
       setError('Failed to create share link. Please try again.');
       console.error('Share failed:', err);
@@ -112,7 +117,7 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
     }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Share Markdown</DialogTitle>
+          <DialogTitle>{content?.preview ? 'Share Preview' : 'Share Diff'}</DialogTitle>
           <DialogClose className="bg-transparent border-none text-page-text cursor-pointer p-1 rounded hover:bg-btn-hover">
             <IconX size={16} />
           </DialogClose>
@@ -148,7 +153,7 @@ export default function ShareModal({ isOpen, onClose, getContent }) {
           )}
 
           <p className="mt-0 mb-0 text-[0.75rem] text-dark-text-secondary">
-            Generate a shareable link to this diff.
+            Generate a shareable link to this {content?.preview ? 'preview' : 'diff'}.
           </p>
         </div>
       </DialogContent>

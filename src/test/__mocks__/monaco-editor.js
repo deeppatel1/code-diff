@@ -9,6 +9,16 @@ const createMockModel = (side) => ({
     this._value = val;
     contentChangeListeners[side].forEach(fn => fn());
   },
+  getFullModelRange: function() {
+    const lines = (this._value || '').split('\n');
+    return { startLineNumber: 1, startColumn: 1, endLineNumber: lines.length, endColumn: lines[lines.length - 1].length + 1 };
+  },
+  pushEditOperations: function(_selections, edits, _cursorComputer) {
+    if (edits && edits.length > 0) {
+      this._value = edits[0].text;
+      contentChangeListeners[side].forEach(fn => fn());
+    }
+  },
   getLanguageId: () => 'plaintext',
   onDidChangeContent: (fn) => { contentChangeListeners[side].push(fn); },
   _value: '',
@@ -24,12 +34,24 @@ const mockDiffEditor = {
     updateOptions: () => {},
     getDomNode: () => null,
     addAction: () => {},
+    executeEdits: (source, edits) => {
+      if (edits?.[0]) {
+        mockOriginalModel._value = edits[0].text;
+        contentChangeListeners.original.forEach(fn => fn());
+      }
+    },
   }),
   getModifiedEditor: () => ({
     getModel: () => mockModifiedModel,
     updateOptions: () => {},
     getDomNode: () => null,
     addAction: () => {},
+    executeEdits: (source, edits) => {
+      if (edits?.[0]) {
+        mockModifiedModel._value = edits[0].text;
+        contentChangeListeners.modified.forEach(fn => fn());
+      }
+    },
   }),
   setModel: () => {},
   updateOptions: () => {},

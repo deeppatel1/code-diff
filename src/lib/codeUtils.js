@@ -1,11 +1,11 @@
-import prettier from 'prettier/standalone';
-import parserBabel from 'prettier/parser-babel';
-import parserHtml from 'prettier/parser-html';
-import parserCss from 'prettier/parser-postcss';
-import parserMarkdown from 'prettier/parser-markdown';
-import parserYaml from 'prettier/parser-yaml';
-import parserTypescript from 'prettier/parser-typescript';
-import pluginEstree from 'prettier/plugins/estree';
+import * as prettier from 'prettier/standalone';
+import * as parserBabel from 'prettier/parser-babel';
+import * as parserHtml from 'prettier/parser-html';
+import * as parserCss from 'prettier/parser-postcss';
+import * as parserMarkdown from 'prettier/parser-markdown';
+import * as parserYaml from 'prettier/parser-yaml';
+import * as parserTypescript from 'prettier/parser-typescript';
+import * as pluginEstree from 'prettier/plugins/estree';
 import * as yaml from 'js-yaml';
 
 export class CodeBeautifier {
@@ -14,7 +14,6 @@ export class CodeBeautifier {
       javascript: { parser: 'babel', plugins: [parserBabel, pluginEstree] },
       typescript: { parser: 'typescript', plugins: [parserTypescript, pluginEstree] },
       tsx: { parser: 'typescript', plugins: [parserTypescript, pluginEstree] },
-      html: { parser: 'html', plugins: [parserHtml] },
       xml: { parser: 'html', plugins: [parserHtml] },
       css: { parser: 'css', plugins: [parserCss] },
       scss: { parser: 'css', plugins: [parserCss] },
@@ -39,6 +38,7 @@ export class CodeBeautifier {
     };
 
     this.customFormatters = {
+      html: this.formatHtml.bind(this),
       json: this.formatJson.bind(this),
       python: this.formatPython.bind(this),
       java: this.formatJava.bind(this),
@@ -138,6 +138,35 @@ export class CodeBeautifier {
       } else {
         throw new Error(`Invalid JSON: ${error.message}`);
       }
+    }
+  }
+
+  async formatHtml(code, options = {}) {
+    const { indentSize = 4 } = options;
+    try {
+      return await prettier.format(code, {
+        ...this.prettierConfig,
+        parser: 'html',
+        plugins: [parserHtml],
+        tabWidth: indentSize,
+      });
+    } catch {
+      // Fallback: simple tag-based indentation
+      const lines = code.replace(/>\s*</g, '>\n<').split('\n');
+      let indent = 0;
+      const result = [];
+      const pad = () => ' '.repeat(indent * indentSize);
+      const voidTags = /^<(area|base|br|col|embed|hr|img|input|link|meta|source|track|wbr)\b/i;
+      for (const raw of lines) {
+        const line = raw.trim();
+        if (!line) continue;
+        if (line.startsWith('</')) indent = Math.max(0, indent - 1);
+        result.push(pad() + line);
+        if (line.startsWith('<') && !line.startsWith('</') && !line.startsWith('<!') && !voidTags.test(line) && !line.endsWith('/>') && /<\/\w+>\s*$/.test(line) === false) {
+          indent++;
+        }
+      }
+      return result.join('\n');
     }
   }
 
@@ -454,6 +483,7 @@ export const detectLanguage = code => {
     const count = md.filter(Boolean).length;
     if (md[4] || md[5] || count >= 2) return 'markdown';
   }
+  if (/^\s*<!doctype\s+html/i.test(t) || /^\s*<html[\s>]/i.test(t)) return 'html';
   if (/^\s*import\s+React\s+/.test(t) || (/^\s*<\w+[\s>]/m.test(t) && /^\s*(import|export|const|let|var|function)\s/m.test(t))) return 'javascript';
   if (t.startsWith('<') && t.endsWith('>')) return 'html';
   if (/^\s*(interface|type|enum)\s+\w+/.test(t) || (t.includes('import ') && t.includes(' from ') && t.includes(';'))) return 'typescript';

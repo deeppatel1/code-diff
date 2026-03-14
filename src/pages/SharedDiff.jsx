@@ -16,6 +16,9 @@ export default function SharedDiff() {
       if (data.preview) {
         sessionStorage.setItem('diffright-shared-preview', data.preview);
       }
+      if (data.diff_highlight === false) {
+        sessionStorage.setItem('diffright-shared-diff-highlight', 'false');
+      }
       navigate('/', { replace: true });
     };
 

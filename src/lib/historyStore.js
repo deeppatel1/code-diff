@@ -13,7 +13,7 @@ function hashContent(original, modified) {
  */
 const MAX_SIZE = 500_000; // 500KB per side
 
-export function saveSnapshot(original, modified) {
+export function saveSnapshot(original, modified, source = 'auto') {
   if (!db) return;
   if (original.length > MAX_SIZE || modified.length > MAX_SIZE) return;
 
@@ -40,6 +40,7 @@ export function saveSnapshot(original, modified) {
         modified_lang: null,
         preview_original: original.slice(0, 100),
         preview_modified: modified.slice(0, 100),
+        source,
         created_at: new Date().toISOString(),
       });
       lastSavedHash = currentHash;
@@ -47,6 +48,49 @@ export function saveSnapshot(original, modified) {
       console.error('Failed to save snapshot:', error);
     }
   }, 5000);
+}
+
+/**
+ * Immediately save a snapshot (used when sharing, bypasses debounce).
+ */
+export async function saveSnapshotNow(original, modified, source = 'save', options = {}) {
+  if (!db) return false;
+  if (original.length > MAX_SIZE || modified.length > MAX_SIZE) return false;
+
+  // Cancel any pending debounced auto-save to avoid duplicates
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+    saveTimeout = null;
+  }
+
+  const user = await getOrCreateAnonUser();
+  if (!user) return false;
+
+  const hash = hashContent(original, modified);
+  if (hash === lastSavedHash && source !== 'save' && source !== 'share') return false;
+
+  try {
+    const id = nanoid();
+    await setDoc(doc(db, 'history', id), {
+      id,
+      user_id: user.uid,
+      original,
+      modified,
+      original_lang: null,
+      modified_lang: null,
+      preview_original: original.slice(0, 100),
+      preview_modified: modified.slice(0, 100),
+      source,
+      diff_highlight: options.diffHighlight !== false,
+      side_by_side: options.sideBySide !== false,
+      created_at: new Date().toISOString(),
+    });
+    lastSavedHash = hash;
+    return true;
+  } catch (error) {
+    console.error('Failed to save snapshot:', error);
+    return false;
+  }
 }
 
 /**
@@ -61,14 +105,27 @@ export async function getHistory() {
   try {
     const q = query(
       collection(db, 'history'),
-      where('user_id', '==', user.uid),
-      orderBy('created_at', 'desc')
+      where('user_id', '==', user.uid)
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => d.data());
+    return snap.docs
+      .map(d => d.data())
+      .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
   } catch (error) {
     console.error('Failed to fetch history:', error);
     return [];
+  }
+}
+
+/**
+ * Rename a snapshot.
+ */
+export async function renameSnapshot(id, name) {
+  if (!db) return;
+  try {
+    await setDoc(doc(db, 'history', id), { name }, { merge: true });
+  } catch (error) {
+    console.error('Failed to rename snapshot:', error);
   }
 }
 

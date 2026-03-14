@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { IconCode, IconColumns, IconAlignLeft, IconSparkles, IconWand, IconSortAscending, IconMinimize, IconSun, IconMoon, IconPalette, IconHeart, IconUpload, IconClock, IconShare, IconChevronUp, IconChevronDown, IconFold, IconEye, IconTable, IconX } from '@tabler/icons-react';
+import { IconCode, IconColumns, IconAlignLeft, IconSparkles, IconWand, IconSortAscending, IconMinimize, IconSun, IconMoon, IconPalette, IconHeart, IconUpload, IconClock, IconShare, IconChevronUp, IconChevronDown, IconFold, IconEye, IconTable, IconX, IconBulb, IconHighlight, IconDeviceFloppy, IconMessageCircle } from '@tabler/icons-react';
 import * as monaco from 'monaco-editor';
 import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
 import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
@@ -9,12 +9,13 @@ import './globals.css';
 import { CodeBeautifier, calculateStats, detectLanguage } from './lib/codeUtils';
 import { MONACO_THEME_BY_MODE } from './lib/themes';
 import { analytics } from './services/analytics';
-import { saveSnapshot } from './lib/historyStore';
+import { saveSnapshotNow } from './lib/historyStore';
 import { db } from './lib/firebase';
 import HistoryPanel from './components/HistoryPanel';
 import ShareModal from './components/ShareModal';
 import MarkdownDiffPreview from './components/MarkdownDiffPreview';
 import PreviewOverlay from './components/PreviewOverlay';
+import FeedbackModal from './components/FeedbackModal';
 import { Toaster, toast } from 'sonner';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './components/ui/tooltip';
 import {
@@ -69,6 +70,19 @@ monaco.editor.setTheme(MONACO_THEME_BY_MODE.dark);
 const btnBase = 'flex items-center gap-1 px-2.5 py-1 bg-btn-bg text-btn-text border border-btn-border rounded-md text-[0.65rem] font-semibold cursor-pointer transition-all duration-200 uppercase tracking-wide whitespace-nowrap hover:enabled:bg-btn-hover hover:enabled:-translate-y-px disabled:opacity-70 disabled:cursor-not-allowed';
 const btnAccent = `${btnBase} border-lang-indicator/40 text-lang-indicator`;
 
+const TIPS = [
+  'Auto-format code in any language',
+  'Sort JSON keys alphabetically',
+  'Minify JSON to remove whitespace',
+  'Convert JSON to YAML and back',
+  'Drag any type of file to compare or preview its contents',
+  'Preview CSV files as tables',
+  'Preview rendered Markdown',
+  'Share a diff link or preview link',
+  'Save diffs and rename them for later',
+  'View and restore your diff history',
+];
+
 export default function App() {
   const containerRef = useRef(null);
   const diffEditorRef = useRef(null);
@@ -103,6 +117,10 @@ export default function App() {
   });
   const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
   const [previewOverlay, setPreviewOverlay] = useState(null);
+  const [diffHighlight, setDiffHighlight] = useState(true);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [tipIndex, setTipIndex] = useState(0);
+  const [jsonMinified, setJsonMinified] = useState({ original: false, modified: false });
   const formatHintShownRef = useRef(false);
 
   const themeLabels = {
@@ -137,6 +155,15 @@ export default function App() {
 
   const getLanguage = (side) => side === 'original' ? originalLanguage : modifiedLanguage;
 
+  const replaceModelContent = (model, newText, side) => {
+    const editor = getEditor(side);
+    const fullRange = model.getFullModelRange();
+    editor.executeEdits('diffplease', [{
+      range: fullRange,
+      text: newText,
+    }]);
+  };
+
   const createBeautifyHandler = (side) => async () => {
     if (!diffEditorRef.current) return;
     setIsBeautifying(prev => ({ ...prev, [side]: true }));
@@ -146,7 +173,7 @@ export default function App() {
       const code = model.getValue();
       if (beautifierRef.current.isBeautifiable(language)) {
         const beautified = await beautifierRef.current.beautify(code, language, { indentationSize, useTabs });
-        model.setValue(beautified);
+        replaceModelContent(model, beautified, side);
         toast.success(`Beautified ${language}`);
         analytics.beautify(language, side);
       } else {
@@ -154,7 +181,7 @@ export default function App() {
       }
     } catch (error) {
       console.error('Beautification failed:', error);
-      toast.error('Beautification failed');
+      toast.error(error.message || 'Beautification failed');
     } finally {
       setIsBeautifying(prev => ({ ...prev, [side]: false }));
     }
@@ -164,7 +191,7 @@ export default function App() {
     if (diffEditorRef.current && getLanguage(side) === 'json') {
       try {
         const model = getEditor(side).getModel();
-        model.setValue(beautifierRef.current.sortJson(model.getValue(), { indentationSize }));
+        replaceModelContent(model, beautifierRef.current.sortJson(model.getValue(), { indentationSize }), side);
         toast.success('JSON sorted');
         analytics.sortJson(side);
       } catch (error) {
@@ -177,8 +204,16 @@ export default function App() {
     if (diffEditorRef.current && getLanguage(side) === 'json') {
       try {
         const model = getEditor(side).getModel();
-        model.setValue(beautifierRef.current.compactJson(model.getValue()));
-        toast.success('JSON minified');
+        const original = model.getValue();
+        const compacted = beautifierRef.current.compactJson(original);
+        if (compacted === original) {
+          setJsonMinified(prev => ({ ...prev, [side]: true }));
+          toast.success('Already minified');
+        } else {
+          replaceModelContent(model, compacted, side);
+          setJsonMinified(prev => ({ ...prev, [side]: true }));
+          toast.success('JSON minified');
+        }
         analytics.compactJson(side);
       } catch (error) {
         console.error('JSON compacting failed:', error);
@@ -190,7 +225,7 @@ export default function App() {
     if (diffEditorRef.current && getLanguage(side) === 'json') {
       try {
         const model = getEditor(side).getModel();
-        model.setValue(beautifierRef.current.convertJsonToYaml(model.getValue()));
+        replaceModelContent(model, beautifierRef.current.convertJsonToYaml(model.getValue()), side);
         monaco.editor.setModelLanguage(model, 'yaml');
         toast.success('Converted to YAML');
         analytics.convertJsonToYaml(side);
@@ -204,7 +239,7 @@ export default function App() {
     if (diffEditorRef.current && getLanguage(side) === 'yaml') {
       try {
         const model = getEditor(side).getModel();
-        model.setValue(beautifierRef.current.convertYamlToJson(model.getValue()));
+        replaceModelContent(model, beautifierRef.current.convertYamlToJson(model.getValue()), side);
         monaco.editor.setModelLanguage(model, 'json');
         toast.success('Converted to JSON');
         analytics.convertYamlToJson(side);
@@ -285,16 +320,18 @@ export default function App() {
 
   // --- History restore ---
 
-  const handleHistoryRestore = useCallback((original, modified) => {
+  const handleHistoryRestore = useCallback((original, modified, options = {}) => {
     if (!diffEditorRef.current) return;
     diffEditorRef.current.getOriginalEditor().getModel().setValue(original);
     diffEditorRef.current.getModifiedEditor().getModel().setValue(modified);
+    if (options.diffHighlight !== undefined) setDiffHighlight(options.diffHighlight !== false);
+    if (options.sideBySide !== undefined) setIsSideBySide(options.sideBySide !== false);
   }, []);
 
   // --- Share content getter ---
 
   const getShareContent = useCallback(() => {
-    if (!diffEditorRef.current) return { original: '', modified: '', originalLang: null, modifiedLang: null, lineChanges: [], preview: null };
+    if (!diffEditorRef.current) return { original: '', modified: '', originalLang: null, modifiedLang: null, lineChanges: [], preview: null, diffHighlight: true };
     return {
       original: diffEditorRef.current.getOriginalEditor().getModel().getValue(),
       modified: diffEditorRef.current.getModifiedEditor().getModel().getValue(),
@@ -302,8 +339,10 @@ export default function App() {
       modifiedLang: modifiedLanguage,
       lineChanges: diffEditorRef.current.getLineChanges() || [],
       preview: previewOverlay || null,
+      diffHighlight,
+      sideBySide: isSideBySide,
     };
-  }, [originalLanguage, modifiedLanguage, previewOverlay]);
+  }, [originalLanguage, modifiedLanguage, previewOverlay, diffHighlight, isSideBySide]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -314,6 +353,32 @@ export default function App() {
     if (typeof window === 'undefined') return;
     sessionStorage.setItem(VIEW_STORAGE_KEY, isSideBySide ? 'side-by-side' : 'inline');
   }, [isSideBySide]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTipIndex(i => (i + 1) % TIPS.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const id = 'diffright-no-highlight';
+    if (diffHighlight) {
+      document.getElementById(id)?.remove();
+    } else {
+      if (!document.getElementById(id)) {
+        const style = document.createElement('style');
+        style.id = id;
+        style.textContent = `
+          .line-insert, .line-delete, .char-insert, .char-delete,
+          .diff-range-empty, .inline-deleted-margin-view-zone,
+          .gutter-delete, .delete-sign, .insert-sign { background: transparent !important; background-color: transparent !important; }
+        `;
+        document.head.appendChild(style);
+      }
+    }
+    return () => document.getElementById(id)?.remove();
+  }, [diffHighlight]);
 
   useEffect(() => {
     const rootElement = document.documentElement;
@@ -363,6 +428,7 @@ export default function App() {
       lineNumbers: 'on',
       glyphMargin: false,
       folding: true,
+      stickyScroll: { enabled: true },
       diffAlgorithm: 'advanced',
       lineNumbersMinChars: 3,
       originalEditable: true,
@@ -400,10 +466,16 @@ export default function App() {
         sessionStorage.removeItem('diffright-shared-preview');
         setPreviewOverlay(sharedPreview === 'markdown-full' ? 'markdown' : sharedPreview);
       }
+      // Restore diff highlight setting from shared link
+      const sharedDiffHighlight = sessionStorage.getItem('diffright-shared-diff-highlight');
+      if (sharedDiffHighlight !== null) {
+        sessionStorage.removeItem('diffright-shared-diff-highlight');
+        setDiffHighlight(sharedDiffHighlight !== 'false');
+      }
     }
     diffEditorRef.current.getOriginalEditor().updateOptions({
       padding: { top: 16, bottom: 16 },
-      lineNumbersMinChars: 1,
+      lineNumbersMinChars: 2,
     });
     diffEditorRef.current.getModifiedEditor().updateOptions({
       padding: { top: 16, bottom: 16, right: 20 }
@@ -412,6 +484,11 @@ export default function App() {
       splitViewDefaultRatio: 0.512
     });
     diffEditorRef.current.layout();
+
+    // Diff editor doesn't propagate folding options to child editors, so set them directly after all other options
+    const editorOpts = { folding: true, showFoldingControls: 'always', stickyScroll: { enabled: true } };
+    diffEditorRef.current.getOriginalEditor().updateOptions(editorOpts);
+    diffEditorRef.current.getModifiedEditor().updateOptions(editorOpts);
 
     // Register command palette and custom actions
     const registerActions = (editor, side) => {
@@ -471,6 +548,7 @@ export default function App() {
 
       setOriginalStats(stats);
       setOriginalLanguage(lang);
+      setJsonMinified(prev => prev.original ? { ...prev, original: false } : prev);
 
       if (originalModel.getLanguageId() !== lang) {
         monaco.editor.setModelLanguage(originalModel, lang);
@@ -487,8 +565,6 @@ export default function App() {
         toast('Tip: Right-click or press Ctrl+Shift+B to format code', { duration: 5000 });
       }
 
-      const modifiedVal = modifiedModel.getValue();
-      if (val || modifiedVal) saveSnapshot(val, modifiedVal);
     };
 
     const updateModified = () => {
@@ -502,6 +578,7 @@ export default function App() {
 
       setModifiedStats(stats);
       setModifiedLanguage(lang);
+      setJsonMinified(prev => prev.modified ? { ...prev, modified: false } : prev);
 
       if (modifiedModel.getLanguageId() !== lang) {
         monaco.editor.setModelLanguage(modifiedModel, lang);
@@ -512,8 +589,6 @@ export default function App() {
         if (lang !== 'plaintext') analytics.languageDetected(lang, 'modified');
       }
 
-      const originalVal = originalModel.getValue();
-      if (val || originalVal) saveSnapshot(originalVal, val);
     };
 
     originalModel.onDidChangeContent(updateOriginal);
@@ -571,6 +646,9 @@ export default function App() {
           contextLineCount: 3,
         },
       });
+      const editorOpts = { folding: true, showFoldingControls: 'always', stickyScroll: { enabled: true } };
+      diffEditorRef.current.getOriginalEditor().updateOptions(editorOpts);
+      diffEditorRef.current.getModifiedEditor().updateOptions(editorOpts);
       diffEditorRef.current.layout();
     }
   }, [isSideBySide, themeMode, collapseUnchanged]);
@@ -655,9 +733,11 @@ export default function App() {
           <TipButton tip="Sort JSON keys alphabetically" className={btnPill} onClick={createSortHandler(side)} title="Sort JSON">
             <IconSortAscending size={14} /> <span className="hidden md:inline">Sort</span>
           </TipButton>
-          <TipButton tip="Minify JSON (remove whitespace)" className={btnPill} onClick={createCompactHandler(side)} title="Minify JSON">
-            <IconMinimize size={14} /> <span className="hidden md:inline">Minify</span>
-          </TipButton>
+          {!jsonMinified[side] && (
+            <TipButton tip="Minify JSON (remove whitespace)" className={btnPill} onClick={createCompactHandler(side)} title="Minify JSON">
+              <IconMinimize size={14} /> <span className="hidden md:inline">Minify</span>
+            </TipButton>
+          )}
           <TipButton tip="Convert JSON to YAML" className={btnPill} onClick={createConvertToYamlHandler(side)} title="Convert JSON to YAML">
             <IconWand size={14} /> <span className="hidden md:inline">→ YAML</span>
           </TipButton>
@@ -691,19 +771,25 @@ export default function App() {
       </Helmet>
       <div className="flex flex-col h-screen font-[-apple-system,BlinkMacSystemFont,'Segoe_UI','Noto_Sans',Helvetica,Arial,sans-serif]">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center p-2.5 text-dark-text shrink-0 z-10 bg-header-bg border-b border-header-border gap-3">
-        <div />
-        <div className="flex items-center gap-3 shrink-0 -ml-8">
-          <svg width="40" height="32" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="header-icon w-10 h-8 transition-all duration-300 shrink-0 cursor-pointer hover:scale-[1.08] hover:-rotate-2 hover:drop-shadow-[0_6px_12px_rgba(0,0,0,0.15)]">
-            <path d="M14 19L6 12L14 5" stroke="#da3633" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M22 5L30 12L22 19" stroke="#2ea043" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <div><h1 className="m-0 text-lg md:text-2xl font-medium tracking-tighter font-['Fira_Code'] text-dark-text whitespace-nowrap">diff please</h1></div>
-        </div>
-        <div className="flex items-center shrink-0 justify-self-end">
+        <div className="flex items-center justify-self-start overflow-hidden gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                className="flex items-center justify-center h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.8rem] font-semibold tracking-wide hover:bg-btn-hover hover:-translate-y-px"
+                className={`flex items-center justify-center h-8 rounded-full border cursor-pointer transition-all duration-200 px-2.5 gap-1.5 text-[0.8rem] font-semibold tracking-wide hover:-translate-y-px ${diffHighlight ? 'border-btn-border bg-btn-bg text-btn-text hover:bg-btn-hover' : 'border-btn-border bg-btn-bg text-dark-text-secondary hover:bg-btn-hover opacity-50'}`}
+                onClick={() => setDiffHighlight(h => !h)}
+                title={diffHighlight ? 'Disable diff' : 'Enable diff'}
+                aria-label={diffHighlight ? 'Disable diff' : 'Enable diff'}
+              >
+                <IconHighlight size={14} />
+                <span className="hidden md:inline">Diff</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{diffHighlight ? 'Disable diff' : 'Enable diff'}</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className="flex items-center justify-center h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 px-2.5 gap-1.5 text-[0.8rem] font-semibold tracking-wide hover:bg-btn-hover hover:-translate-y-px"
                 onClick={() => {
                   const newMode = !isSideBySide;
                   setIsSideBySide(newMode);
@@ -718,7 +804,60 @@ export default function App() {
             </TooltipTrigger>
             <TooltipContent>{isSideBySide ? 'Unified View' : 'Side-by-Side View'} (Ctrl+Shift+V)</TooltipContent>
           </Tooltip>
+          <div className="hidden md:flex items-center h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text px-2.5 gap-1.5 text-[0.75rem] font-medium tracking-wide opacity-70 whitespace-nowrap">
+            <IconBulb size={14} className="shrink-0 text-tip-icon" />
+            <span key={tipIndex} className="animate-tip-fade"><span className="font-semibold">Tip:</span> {TIPS[tipIndex]}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 shrink-0 -ml-8">
+          <svg width="40" height="32" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="header-icon w-10 h-8 transition-all duration-300 shrink-0 cursor-pointer hover:scale-[1.08] hover:-rotate-2 hover:drop-shadow-[0_6px_12px_rgba(0,0,0,0.15)]">
+            <path d="M14 19L6 12L14 5" stroke="#da3633" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M22 5L30 12L22 19" stroke="#2ea043" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <div><h1 className="m-0 text-lg md:text-2xl font-medium tracking-tighter font-['Fira_Code'] text-dark-text whitespace-nowrap">diff please</h1></div>
+        </div>
+        <div className="flex items-center shrink-0 justify-self-end">
+          {db && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className="flex items-center justify-center h-8 rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.8rem] font-semibold tracking-wide hover:bg-btn-hover hover:-translate-y-px"
+                  onClick={async () => {
+                    if (!diffEditorRef.current) return;
+                    const original = diffEditorRef.current.getOriginalEditor().getModel().getValue();
+                    const modified = diffEditorRef.current.getModifiedEditor().getModel().getValue();
+                    const ok = await saveSnapshotNow(original, modified, 'save', { diffHighlight, sideBySide: isSideBySide });
+                    if (ok) {
+                      toast.success('Saved');
+                    } else {
+                      toast.error('Save failed');
+                    }
+                  }}
+                  title="Save"
+                  aria-label="Save diff"
+                >
+                  <IconDeviceFloppy size={14} />
+                  <span className="hidden md:inline">Save</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Save to history</TooltipContent>
+            </Tooltip>
+          )}
 
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className="flex items-center justify-center h-8 w-auto rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.8rem] font-semibold tracking-wide hover:bg-btn-hover hover:-translate-y-px"
+                onClick={() => { setShareOpen(true); analytics.shareOpened(); }}
+                title="Share"
+                aria-label="Share diff"
+              >
+                <IconShare size={14} />
+                <span className="hidden md:inline">{previewOverlay ? 'Share Preview' : 'Share Diff'}</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{previewOverlay ? 'Share preview link' : 'Share diff link'}</TooltipContent>
+          </Tooltip>
 
           {db && (
             <Tooltip>
@@ -733,24 +872,9 @@ export default function App() {
                   <span className="hidden md:inline">History</span>
                 </button>
               </TooltipTrigger>
-              <TooltipContent>View history</TooltipContent>
+              <TooltipContent>History of saves and shares</TooltipContent>
             </Tooltip>
           )}
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                className="flex items-center justify-center h-8 w-auto rounded-full border border-btn-border bg-btn-bg text-btn-text cursor-pointer transition-all duration-200 mr-2 px-2.5 gap-1.5 text-[0.8rem] font-semibold tracking-wide hover:bg-btn-hover hover:-translate-y-px"
-                onClick={() => { setShareOpen(true); analytics.shareOpened(); }}
-                title="Share"
-                aria-label="Share diff"
-              >
-                <IconShare size={14} />
-                <span className="hidden md:inline">Share Markdown</span>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>Share diff as markdown</TooltipContent>
-          </Tooltip>
 
           <Select
             value={themeMode}
@@ -779,6 +903,19 @@ export default function App() {
               ))}
             </SelectContent>
           </Select>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className="flex items-center justify-center w-8 h-8 rounded-full border border-dropdown-border bg-dropdown-bg text-dropdown-text transition-all duration-200 cursor-pointer ml-2 hover:bg-dropdown-hover hover:-translate-y-px"
+                onClick={() => setFeedbackOpen(true)}
+                title="Feedback"
+                aria-label="Send feedback"
+              >
+                <IconMessageCircle size={15} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Send feedback</TooltipContent>
+          </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
@@ -1000,14 +1137,25 @@ export default function App() {
       getContent={getShareContent}
     />
 
+    <FeedbackModal
+      isOpen={feedbackOpen}
+      onClose={() => setFeedbackOpen(false)}
+    />
+
     <Toaster
       position="bottom-center"
       toastOptions={{
         style: {
-          background: 'var(--dark-bg-secondary)',
+          background: 'var(--button-bg)',
           color: 'var(--page-text-color)',
-          border: '1px solid var(--dark-border)',
+          border: '1px solid var(--button-border)',
+          borderRadius: '9999px',
           fontSize: '0.8rem',
+          fontWeight: 500,
+          padding: '8px 16px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          gap: '8px',
+          opacity: 1,
         },
       }}
     />

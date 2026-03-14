@@ -229,7 +229,7 @@ describe('App', () => {
   });
 
   // ── Button click handlers ──
-  it('Sort JSON button calls model.setValue with sorted output', async () => {
+  it('Sort JSON button updates model with sorted output', async () => {
     renderApp(App);
     const json = '{"b":2,"a":1}';
     act(() => {
@@ -241,17 +241,14 @@ describe('App', () => {
     await waitFor(() => {
       expect(screen.getByTitle('Sort JSON')).toBeInTheDocument();
     });
-    const setValueSpy = vi.fn(val => { mockOriginalModel._value = val; });
-    mockOriginalModel.setValue = setValueSpy;
     fireEvent.click(screen.getByTitle('Sort JSON'));
     await waitFor(() => {
-      expect(setValueSpy).toHaveBeenCalled();
-      const sorted = JSON.parse(setValueSpy.mock.calls[0][0]);
+      const sorted = JSON.parse(mockOriginalModel._value);
       expect(Object.keys(sorted)).toEqual(['a', 'b']);
     });
   });
 
-  it('Minify JSON button calls model.setValue with compact output', async () => {
+  it('Minify JSON button updates model with compact output', async () => {
     renderApp(App);
     const json = '{"b": 2, "a": 1}';
     act(() => {
@@ -263,11 +260,9 @@ describe('App', () => {
     await waitFor(() => {
       expect(screen.getByTitle('Minify JSON')).toBeInTheDocument();
     });
-    const setValueSpy = vi.fn(val => { mockOriginalModel._value = val; });
-    mockOriginalModel.setValue = setValueSpy;
     fireEvent.click(screen.getByTitle('Minify JSON'));
     await waitFor(() => {
-      expect(setValueSpy).toHaveBeenCalledWith('{"b":2,"a":1}');
+      expect(mockOriginalModel._value).toBe('{"b":2,"a":1}');
     });
   });
 
@@ -285,12 +280,9 @@ describe('App', () => {
       expect(screen.getByTitle('Convert JSON to YAML')).toBeInTheDocument();
     });
     monacoMock.editor.setModelLanguage.mockClear();
-    const setValueSpy = vi.fn(val => { mockOriginalModel._value = val; });
-    mockOriginalModel.setValue = setValueSpy;
     fireEvent.click(screen.getByTitle('Convert JSON to YAML'));
     await waitFor(() => {
-      expect(setValueSpy).toHaveBeenCalled();
-      expect(setValueSpy.mock.calls[0][0]).toContain('name: codex');
+      expect(mockOriginalModel._value).toContain('name: codex');
       expect(monacoMock.editor.setModelLanguage).toHaveBeenCalledWith(mockOriginalModel, 'yaml');
     });
   });
@@ -309,12 +301,9 @@ describe('App', () => {
       expect(screen.getByTitle('Convert YAML to JSON')).toBeInTheDocument();
     });
     monacoMock.editor.setModelLanguage.mockClear();
-    const setValueSpy = vi.fn(val => { mockOriginalModel._value = val; });
-    mockOriginalModel.setValue = setValueSpy;
     fireEvent.click(screen.getByTitle('Convert YAML to JSON'));
     await waitFor(() => {
-      expect(setValueSpy).toHaveBeenCalled();
-      expect(setValueSpy.mock.calls[0][0]).toContain('"name": "codex"');
+      expect(mockOriginalModel._value).toContain('"name": "codex"');
       expect(monacoMock.editor.setModelLanguage).toHaveBeenCalledWith(mockOriginalModel, 'json');
     });
   });

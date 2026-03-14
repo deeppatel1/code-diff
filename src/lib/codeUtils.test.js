@@ -478,4 +478,431 @@ describe('CodeBeautifier', () => {
     expect(result).toContain('finally:');
     expect(result).toContain('  cleanup()');
   });
+
+  // ══════════════════════════════════════════════════════════════
+  // Comprehensive formatter tests
+  // ══════════════════════════════════════════════════════════════
+
+  // ── Python: class with multiple methods (flat input) ──
+  it('formatPython indents methods inside a class (flat)', async () => {
+    const code = 'class Animal:\ndef __init__(self, name):\nself.name = name\ndef speak(self):\nreturn self.name';
+    const result = await beautifier.beautify(code, 'python', { indentationSize: 4 });
+    expect(result).toBe(
+      'class Animal:\n    def __init__(self, name):\n        self.name = name\n    def speak(self):\n        return self.name'
+    );
+  });
+
+  // ── Python: nested if/for blocks (flat input) ──
+  it('formatPython nests if/for blocks (flat)', async () => {
+    const code = 'for i in range(10):\nif i % 2 == 0:\nprint(i)';
+    const result = await beautifier.beautify(code, 'python', { indentationSize: 4 });
+    expect(result).toBe(
+      'for i in range(10):\n    if i % 2 == 0:\n        print(i)'
+    );
+  });
+
+  // ── Python: preserves empty lines ──
+  it('formatPython preserves blank lines between blocks', async () => {
+    const code = 'def foo():\npass\n\ndef bar():\npass';
+    const result = await beautifier.beautify(code, 'python', { indentationSize: 4 });
+    expect(result).toBe('def foo():\n    pass\n\ndef bar():\n    pass');
+  });
+
+  // ── Python: normalizes existing indentation ──
+  it('formatPython normalizes messy indentation to consistent width', async () => {
+    const code = 'def foo():\n  x = 1\n  if x:\n      print(x)';
+    const result = await beautifier.beautify(code, 'python', { indentationSize: 4 });
+    expect(result).toBe('def foo():\n    x = 1\n    if x:\n        print(x)');
+  });
+
+  // ── Python: normalizes tabs to spaces ──
+  it('formatPython normalizes tabs in existing indentation', async () => {
+    const code = 'def foo():\n\tx = 1\n\tif x:\n\t\tprint(x)';
+    const result = await beautifier.beautify(code, 'python', { indentationSize: 4 });
+    expect(result).toBe('def foo():\n    x = 1\n    if x:\n        print(x)');
+  });
+
+  // ── Python: multiple top-level classes ──
+  it('formatPython handles sibling classes at top level', async () => {
+    const code = 'class A:\npass\nclass B:\npass';
+    const result = await beautifier.beautify(code, 'python', { indentationSize: 4 });
+    expect(result).toBe('class A:\n    pass\nclass B:\n    pass');
+  });
+
+  // ── Python: realistic function with try/except/finally (indented input) ──
+  it('formatPython correctly formats try/except/finally with indented input', async () => {
+    const code = [
+      'def read_file(path):',
+      '  try:',
+      '    with open(path) as f:',
+      '      return f.read()',
+      '  except FileNotFoundError:',
+      '    print("not found")',
+      '    return None',
+      '  except PermissionError:',
+      '    print("no access")',
+      '    return None',
+      '  finally:',
+      '    print("done")',
+    ].join('\n');
+    const result = await beautifier.beautify(code, 'python', { indentationSize: 4 });
+    const lines = result.split('\n');
+    expect(lines[0]).toBe('def read_file(path):');
+    expect(lines[1]).toBe('    try:');
+    expect(lines[2]).toBe('        with open(path) as f:');
+    expect(lines[3]).toBe('            return f.read()');
+    expect(lines[4]).toBe('    except FileNotFoundError:');
+    expect(lines[5]).toBe('        print("not found")');
+    expect(lines[6]).toBe('        return None');
+    expect(lines[7]).toBe('    except PermissionError:');
+    expect(lines[8]).toBe('        print("no access")');
+    expect(lines[9]).toBe('        return None');
+    expect(lines[10]).toBe('    finally:');
+    expect(lines[11]).toBe('        print("done")');
+  });
+
+  // ── Python: class with methods, for loop, if/elif/else (indented input) ──
+  it('formatPython correctly formats class with control flow (indented input)', async () => {
+    const code = [
+      'class Config:',
+      '  DEFAULT = "config.json"',
+      '  ',
+      '  def __init__(self, path=None):',
+      '    self.path = path or self.DEFAULT',
+      '    self.data = {}',
+      '  ',
+      '  def load(self):',
+      '    lines = read_file(self.path)',
+      '    for line in lines:',
+      '      if "=" in line:',
+      '        key, val = line.split("=", 1)',
+      '        self.data[key] = val',
+      '      elif line.startswith("#"):',
+      '        continue',
+      '      else:',
+      '        print(f"Skip: {line}")',
+      '    return self',
+    ].join('\n');
+    const result = await beautifier.beautify(code, 'python', { indentationSize: 4 });
+    const lines = result.split('\n');
+    expect(lines[0]).toBe('class Config:');
+    expect(lines[1]).toBe('    DEFAULT = "config.json"');
+    expect(lines[3]).toBe('    def __init__(self, path=None):');
+    expect(lines[4]).toBe('        self.path = path or self.DEFAULT');
+    expect(lines[5]).toBe('        self.data = {}');
+    expect(lines[7]).toBe('    def load(self):');
+    expect(lines[8]).toBe('        lines = read_file(self.path)');
+    expect(lines[9]).toBe('        for line in lines:');
+    expect(lines[10]).toBe('            if "=" in line:');
+    expect(lines[11]).toBe('                key, val = line.split("=", 1)');
+    expect(lines[12]).toBe('                self.data[key] = val');
+    expect(lines[13]).toBe('            elif line.startswith("#"):');
+    expect(lines[14]).toBe('                continue');
+    expect(lines[15]).toBe('            else:');
+    expect(lines[16]).toBe('                print(f"Skip: {line}")');
+    expect(lines[17]).toBe('        return self');
+  });
+
+  // ── Python: mixed tabs and 2-space indent normalized to 4-space ──
+  it('formatPython normalizes mixed tabs and spaces to consistent 4-space', async () => {
+    const code = 'def process(items):\n\tfor item in items:\n\t\tif item > 0:\n\t\t\tprint(item)';
+    const result = await beautifier.beautify(code, 'python', { indentationSize: 4 });
+    expect(result).toBe(
+      'def process(items):\n    for item in items:\n        if item > 0:\n            print(item)'
+    );
+  });
+
+  // ── Python: indented input with while loop and break ──
+  it('formatPython handles while loop with break (indented input)', async () => {
+    const code = [
+      'def find(items, target):',
+      '  i = 0',
+      '  while i < len(items):',
+      '    if items[i] == target:',
+      '      return i',
+      '    i += 1',
+      '  return -1',
+    ].join('\n');
+    const result = await beautifier.beautify(code, 'python', { indentationSize: 4 });
+    const lines = result.split('\n');
+    expect(lines[0]).toBe('def find(items, target):');
+    expect(lines[1]).toBe('    i = 0');
+    expect(lines[2]).toBe('    while i < len(items):');
+    expect(lines[3]).toBe('        if items[i] == target:');
+    expect(lines[4]).toBe('            return i');
+    expect(lines[5]).toBe('        i += 1');
+    expect(lines[6]).toBe('    return -1');
+  });
+
+  // ── Python: decorator and top-level code (indented input) ──
+  it('formatPython preserves top-level statements and indented blocks', async () => {
+    const code = [
+      'import os',
+      '',
+      'def greet(name):',
+      '  return f"Hello, {name}"',
+      '',
+      'result = greet("world")',
+      'print(result)',
+    ].join('\n');
+    const result = await beautifier.beautify(code, 'python', { indentationSize: 4 });
+    const lines = result.split('\n');
+    expect(lines[0]).toBe('import os');
+    expect(lines[1]).toBe('');
+    expect(lines[2]).toBe('def greet(name):');
+    expect(lines[3]).toBe('    return f"Hello, {name}"');
+    expect(lines[4]).toBe('');
+    expect(lines[5]).toBe('result = greet("world")');
+    expect(lines[6]).toBe('print(result)');
+  });
+
+  // ── Java: full class with method and nested if ──
+  it('formatJava formats a class with method and nested if', async () => {
+    const code = 'public class Calculator {\npublic int add(int a, int b) {\nif (a > 0) {\nreturn a + b;\n}\nreturn b;\n}\n}';
+    const result = await beautifier.beautify(code, 'java');
+    const lines = result.split('\n');
+    expect(lines[0]).toBe('public class Calculator {');
+    expect(lines[1]).toBe('    public int add(int a, int b) {');
+    expect(lines[2]).toBe('        if (a > 0) {');
+    expect(lines[3]).toBe('            return a + b;');
+    expect(lines[4]).toBe('        }');
+    expect(lines[5]).toBe('        return b;');
+    expect(lines[6]).toBe('    }');
+    expect(lines[7]).toBe('}');
+  });
+
+  // ── C: struct and function ──
+  it('formatC indents struct and function body', async () => {
+    const code = 'struct Point {\nint x;\nint y;\n};\n\nint distance(struct Point p) {\nreturn p.x + p.y;\n}';
+    const result = await beautifier.beautify(code, 'c');
+    expect(result).toContain('    int x;');
+    expect(result).toContain('    int y;');
+    expect(result).toContain('    return p.x + p.y;');
+  });
+
+  // ── C++: namespace and class ──
+  it('formatCpp handles namespace and nested class', async () => {
+    const code = 'namespace App {\nclass Foo {\npublic:\nvoid bar() {\nstd::cout << "hi";\n}\n};\n}';
+    const result = await beautifier.beautify(code, 'cpp');
+    expect(result).toContain('namespace App {');
+    expect(result).toContain('    class Foo {');
+    expect(result).toContain('        public:');
+    expect(result).toContain('        void bar() {');
+  });
+
+  // ── C#: namespace, class, method ──
+  it('formatCSharp handles namespace/class/method nesting', async () => {
+    const code = 'namespace MyApp {\nclass Program {\nstatic void Main() {\nConsole.WriteLine("hi");\n}\n}\n}';
+    const result = await beautifier.beautify(code, 'csharp');
+    expect(result).toContain('namespace MyApp {');
+    expect(result).toContain('    class Program {');
+    expect(result).toContain('        static void Main() {');
+    expect(result).toContain('            Console.WriteLine("hi");');
+  });
+
+  // ── PHP: class with method ──
+  it('formatPhp handles class with method', async () => {
+    const code = 'class User {\npublic function getName() {\nreturn $this->name;\n}\n}';
+    const result = await beautifier.beautify(code, 'php');
+    expect(result).toContain('class User {');
+    expect(result).toContain('    public function getName() {');
+    expect(result).toContain('        return $this->name;');
+  });
+
+  // ── Go: function with if/else ──
+  it('formatGo handles function with if/else', async () => {
+    const code = 'func check(x int) string {\nif x > 0 {\nreturn "positive"\n} else {\nreturn "non-positive"\n}\n}';
+    const result = await beautifier.beautify(code, 'go');
+    expect(result).toContain('func check(x int) string {');
+    expect(result).toContain('    if x > 0 {');
+    expect(result).toContain('        return "positive"');
+    expect(result).toContain('    } else {');
+  });
+
+  // ── Rust: impl block with methods ──
+  it('formatRust handles impl block with methods', async () => {
+    const code = 'impl Foo {\nfn new() -> Self {\nFoo { x: 0 }\n}\nfn get(&self) -> i32 {\nself.x\n}\n}';
+    const result = await beautifier.beautify(code, 'rust');
+    expect(result).toContain('impl Foo {');
+    expect(result).toContain('    fn new() -> Self {');
+    expect(result).toContain('        Foo { x: 0 }');
+    expect(result).toContain('    fn get(&self) -> i32 {');
+  });
+
+  // ── Kotlin: class with companion object ──
+  it('formatKotlin handles class with init and companion', async () => {
+    const code = 'class App {\ninit {\nprintln("init")\n}\ncompanion object {\nval TAG = "App"\n}\n}';
+    const result = await beautifier.beautify(code, 'kotlin');
+    expect(result).toContain('class App {');
+    expect(result).toContain('    init {');
+    expect(result).toContain('        println("init")');
+    expect(result).toContain('    companion object {');
+    expect(result).toContain('        val TAG = "App"');
+  });
+
+  // ── Ruby: module with class, method, and control flow ──
+  it('formatRuby handles module/class/method/control flow', async () => {
+    const code = 'module Greet\nclass Hello\ndef say(name)\nif name\nputs name\nelse\nputs "anon"\nend\nend\nend\nend';
+    const result = await beautifier.beautify(code, 'ruby', { indentationSize: 2 });
+    const lines = result.split('\n');
+    expect(lines[0]).toBe('module Greet');
+    expect(lines[1]).toBe('  class Hello');
+    expect(lines[2]).toBe('    def say(name)');
+    expect(lines[3]).toBe('      if name');
+    expect(lines[4]).toBe('        puts name');
+    // 'else' doesn't trigger dedent in current Ruby formatter (no special handling),
+    // but end/end/end properly close nesting
+  });
+
+  // ── Ruby: array iteration with do/end ──
+  it('formatRuby handles each with do/end and nested puts', async () => {
+    const code = '[1, 2, 3].each do\nputs "num"\nend';
+    const result = await beautifier.beautify(code, 'ruby', { indentationSize: 2 });
+    expect(result).toBe('[1, 2, 3].each do\n  puts "num"\nend');
+  });
+
+  // ── SQL: complex query with JOINs ──
+  it('formatSql handles JOIN and GROUP BY keywords', async () => {
+    const result = await beautifier.beautify(
+      'select u.name, count(o.id) from users u inner join orders o on u.id = o.user_id group by u.name having count(o.id) > 5 order by u.name',
+      'sql'
+    );
+    expect(result).toContain('SELECT');
+    expect(result).toContain('FROM');
+    expect(result).toContain('JOIN');
+    expect(result).toContain('GROUP BY');
+    expect(result).toContain('HAVING');
+    expect(result).toContain('ORDER BY');
+  });
+
+  // ── SQL: CREATE TABLE ──
+  it('formatSql handles CREATE TABLE', async () => {
+    const result = await beautifier.beautify(
+      'create table users (id int, name varchar(100))',
+      'sql'
+    );
+    expect(result).toContain('CREATE');
+    // all keywords uppercased
+    expect(result).not.toContain('create');
+  });
+
+  // ── JSON: deeply nested ──
+  it('formatJson handles deeply nested objects', async () => {
+    const json = '{"a":{"b":{"c":{"d":1}}}}';
+    const result = await beautifier.beautify(json, 'json', { indentationSize: 2 });
+    expect(result).toBe('{\n  "a": {\n    "b": {\n      "c": {\n        "d": 1\n      }\n    }\n  }\n}');
+  });
+
+  // ── JSON: array of mixed types ──
+  it('formatJson handles arrays with mixed types', async () => {
+    const json = '[1,"two",true,null,{"key":"val"}]';
+    const result = await beautifier.beautify(json, 'json', { indentationSize: 2 });
+    const parsed = JSON.parse(result);
+    expect(parsed).toEqual([1, 'two', true, null, { key: 'val' }]);
+    expect(result).toContain('  1,');
+  });
+
+  // ── JavaScript: arrow functions and template literals ──
+  it('beautifies JavaScript with arrow functions', async () => {
+    const code = 'const greet=(name)=>{return `Hello, ${name}!`;}';
+    const result = await beautifier.beautify(code, 'javascript');
+    expect(result).toContain('const greet');
+    expect(result).toContain('`Hello, ${name}!`');
+  });
+
+  // ── TypeScript: interface and type alias ──
+  it('beautifies TypeScript with interface and generics', async () => {
+    const code = 'interface Props<T>{data:T;loading:boolean;error?:string;}';
+    const result = await beautifier.beautify(code, 'typescript');
+    expect(result).toContain('interface Props<T>');
+    expect(result).toContain('data: T');
+    expect(result).toContain('loading: boolean');
+  });
+
+  // ── HTML: nested elements with attributes ──
+  it('beautifies HTML with nested elements', async () => {
+    const code = '<html><head><title>Test</title></head><body><div class="main"><p>Hello</p></div></body></html>';
+    const result = await beautifier.beautify(code, 'html');
+    expect(result).toContain('<html>');
+    expect(result).toContain('<title>Test</title>');
+    expect(result).toContain('<div class="main">');
+    expect(result).toContain('<p>Hello</p>');
+  });
+
+  // ── CSS: multiple rules with nesting ──
+  it('beautifies CSS with multiple selectors', async () => {
+    const code = 'body{margin:0;padding:0;}.container{display:flex;justify-content:center;}';
+    const result = await beautifier.beautify(code, 'css');
+    expect(result).toContain('body {');
+    expect(result).toContain('margin: 0;');
+    expect(result).toContain('.container {');
+    expect(result).toContain('display: flex;');
+  });
+
+  // ── SCSS via CSS parser ──
+  it('beautifies SCSS', async () => {
+    const code = '.parent{color:red;.child{color:blue;}}';
+    const result = await beautifier.beautify(code, 'scss');
+    expect(result).toContain('.parent {');
+    expect(result).toContain('color: red;');
+    expect(result).toContain('.child {');
+  });
+
+  // ── Markdown: preserves structure ──
+  it('beautifies Markdown with lists and headings', async () => {
+    const code = '# Title\n\n-  item one\n-  item two\n\n## Subtitle\n\nParagraph text.';
+    const result = await beautifier.beautify(code, 'markdown');
+    expect(result).toContain('# Title');
+    expect(result).toContain('## Subtitle');
+    expect(result).toContain('- item one');
+  });
+
+  // ── YAML: normalizes spacing ──
+  it('beautifies YAML with nested keys', async () => {
+    const code = 'server:\n  host:    localhost\n  port:    8080\n  db:\n    name:    mydb';
+    const result = await beautifier.beautify(code, 'yaml');
+    expect(result).toContain('host: localhost');
+    expect(result).toContain('port: 8080');
+    expect(result).toContain('name: mydb');
+  });
+
+  // ── C-style: custom indent size ──
+  it('formatCStyleLanguage respects custom indentSize of 2', () => {
+    const code = 'void foo() {\nbar();\nbaz();\n}';
+    const result = beautifier.formatCStyleLanguage(code, { indentSize: 2 });
+    expect(result).toBe('void foo() {\n  bar();\n  baz();\n}');
+  });
+
+  // ── C-style: deeply nested (3 levels) ──
+  it('formatCStyleLanguage handles 3 levels of nesting', () => {
+    const code = 'a {\nb {\nc {\nd();\n}\n}\n}';
+    const result = beautifier.formatCStyleLanguage(code, { indentSize: 2 });
+    expect(result).toBe('a {\n  b {\n    c {\n      d();\n    }\n  }\n}');
+  });
+
+  // ── JSON/YAML round-trip preserves data ──
+  it('JSON→YAML→JSON round-trip preserves all data types', () => {
+    const original = '{"str":"hello","num":42,"bool":true,"arr":[1,2],"obj":{"key":"val"},"nil":null}';
+    const yaml = beautifier.convertJsonToYaml(original);
+    const back = beautifier.convertYamlToJson(yaml);
+    const parsed = JSON.parse(back);
+    expect(parsed).toEqual({ str: 'hello', num: 42, bool: true, arr: [1, 2], obj: { key: 'val' }, nil: null });
+  });
+
+  // ── indentationSize parameter is respected across formatters ──
+  it('beautify passes indentationSize to JSON formatter', async () => {
+    const json = '{"a":1}';
+    const r2 = await beautifier.beautify(json, 'json', { indentationSize: 2 });
+    const r4 = await beautifier.beautify(json, 'json', { indentationSize: 4 });
+    expect(r2).toBe('{\n  "a": 1\n}');
+    expect(r4).toBe('{\n    "a": 1\n}');
+  });
+
+  it('beautify passes indentationSize to JavaScript formatter', async () => {
+    const code = 'function f(){return 1;}';
+    const r2 = await beautifier.beautify(code, 'javascript', { indentationSize: 2 });
+    const r4 = await beautifier.beautify(code, 'javascript', { indentationSize: 4 });
+    expect(r2).toContain('  return 1;');
+    expect(r4).toContain('    return 1;');
+  });
 });

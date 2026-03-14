@@ -22,6 +22,7 @@
   --color-dark-text-secondary: var(--dark-text-secondary);
   --color-dark-border: var(--dark-border);
   --color-dark-hover: var(--dark-hover);
+  --color-tip-icon: var(--tip-icon-color);
   --color-blue-500: var(--blue-500);
   --color-red-500: var(--red-500);
   --color-green-500: var(--green-500);
@@ -29,6 +30,7 @@
   --animate-spin: spin 1s linear infinite;
   --animate-slide-in-right: slideInRight 0.2s ease;
   --animate-fade-in: fadeIn 0.15s ease;
+  --animate-tip-fade: tipFade 10s ease-in-out;
 }
 
 /* ============================================================
@@ -99,6 +101,7 @@ html.theme-dark {
   --dropdown-border: var(--header-border);
   --dropdown-hover-bg: #30363d;
   --language-indicator-color: var(--blue-500);
+  --tip-icon-color: #facc15;
 }
 
 html.theme-light {
@@ -123,6 +126,7 @@ html.theme-light {
   --dropdown-border: #d0d7de;
   --dropdown-hover-bg: #d0d7de;
   --language-indicator-color: #7c3aed;
+  --tip-icon-color: #b45309;
 }
 
 html.theme-pink {
@@ -147,6 +151,7 @@ html.theme-pink {
   --dropdown-border: rgba(190, 83, 147, 0.35);
   --dropdown-hover-bg: rgba(190, 83, 147, 0.3);
   --language-indicator-color: #d03592;
+  --tip-icon-color: #c2185b;
 }
 
 html.theme-midnight {
@@ -171,6 +176,7 @@ html.theme-midnight {
   --dropdown-border: #2a355a;
   --dropdown-hover-bg: #23305a;
   --language-indicator-color: #6aa9ff;
+  --tip-icon-color: #facc15;
 }
 
 html.theme-sand {
@@ -195,6 +201,7 @@ html.theme-sand {
   --dropdown-border: #d9cbb8;
   --dropdown-hover-bg: #d9cbb8;
   --language-indicator-color: #8a5e2c;
+  --tip-icon-color: #92400e;
 }
 
 html.theme-slate {
@@ -219,6 +226,7 @@ html.theme-slate {
   --dropdown-border: #3a424c;
   --dropdown-hover-bg: #343d48;
   --language-indicator-color: #7aa2c2;
+  --tip-icon-color: #facc15;
 }
 
 html.theme-sky {
@@ -243,6 +251,7 @@ html.theme-sky {
   --dropdown-border: #c7d9f2;
   --dropdown-hover-bg: #bfd6f4;
   --language-indicator-color: #2d6cdf;
+  --tip-icon-color: #1d4ed8;
 }
 
 html.theme-monokai {
@@ -267,6 +276,7 @@ html.theme-monokai {
   --dropdown-border: #3e3d32;
   --dropdown-hover-bg: #49483e;
   --language-indicator-color: #66d9ef;
+  --tip-icon-color: #e6db74;
 }
 
 
@@ -317,6 +327,21 @@ header, footer, button, select, a,
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes tipFade {
+  0% { opacity: 0; transform: translateY(4px); }
+  5% { opacity: 1; transform: translateY(0); }
+  95% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+
+/* ============================================================
+   Sonner toast overrides
+   ============================================================ */
+
+[data-sonner-toast] {
+  opacity: 1 !important;
+}
+
 /* ============================================================
    Monaco Editor overrides (can't be done with Tailwind)
    ============================================================ */
@@ -329,6 +354,18 @@ header, footer, button, select, a,
 .monaco-diff-editor > .editor.original,
 .monaco-diff-editor > .editor.modified {
   box-shadow: none !important;
+}
+
+/* Hide diff +/- gutter signs */
+.monaco-editor .codicon-diff-remove::before,
+.monaco-editor .codicon-diff-insert::before {
+  content: '' !important;
+}
+
+/* Add spacing between line numbers and fold arrows */
+.monaco-editor .codicon-folding-expanded,
+.monaco-editor .codicon-folding-collapsed {
+  transform: translateX(-2px);
 }
 
 .monaco-diff-editor > .diffOverview {
